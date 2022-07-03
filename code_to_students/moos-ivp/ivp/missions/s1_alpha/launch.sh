@@ -14,19 +14,42 @@ GUI="yes"
 #----------------------------------------------------------
 #  Part 2: Check for and handle command-line arguments
 #----------------------------------------------------------
-for ARGI; do
-    if [ "${ARGI}" = "--help" -o "${ARGI}" = "-h" ] ; then
-	echo "launch.sh [SWITCHES] [time_warp]   "
-	echo "  --help, -h                       " 
-	exit 0;
-    elif [ "${ARGI}" = "--nogui" ] ; then
-	GUI="no"
-    elif [ "${ARGI//[^0-9]/}" = "$ARGI" -a "$TIME_WARP" = 1 ]; then 
-        TIME_WARP=$ARGI
-    else 
-	printf "Bad Argument: %s \n" $ARGI
-	exit 0
-    fi
+SHORT=h,w:
+LONG=help,nogui,warp:
+OPTS=$(getopt --options $SHORT --longoptions $LONG)
+
+eval set -- "$OPTS"
+
+while :
+do
+	case "$1" in
+		-h | --help )
+			echo "./launch.sh <OPTIONS>"
+			echo "-w <#> or --warp <#> is the warp factor"
+		    echo "--nogui turns off the GUI"
+			echo "-h or --help prints this message"
+			exit 2
+			;;
+
+		--nogui )
+			GUI="no"
+			shift 1
+			;;
+
+		-w | --warp )
+			TIME_WARP="$2"
+			shift 2
+			;;
+
+		-- )
+			shift;
+			break
+			;;
+
+		*)
+			echo "Unexpected option: $1"
+			;;
+	esac
 done
 
 
