@@ -56,7 +56,7 @@ static void vscrollbar_cb(Fl_Widget* o, void*)
 	Flv_List *s = (Flv_List *)(o->parent());
 	s->top_row( ((Fl_Scrollbar *)o)->value() );
 	s->damage(FL_DAMAGE_CHILD);
-//	s->select_start_row( ((Fl_Scrollbar *)o)->value() );
+	//	s->select_start_row( ((Fl_Scrollbar *)o)->value() );
 }
 
 static void hscrollbar_cb(Fl_Widget* o, void*)
@@ -81,8 +81,8 @@ Flv_List::Flv_List( int X, int Y, int W, int H, const char *l ) :
 	fl_font( text_font(), text_size() );
 	fl_measure("X", r, rh );
 
-//	Leave global_style & row_style undefined
-//	get_default_style(global_style);
+	//	Leave global_style & row_style undefined
+	//	get_default_style(global_style);
 
 	if (parent())
 		vdead_space_color = parent()->color();
@@ -99,7 +99,7 @@ Flv_List::Flv_List( int X, int Y, int W, int H, const char *l ) :
 	veditor = NULL;
 	vediting = false;
 	vedit_when = FLV_EDIT_MANUAL;
-  vwhy_event = 0;
+	vwhy_event = 0;
 	vfeature = FLVF_PERSIST_SELECT;
 	vhas_scrollbars = FLVS_BOTH;
 	vlast_row = 0;
@@ -146,16 +146,16 @@ void Flv_List::draw_row( int Offset, int &X, int &Y, int &W, int &H, int R )
 	get_style( s, R );						//	Guaranteed to fill in style
 	if (Fl::focus()==this || persist_select())
 		add_selection_style( s, R );	//	Add selection coloring if applicable
-  if (row_divider())
-  	s.border( s.border()|FLVB_BOTTOM );	//	Be sure bottom is on
+	if (row_divider())
+		s.border( s.border()|FLVB_BOTTOM );	//	Be sure bottom is on
 
 	X -= Offset;
-  
-  draw_border(s,X,Y,W,H);
+
+	draw_border(s,X,Y,W,H);
 	bt = s.frame();
 
-  fl_color( s.background() );
-  fl_rectf(X,Y,W,H );
+	fl_color( s.background() );
+	fl_rectf(X,Y,W,H );
 #ifdef FLTK_2
 	bt->draw(X,Y,W,H,s.background());
 	bt->inset( X, Y, W, H );
@@ -180,7 +180,7 @@ void Flv_List::draw_row( int Offset, int &X, int &Y, int &W, int &H, int R )
 	if (!active())
 		s.foreground( fl_inactive(s.foreground()) );
 	fl_color( s.foreground() );
-  X += Offset;
+	X += Offset;
 	if (R==-3)										//	Draw title
 		fl_draw(label(), X, Y, W, H, s.align() );
 }
@@ -223,6 +223,7 @@ int Flv_List::handle(int event)
 		case FL_DRAG:
 			if (check_resize())
 				return 1;
+			break;
 		case FL_PUSH:
 			Fl::focus(this);
 			damage(FL_DAMAGE_CHILD);
@@ -447,7 +448,7 @@ void Flv_List::get_style(Flv_Style &s, int R, int )
 			s.background( FL_WHITE );
 		s.frame(FL_THIN_UP_BOX);
 		s.border( FLVB_NONE );
-    s.border_spacing(0);
+		s.border_spacing(0);
 	}
 	if (R==-3)									//	If title use label information
 	{
@@ -457,11 +458,11 @@ void Flv_List::get_style(Flv_Style &s, int R, int )
 		s.align(FL_ALIGN_CLIP);
 	}
 	if (rows && R<0)
-  {
+	{
 		rows = rows->cell_style.skip_to(0);
-	  if (rows && R<0)
-  	  s = *rows;
-  }
+		if (rows && R<0)
+			s = *rows;
+	}
 }
 
 Flv_Feature Flv_List::feature(Flv_Feature v)
@@ -737,79 +738,79 @@ void Flv_List::draw_border(Flv_Style &s, int &X, int &Y, int &W, int &H )
 {
 	int t;
 
-  //	Draw outer border if defined
+	//	Draw outer border if defined
 	fl_color( s.border_color() );
 	if (s.left_border())
-  	fl_yxline(X, Y, Y+H-1);
-  if (s.right_border())
-  	fl_yxline(X+W-1, Y, Y+H-1 );
-  if (s.left_border())
-  {
-  	X++;
-    W--;
-  }
-  if (s.right_border())
-  	W--;
+		fl_yxline(X, Y, Y+H-1);
+	if (s.right_border())
+		fl_yxline(X+W-1, Y, Y+H-1 );
+	if (s.left_border())
+	{
+		X++;
+		W--;
+	}
+	if (s.right_border())
+		W--;
 
-  if (s.top_border())
-		fl_xyline(X, Y, X+W-1 );
-  if (s.bottom_border())
-  	fl_xyline(X, Y+H-1, X+W-1 );
 	if (s.top_border())
-  {
-  	Y++;
-    H--;
-  }
-  if (s.bottom_border())
-  	H--;
+		fl_xyline(X, Y, X+W-1 );
+	if (s.bottom_border())
+		fl_xyline(X, Y+H-1, X+W-1 );
+	if (s.top_border())
+	{
+		Y++;
+		H--;
+	}
+	if (s.bottom_border())
+		H--;
 
-  //	Draw spacing between borders
+	//	Draw spacing between borders
 	fl_color( color() );
-  for (t=0;	t<s.border_spacing();	t++ )
-  {
+	for (t=0;	t<s.border_spacing();	t++ )
+	{
 
 		fl_rect( X, Y, W, H );
-    if (s.left_border())
-    {
-	    X++;
-      W--;
+		if (s.left_border())
+		{
+			X++;
+			W--;
 		}
-    if (s.right_border())
-    	W--;
+		if (s.right_border())
+			W--;
 		if (s.top_border())
-    {
-	    Y++;
-      H--;
-    }
-    if (s.bottom_border())
-    	H--;
-  }
+		{
+			Y++;
+			H--;
+		}
+		if (s.bottom_border())
+			H--;
+	}
 
-  //	Draw inner border if defined
+	//	Draw inner border if defined
 	fl_color( s.border_color() );
 	if (s.inner_left_border())
-  	fl_yxline(X, Y, Y+H-1);
-  if (s.inner_right_border())
-  	fl_yxline(X+W-1, Y, Y+H-1 );
-  if (s.inner_left_border())
-  {
-  	X++;
+		fl_yxline(X, Y, Y+H-1);
+	if (s.inner_right_border())
+		fl_yxline(X+W-1, Y, Y+H-1 );
+	if (s.inner_left_border())
+	{
+		X++;
 		W--;
-  }
-  if (s.inner_right_border())
+	}
+	if (s.inner_right_border())
 		W--;
 
-  if (s.inner_top_border())
-  	fl_xyline(X, Y, X+W-1 );
-  if (s.inner_bottom_border())
-  	fl_xyline(X, Y+H-1, X+W-1 );
-  if (s.inner_top_border())
-  {
-  	Y++;
-    H--;
-  }
-  if (s.inner_bottom_border())
-  	H--;
+	if (s.inner_top_border())
+		fl_xyline(X, Y, X+W-1 );
+	if (s.inner_bottom_border())
+		fl_xyline(X, Y+H-1, X+W-1 );
+	if (s.inner_top_border())
+	{
+		Y++;
+		H--;
+	}
+	if (s.inner_bottom_border())
+		H--;
 }
 
 //	Determine if scrollbars are visible/position and draw
@@ -949,29 +950,29 @@ void Flv_List::update_top_row(int H)
 			}
 		}
 		//	If there're visible rows below the current row
-//		if (rh<H)
-//		{
-//			//	Finish computing visible rows
-//			for (;	r<vrows;	r++, H-=rh )
-//			{
-//				rh = row_height(r);
-//				if (rh>H)
-//					break;
-//			}
-//		}
-//		//	Do we need to move the top row up?
-//		if (rh<H)
-//		{
-//			//	Too much space at bottom, we need to move top row toward 0
-//			//	If possible.
-//			vlast_row = vrow;	//	Make sure we update the entire widget
-//			for (; vtop_row>0; vtop_row--, H -= rh )
-//			{
-//				rh = row_height(vtop_row);
-//				if (rh>H)
-//					break;
-//			}
-//		}
+		//		if (rh<H)
+		//		{
+		//			//	Finish computing visible rows
+		//			for (;	r<vrows;	r++, H-=rh )
+		//			{
+		//				rh = row_height(r);
+		//				if (rh>H)
+		//					break;
+		//			}
+		//		}
+		//		//	Do we need to move the top row up?
+		//		if (rh<H)
+		//		{
+		//			//	Too much space at bottom, we need to move top row toward 0
+		//			//	If possible.
+		//			vlast_row = vrow;	//	Make sure we update the entire widget
+		//			for (; vtop_row>0; vtop_row--, H -= rh )
+		//			{
+		//				rh = row_height(vtop_row);
+		//				if (rh>H)
+		//					break;
+		//			}
+		//		}
 	}
 }
 
@@ -1009,14 +1010,14 @@ void Flv_List::start_draw(int &X, int &Y, int &W, int &H, int &trow_width )
 		trow_width = W;
 
 	//	Update top row if nessasary
-//	update_top_row(H);
+	//	update_top_row(H);
 
 	//	Draw Title
 	if (label())
 	{
 		rh = row_height(-3);
 		fl_clip( X, Y, W, rh );
-    CX=X;	CY=Y;	CW=W;	CH=rh;
+		CX=X;	CY=Y;	CW=W;	CH=rh;
 		Flv_List::draw_row( 0, CX, CY, CW, CH, -3);
 		fl_pop_clip();
 		Y += rh;
@@ -1028,7 +1029,7 @@ void Flv_List::start_draw(int &X, int &Y, int &W, int &H, int &trow_width )
 	{
 		rh = row_height(-1);
 		fl_clip( X, Y, W, rh );
-    CX=X;	CY=Y;	CW=trow_width;	CH=rh;
+		CX=X;	CY=Y;	CW=trow_width;	CH=rh;
 		draw_row( vrow_offset, CX, CY, CW, CH, -1);
 		fl_pop_clip();
 		Y += rh;
@@ -1040,7 +1041,7 @@ void Flv_List::start_draw(int &X, int &Y, int &W, int &H, int &trow_width )
 		rh = row_height(-2);
 		H -=rh;
 		fl_clip( X, Y+H, W, rh );
-    CX=X;	CY=Y+H;	CW=trow_width;	CH=rh;
+		CX=X;	CY=Y+H;	CW=trow_width;	CH=rh;
 		draw_row( vrow_offset, CX, CY, CW, CH, -2 );
 		fl_pop_clip();
 	}
@@ -1079,14 +1080,14 @@ void Flv_List::draw()
 	if (B>0)
 	{
 		fl_color( dead_space_color() );
-    CY = Y;	CH = H;
-    if (row_header())
-    {
-    	CY -= row_height(-1);
-      CH += row_height(-1);
-    }
-    if (row_footer())
-    	CH += row_height(-2);
+		CY = Y;	CH = H;
+		if (row_header())
+		{
+			CY -= row_height(-1);
+			CH += row_height(-1);
+		}
+		if (row_footer())
+			CH += row_height(-2);
 		fl_rectf( X+rw-vrow_offset, CY, B, CH );
 	}
 
@@ -1099,7 +1100,7 @@ void Flv_List::draw()
 		if ( vlast_row==vrow || (vlast_row!=vrow && (r==vlast_row || r==vrow)) )
 		{
 			fl_clip( X, Y, rw, rh);
-	    CX=X;	CY=Y;	CW=rw;	CH=rh;
+			CX=X;	CY=Y;	CW=rw;	CH=rh;
 			draw_row( vrow_offset, CX, CY, CW, CH, r );
 			fl_pop_clip();
 		}
@@ -1129,7 +1130,7 @@ int Flv_List::page_size(void)
 			ps=(H/row_height(0));
 		ps--;
 		if (ps<1)
-		  ps=1;
+			ps=1;
 	}
 	return ps;
 }
@@ -1191,8 +1192,8 @@ void Flv_List::get_default_style( Flv_Style &s )
 	s.locked(true);
 	s.resizable(false);
 	s.width(40);
-  s.x_margin(2);
-  s.y_margin(1);
+	s.x_margin(2);
+	s.y_margin(1);
 }
 
 void Flv_List::add_selection_style( Flv_Style &s, int R, int  )
@@ -1203,8 +1204,8 @@ void Flv_List::add_selection_style( Flv_Style &s, int R, int  )
 	//	Handle row selection
 	if (row_selected(R))
 	{
-			s.background( selection_color() );
-			s.foreground( fl_contrast( text_color(), selection_color() ) );
+		s.background( selection_color() );
+		s.foreground( fl_contrast( text_color(), selection_color() ) );
 	}
 }
 
@@ -1258,7 +1259,7 @@ void Flv_List::check_cursor(void)
 		H-=row_height(-3);
 	}
 
-//	if (full_resize())	//	Trival test first
+	//	if (full_resize())	//	Trival test first
 	{
 		if (row_header())
 		{
@@ -1316,9 +1317,9 @@ void Flv_List::check_cursor(void)
 	{
 		case MOVE_Y:	cursor = FL_CURSOR_NS;			break;
 		default:
-			drag_row = -4;
-			cursor = FL_CURSOR_DEFAULT;
-			break;
+						drag_row = -4;
+						cursor = FL_CURSOR_DEFAULT;
+						break;
 	}
 	if (cursor!=last_cursor)
 	{
@@ -1400,7 +1401,7 @@ static void revert(Fl_Style* s) {
 }
 
 Fl_Style* Flv_List::default_style =
-		new Fl_Named_Style("Browser", revert, &Flv_List::default_style);
+new Fl_Named_Style("Browser", revert, &Flv_List::default_style);
 #endif
 
 

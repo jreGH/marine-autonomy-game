@@ -46,8 +46,13 @@ int main(int argc,char* argv[])
     {
     case 3:
         sMOOSName  = argv[2];
+		break;
     case 2:
         sMissionFile = argv[1];
+		break;
+	default:
+		std::cout << "Improper call to pMOOSBridge: has " << argc << " arguments." << std::endl;
+		exit(1);
     }
 
     //sMissionFile = "/Users/pnewman/links/MOOS/Essentials/pMOOSBridge/Examples/V1.moos";

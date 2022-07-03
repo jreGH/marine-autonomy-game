@@ -423,13 +423,13 @@ const Flv_Style &Flv_Style::operator=(const Flv_Style &n)
 		align(n.valign);
 	if (n.background_defined())
 		background(n.vbackground);
-  if (n.border_defined())
-  	border(n.vborder);
+	if (n.border_defined())
+  		border(n.vborder);
 	if (n.border_color_defined())
 		border_color(n.vborder_color);
-	if (n.border_spacing_defined())
+  	if (n.border_spacing_defined())
 		border_spacing(n.vborder_spacing);
-	if (n.editor_defined())
+  	if (n.editor_defined())
 		editor(n.veditor);
 	if (n.font_defined())
 		font(n.vfont);
@@ -447,9 +447,10 @@ const Flv_Style &Flv_Style::operator=(const Flv_Style &n)
 		resizable(n.vresizable);
 	if (n.width_defined())
 		width(n.vwidth);
-  if (n.x_margin_defined())
-  	x_margin(n.vx_margin);
-	if (n.y_margin_defined())
+  	if (n.x_margin_defined())
+  		x_margin(n.vx_margin);
+  
+  	if (n.y_margin_defined())
 		y_margin(n.vy_margin);
 
 
@@ -458,7 +459,7 @@ const Flv_Style &Flv_Style::operator=(const Flv_Style &n)
 
 	//	I'm not copying cell_style either for the same reason.  It just seems like
 	//	a REALLY bad idea.
-		return *this;
+	return *this;
 }
 
 //	**********************************************************************
@@ -625,9 +626,9 @@ bool Flv_Style_List::insert( Flv_Style *n )		//	Add style (if doesn't exist)
   for (t=vcount;	t>vcurrent;	t-- )
   	list[t] = list[t-1];
 
-	list[vcurrent] = n;
-	vcount++;
-	return true;
+  list[vcurrent] = n;
+  vcount++;
+  return true;
 }
 
 Flv_Style *Flv_Style_List::next(void)											//	Next style

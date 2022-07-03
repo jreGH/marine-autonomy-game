@@ -64,7 +64,7 @@ for ARGI; do
 done
 
 #########################################################################
-CMAKE_CXX_FLAGS="-Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -pedantic -fPIC"
+CMAKE_CXX_FLAGS="-Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wno-cast-function-type -Wno-error=cast-function-type -pedantic -fPIC"
 if [ "${BUILD_DEBUG}" = "yes" ] ; then
     CMAKE_CXX_FLAGS=$CMAKE_CXX_FLAGS" -g"
 fi
@@ -118,6 +118,7 @@ cmake -DIVP_BUILD_GUI_CODE=${BUILD_GUI_CODE}               \
       -DIVP_BIN_DIRECTORY="${BIN_ABS_DIR}"                 \
       -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}"               \
       -DUSE_UTM=ON                                         \
+      -Wno-dev                                             \
       ${IVP_CMAKE_FLAGS}                                   \
       "${SRC_ABS_DIR}"
 

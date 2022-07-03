@@ -522,7 +522,6 @@ bool CMOOSGeodesy::UTM2LatLong(double dfX, double dfY, double& dfLat, double& df
     if (!LocalGrid2LatLong(dfx, dfy, dfLat, dfLong))
         return(false);
     
-    
- 	return true;
+    return true;
 }
 

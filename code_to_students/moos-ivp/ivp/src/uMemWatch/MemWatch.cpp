@@ -148,80 +148,83 @@ void MemWatch::handleMailDBClients(string clients)
 
 void MemWatch::measureMemory()
 {
-  // Sanity check
-  if(m_app.size() == 0)
-    return;
+  	// Sanity check
+  	if(m_app.size() == 0)
+    	return;
 
-  // Part 1: Cycle to next app to measure, reset to 0 if needed
-  unsigned int ix = m_last_measure_ix + 1;
-  if(ix >= m_app.size())
-    ix = 0;
+  	// Part 1: Cycle to next app to measure, reset to 0 if needed
+  	unsigned int ix = m_last_measure_ix + 1;
+  	if(ix >= m_app.size())
+    	ix = 0;
 
-  // Part 2: Build the system call from the app and pid info
-  //         Make the system call
-  string app = m_app[ix];
-  string pid = m_pid[ix];
-  string tmp_file = ".mem_info_" + tolower(app) + "_" + pid;
-  string syscall = "appmem.sh --pid=" + m_pid[ix];
-  syscall += " > " + tmp_file;  
-  system(syscall.c_str());
+  	// Part 2: Build the system call from the app and pid info
+  	//         Make the system call
+  	string app = m_app[ix];
+  	string pid = m_pid[ix];
+  	string tmp_file = ".mem_info_" + tolower(app) + "_" + pid;
+  	string syscall = "appmem.sh --pid=" + m_pid[ix];
+  	syscall += " > " + tmp_file;  
+  	if (system(syscall.c_str()) > 0) {
+	  	std::cout << "Error calling appmem.sh..." << std::endl;
+  		return;
+	}
 
-  // Part 3: Get the output of the system call
-  vector<string> lines = fileBuffer(tmp_file);
-  if(lines.size() == 0)
-    return;
+  	// Part 3: Get the output of the system call
+  	vector<string> lines = fileBuffer(tmp_file);
+  	if(lines.size() == 0)
+    	return;
 
-  // Part 4: Remove temporary file holding first sys call output
-  string syscall_rm = "rm -f " + tmp_file + " &";
-  system(syscall_rm.c_str());
+  	// Part 4: Remove temporary file holding first sys call output
+  	string syscall_rm = "rm -f " + tmp_file + " &";
+  	system(syscall_rm.c_str());
   
-  // Part 5: Intpret the output. Normall this is just an integer
-  //         representing the mem size in Kilobytes. But we also
-  //         handle the case where the output has a unit suffix,
-  //         or ends in a '+' like the output sometimes of top.
-  bool result_in_kb = false;
-  bool result_in_gb = false;
-  string result = lines[0];
+  	// Part 5: Intpret the output. Normall this is just an integer
+  	//         representing the mem size in Kilobytes. But we also
+  	//         handle the case where the output has a unit suffix,
+  	//         or ends in a '+' like the output sometimes of top.
+  	bool result_in_kb = false;
+  	bool result_in_gb = false;
+  	string result = lines[0];
 
-  m_last_app = app;
-  m_last_result_raw = result;
+  	m_last_app = app;
+  	m_last_result_raw = result;
   
-  result = biteString(result, '+');
-  if(strEnds(result, "K")) {
-    result_in_kb = true;
-    result = biteString(result, 'K');
-  }
-  else if(strEnds(result, "G")) {
-    result_in_gb = true;
-    result = biteString(result, 'G');
-  }
-  else
-    result_in_kb = true;
+  	result = biteString(result, '+');
+  	if(strEnds(result, "K")) {
+    	result_in_kb = true;
+    	result = biteString(result, 'K');
+  	}
+  	else if(strEnds(result, "G")) {
+    	result_in_gb = true;
+    	result = biteString(result, 'G');
+  	}
+  	else
+    	result_in_kb = true;
     
 
-  // Part 6: Determine the memory size perhaps applying units.
-  double raw_num = atof(result.c_str());
-  double mbs = raw_num;
-  if(result_in_kb)
-    mbs = raw_num / 1000.0;
-  if(result_in_gb)
-    mbs = raw_num * 1000.0;
+  	// Part 6: Determine the memory size perhaps applying units.
+  	double raw_num = atof(result.c_str());
+  	double mbs = raw_num;
+  	if(result_in_kb)
+    	mbs = raw_num / 1000.0;
+  	if(result_in_gb)
+    	mbs = raw_num * 1000.0;
 
-  m_last_mem = doubleToString(mbs,3);
-  m_last_measure_ix = ix;
+  	m_last_mem = doubleToString(mbs,3);
+  	m_last_measure_ix = ix;
 
-  // Part 7: Calculate and note the changes/deltas
-  double prev = m_mem[ix];
-  double delta = 0;
-  if(prev > 0) {
-    delta = mbs - prev;
-    m_delta[ix] = delta;
-  }
-  m_mem[ix] = mbs;
+  	// Part 7: Calculate and note the changes/deltas
+  	double prev = m_mem[ix];
+  	double delta = 0;
+  	if(prev > 0) {
+    	delta = mbs - prev;
+    	m_delta[ix] = delta;
+  	}
+  	m_mem[ix] = mbs;
 
-  // Part 8: Finally, Post the memory for this app
-  string varname = toupper(app) + "_MEM";
-  Notify(varname, mbs);
+  	// Part 8: Finally, Post the memory for this app
+  	string varname = toupper(app) + "_MEM";
+  	Notify(varname, mbs);
 }
 
 //---------------------------------------------------------

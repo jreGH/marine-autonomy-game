@@ -454,6 +454,7 @@ int Flv_Table::handle(int event)
 		case FL_DRAG:
 			if (!vediting || !veditor)
 				break;
+			break;
 
 		case FL_PUSH:
 			if (Fl::event_button1()==0)
@@ -612,6 +613,7 @@ int Flv_Table::internal_handle(int event)
 			vclicks=0;
 			if (check_resize())
 				return 1;
+			break;
 		case FL_PUSH:
 			//	Dragging not clicking
 			if (drag_row!=-4 || drag_col != -4)
