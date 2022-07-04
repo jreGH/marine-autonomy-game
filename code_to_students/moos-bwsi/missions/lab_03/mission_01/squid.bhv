@@ -1,10 +1,10 @@
-//--------    FILE: alpha.bhv   -------------
+//--------    FILE: squid.bhv   -------------
 
 initialize   DEPLOY = false
 initialize   RETURN = false
 	
 //----------------------------------------------
-Behavior = BHV_Waypoint
+Behavior=BHV_Waypoint
 { 
   name      = waypt_survey
   pwt       = 100
