@@ -1,5 +1,12 @@
 #!/bin/bash -e
+
+#--------------------------------------------------------
+#  Part 1: Set up exit conditions and declare global vars
+#--------------------------------------------------------
+trap "kill -- -$$" EXIT SIGTERM SIGHUP SIGINT SIGKILL
+TIME_WARP=1
 COMMUNITY="leatherback"
+GUI="yes"
 
 #-------------------------------------------------------
 #  Part 1: Check for and handle command-line arguments

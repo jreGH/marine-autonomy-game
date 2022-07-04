@@ -3,6 +3,8 @@ ServerPort   = 9000
 Community    = leatherback
 
 MOOSTimeWarp = 1
+
+//Forest Lake
 LatOrigin    = 43.825300 
 LongOrigin   = -70.330400 
 

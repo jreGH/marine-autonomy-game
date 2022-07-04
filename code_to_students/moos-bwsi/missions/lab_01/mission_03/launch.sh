@@ -9,7 +9,7 @@ COMMUNITY="porpoise"
 #----------------------------------------------------------
 #  Part 2: Check for and handle command-line arguments
 #----------------------------------------------------------
-HORT=h,w:
+SHORT=h,w:
 LONG=help,nogui,warp:
 OPTS=$(getopt --options $SHORT --longoptions $LONG)
 
