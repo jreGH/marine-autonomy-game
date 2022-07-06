@@ -9,7 +9,7 @@ COMMUNITY="leatherback"
 GUI="yes"
 
 #-------------------------------------------------------
-#  Part 1: Check for and handle command-line arguments
+#  Part 2: Check for and handle command-line arguments
 #-------------------------------------------------------
 SHORT=h,w:
 LONG=help,nogui,warp:
@@ -50,7 +50,7 @@ do
 done
 
 #-------------------------------------------------------
-#  Part 2: Launch the processes
+#  Part 3: Launch the processes
 #-------------------------------------------------------
 printf "Launching the %s MOOS Community (WARP=%s) \n"  $COMMUNITY $TIME_WARP
 pAntler $COMMUNITY.moos --MOOSTimeWarp=$TIME_WARP >& /dev/null &
