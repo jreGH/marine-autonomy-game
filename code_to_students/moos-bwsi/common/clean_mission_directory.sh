@@ -41,4 +41,5 @@ done
 rm -rf ${VERBOSE}  MOOSLog_*
 rm -f  ${VERBOSE}  *~
 rm -f  ${VERBOSE}  *.moos++
+rm -f  ${VERBOSE}  .mem_info*
 rm -f  ${VERBOSE}  .LastOpenedMOOSLogDirectory
