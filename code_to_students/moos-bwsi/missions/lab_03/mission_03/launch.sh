@@ -1,38 +1,43 @@
 #!/bin/bash -e
 #----------------------------------------------------------
+
+#----------------------------------------------------------
 #  Part 1: Set Exit actions and declare global var defaults
 #----------------------------------------------------------
 trap "kill -- -$$" EXIT SIGTERM SIGHUP SIGINT SIGKILL
 TIME_WARP=1
 COMMUNITY="porpoise"
+GUI="yes"
 
 #----------------------------------------------------------
 #  Part 2: Check for and handle command-line arguments
 #----------------------------------------------------------
 SHORT=h,w:
 LONG=help,nogui,warp:
-OPTS=$(getopt --options $SHORT --longoptions $LONG)
+OPTS=$(getopt --options $SHORT --longoptions $LONG -- "$@")
+
+if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1; fi
 
 eval set -- "$OPTS"
 
-while :
+while true;
 do
 	case "$1" in
 		-h | --help )
 			echo "./launch.sh <OPTIONS>"
 			echo "-w <#> or --warp <#> is the warp factor"
-			echo "--nogui turns off the GUI"
+		    echo "--nogui turns off the GUI"
 			echo "-h or --help prints this message"
 			exit 2
 			;;
 
 		--nogui )
 			GUI="no"
-			shift 1
+			shift
 			;;
 
 		-w | --warp )
-			TIME_WARP="$2"
+			TIME_WARP=$2
 			shift 2
 			;;
 
@@ -43,12 +48,10 @@ do
 
 		*)
 			echo "Unexpected option: $1"
+			break
 			;;
 	esac
 done
-
-
-
 
 #----------------------------------------------------------
 #  Part 3: Launch the processes

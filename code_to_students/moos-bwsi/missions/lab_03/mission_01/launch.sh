@@ -14,11 +14,13 @@ GUI="yes"
 #----------------------------------------------------------
 SHORT=h,w:
 LONG=help,nogui,warp:
-OPTS=$(getopt --options $SHORT --longoptions $LONG)
+OPTS=$(getopt --options $SHORT --longoptions $LONG -- "$@")
+
+if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1; fi
 
 eval set -- "$OPTS"
 
-while :
+while true;
 do
 	case "$1" in
 		-h | --help )
@@ -31,11 +33,11 @@ do
 
 		--nogui )
 			GUI="no"
-			shift 1
+			shift
 			;;
 
 		-w | --warp )
-			TIME_WARP="$2"
+			TIME_WARP=$2
 			shift 2
 			;;
 
@@ -46,10 +48,10 @@ do
 
 		*)
 			echo "Unexpected option: $1"
+			break
 			;;
 	esac
 done
-
 
 #----------------------------------------------------------
 #  Part 3: Launch the processes
