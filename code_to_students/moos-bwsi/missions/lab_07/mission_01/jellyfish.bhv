@@ -7,19 +7,33 @@ initialize   LOCATION = one
 
 //---------------------------------------------
 // Behavior logic
-Set MODE=LOITERING_ONE{
-	DEPLOY = true
-	RETURN = false
-	LOCATION = one
-} LOITERING_TWO
+Set MODE=Active{
+  DEPLOY=true
+} Inactive
 
+Set MODE=LOITERING_ONE{
+  MODE=Active
+  RETURN=false
+  LOCATION = one
+} 
+
+Set MODE=LOITERING_TWO{
+  MODE=Active
+  RETURN=false
+  LOCATION = two
+}
+
+Set MODE=RETURNING{
+  MODE=Active
+  RETURN=true
+}
 
 //----------------------------------------------
 Behavior=BHV_Waypoint
 { 
   name      = watch_one
   pwt       = 100
-  condition = MODE=LOITERING_ONE
+  condition = MODE==LOITERING_ONE
   endflag   = LOCATION = two
 
   updates    = WPT_UPDATE
@@ -34,7 +48,7 @@ Behavior=BHV_Waypoint
          slip_radius = 15.0
   efficiency_measure = all
 
-		   	points = format=radial, label=watch_one, x=220, y=-340, radius=60, pts=6, snap=1
+		   	points = format=radial, label=watch_one, x=20, y=-340, radius=60, pts=6, snap=1
 
                order = normal
              repeat  = 0
@@ -51,7 +65,7 @@ Behavior=BHV_Waypoint
 {
   name      = watch_two
   pwt       = 100
-  condition = MODE=LOITERING_TWO
+  condition = MODE==LOITERING_TWO
   endflag   = LOCATION = one
 
   updates    = WPT_UPDATE
@@ -66,7 +80,7 @@ Behavior=BHV_Waypoint
          slip_radius = 15.0
   efficiency_measure = all
 
-            points = format=radial, label=watch_two, x=300, y=140, radius=100, pts=12, snap=1
+            points = format=radial, label=watch_two, x=100, y=140, radius=100, pts=12, snap=1
 
                order = normal
              repeat  = 0
@@ -85,8 +99,7 @@ Behavior=BHV_Waypoint
 {
   name       = waypt_return
   pwt        = 100
-  condition  = RETURN = true
-  condition  = DEPLOY = true
+  condition  = MODE==RETURNING
   perpetual  = true
   updates    = RETURN_UPDATE
   endflag    = RETURN = false
