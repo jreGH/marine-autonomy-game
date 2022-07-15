@@ -1,27 +1,19 @@
 //--------    FILE: jellyfish.bhv   -------------
 
-initialize   DEPLOY = false
-initialize   RETURN = false
-initialize   LOCATION = one
 
 
 //---------------------------------------------
 // Behavior logic
-Set MODE=LOITERING_ONE{
-	DEPLOY = true
-	RETURN = false
-	LOCATION = one
-} LOITERING_TWO
-
 
 //----------------------------------------------
 Behavior=BHV_Waypoint
 { 
   name      = watch_one
   pwt       = 100
-  condition = MODE=LOITERING_ONE
+  condition = 
+  endflag   = 
 
-  updates    = UPDATE_ONE
+  updates    = WPT_UPDATE
   perpetual  = true
 
                 lead = 8
@@ -33,7 +25,7 @@ Behavior=BHV_Waypoint
          slip_radius = 15.0
   efficiency_measure = all
 
-		   	points = format=radial, label=watch_one, x=220, y=-340, radius=60, pts=6, snap=1
+		   	points = format=radial, label=watch_one, x=20, y=-340, radius=60, pts=6, snap=1
 
                order = normal
              repeat  = 0
@@ -50,9 +42,10 @@ Behavior=BHV_Waypoint
 {
   name      = watch_two
   pwt       = 100
-  condition = MODE=LOITERING_TWO
+  condition = 
+  endflag   = 
 
-  updates    = UPDATE_TWO
+  updates    = WPT_UPDATE
   perpetual  = true
 
                 lead = 8
@@ -64,7 +57,7 @@ Behavior=BHV_Waypoint
          slip_radius = 15.0
   efficiency_measure = all
 
-            points = format=radial, label=watch_two, x=300, y=140, radius=100, pts=12, snap=1
+            points = format=radial, label=watch_two, x=100, y=140, radius=100, pts=12, snap=1
 
                order = normal
              repeat  = 0
@@ -76,26 +69,34 @@ Behavior=BHV_Waypoint
     visual_hints = vertex_size=5, edge_size=1
 }
 
-
-
-//----------------------------------------------
-Behavior=BHV_Waypoint
+Behavior = BHV_StationKeep
 {
-  name       = waypt_return
-  pwt        = 100
-  condition  = RETURN = true
-  condition  = DEPLOY = true
-  perpetual  = true
-  updates    = RETURN_UPDATE
-  endflag    = RETURN = false
-  endflag    = DEPLOY = false
-  endflag    = MISSION = complete
-	
-           speed = 2.0
-  capture_radius = 2.0
-     slip_radius = 8.0
-          points = 0,-20
- }
+   // General Behavior Parameters
+   // ---------------------------
+   name         = station-keep          // example
+   pwt          = 100                   // default
+   condition    =
+   endflag      = 
+   duration     = 300
+
+   // Parameters specific to this behavior
+   // ------------------------------------
+      center_activate = false   // default
+   hibernation_radius = -1      // default
+         inner_radius = 4       // default
+         outer_radius = 15      // default
+         outer_speed  = 1.2     // default
+       transit_speed  = 2.5     // default
+           station_pt = 0,0     // default
+           swing_time = 0       // default
+
+         visual_hints = vertex_size  = 1           // default
+         visual_hints = edge_color   = light_blue  // default
+         visual_hints = edge_size    = 1           // default
+         visual_hints = label_color  = white       // default
+         visual_hints = vertex_color = red         // default
+}
+
 
 //----------------------------------------------
 Behavior=BHV_ConstantSpeed
