@@ -10,8 +10,8 @@ Behavior=BHV_Waypoint
 { 
   name      = watch_one
   pwt       = 100
-  condition = 
-  endflag   = 
+  condition = DUMMY_COND==true 
+  endflag   = DUMMY_END=true
 
   updates    = WPT_UPDATE
   perpetual  = true
@@ -42,8 +42,8 @@ Behavior=BHV_Waypoint
 {
   name      = watch_two
   pwt       = 100
-  condition = 
-  endflag   = 
+  condition = DUMMY_COND = true
+  endflag   = DUMMY_END = true
 
   updates    = WPT_UPDATE
   perpetual  = true
@@ -75,8 +75,8 @@ Behavior = BHV_StationKeep
    // ---------------------------
    name         = station-keep          // example
    pwt          = 100                   // default
-   condition    =
-   endflag      = 
+   condition    = DUMMY_COND = true
+   endflag      = DUMMY_END = true
    duration     = 300
 
    // Parameters specific to this behavior
