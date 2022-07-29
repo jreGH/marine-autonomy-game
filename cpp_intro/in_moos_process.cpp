@@ -70,5 +70,5 @@ int main()
     heading = calculate_heading(x1, y1, x2, y2);
     std::cout << "Heading from 1 to 2 is  " << heading << " degrees." << std::endl;
 
-    exit(0);
+    return 0;
 }

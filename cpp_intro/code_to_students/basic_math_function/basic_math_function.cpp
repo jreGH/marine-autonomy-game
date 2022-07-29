@@ -3,17 +3,16 @@
 
 double calculate_distance(double x1, double y1, double x2, double y2)
 {
-    double distance = sqrt( pow(x2-x1, 2) + pow(y2-y1, 2) );
 
-    return distance;
+// add code here that will calculate distance between points (x1, y1) and (x2, y2) return the value as a double
+
 }
 
-double calculate_heading(double x1, double y1, double x2, double y2)
-{
-    double heading = fmod(atan2(x2-x1, y2-y1) / M_PI * 180.0 + 360.0, 360.0);
+// write another function named calculate_heading 
+// input variables: x1, y1, x2, y2
+// return heading that is type double
 
-    return heading;
-}
+// add code here 
 
 // This is a unit test of the calculate_distance function
 int main()
@@ -31,5 +30,5 @@ int main()
     std::cout << "Heading from 1 to 2 is  " << heading << " degrees." << std::endl;
 
 
-   return 0;
+    return 0;
 }
