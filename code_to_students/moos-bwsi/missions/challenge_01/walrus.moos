@@ -1,16 +1,16 @@
 
 ServerHost   = localhost
 ServerPort   = 9000
-Community    = jellyfish
+Community    = walrus
 MOOSTimeWarp = 1
 
 // Forest Lake
-// LatOrigin  = 43.825300 
-// LongOrigin = -70.330400 
+LatOrigin  = 43.825300 
+LongOrigin = -70.330400 
 
 // Aerial Singapore
-LatOrigin = 1.28631111
-LongOrigin = 103.855328
+//LatOrigin = 1.28631111
+//LongOrigin = 103.855328
 
 // Boston Outer Harbor
 //LatOrigin = 42.34
@@ -90,8 +90,8 @@ ProcessConfig = uSimMarine
   AppTick  	= 4
   CommsTick	= 4
 
-  start_x       = -80
-  start_y       = -20
+  start_x       = 0
+  start_y       = -175
   start_heading = 180
   start_speed   = 0
 
@@ -112,7 +112,7 @@ ProcessConfig = pHelmIvP
 
   bhv_dir_not_found_ok = true
 
-  behaviors  = jellyfish.bhv
+  behaviors  = walrus.bhv
   domain     = course:0:359:360
   domain     = speed:0:4:41
 }
@@ -159,8 +159,8 @@ ProcessConfig = pMarineViewer
   AppTick    = 4
   CommsTick  = 4
 
-  tiff_file = AerialSingapore.tif
-    //tiiff_file            = forrest19.tif
+  //tiff_file = AerialSingapore.tif
+  tiff_file            = forrest19.tif
 	//tiff_file            = MIT_SP.tif
 
   set_pan_x            = -90
@@ -178,7 +178,7 @@ ProcessConfig = pMarineViewer
   //op_vertex = x=94.6, y=-62.2,   lwidth=1,lcolor=yellow,looped=true,group=moa
   //op_vertex = x=58,   y=20,    lwidth=1,lcolor=yellow,looped=true,group=moa
 
-	// vcolor = jellyfish=dodgerblue
+	// vcolor = walrus=dodgerblue
 
   // Appcast configuration
   appcast_height       = 75
