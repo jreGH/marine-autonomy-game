@@ -6,7 +6,7 @@
 #include <tuple>
 
 template <typename T> void print_elem(const T& t) {
-    std::cout << "(" << t << ") ";
+    std::cout << t ;
 }
 
 //using namespace std;
@@ -68,7 +68,8 @@ int main()
     std::tie(keys_out, values_out) = vectorFunction(node_report);
    
     while (keys_out.begin() != keys_out.end()) {
-        std::cout << "Key: "; print_elem(keys_out.back()); std::cout << std::endl;
+      //  std::cout << "Key: "; print_elem(keys_out.back()); std::cout << std::endl;
+        std::cout << "Key: " << keys_out.back() << std::endl;
         std::cout << "Value: "; print_elem(values_out.back()); std::cout << std::endl;
         keys_out.pop_back();
         values_out.pop_back();
