@@ -1,0 +1,9 @@
+//------------------------------------------------
+// pBWSI config block
+
+ProcessConfig = pBWSI
+{
+   AppTick   = 4
+   CommsTick = 4
+}
+

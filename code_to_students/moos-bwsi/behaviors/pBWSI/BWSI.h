@@ -1,0 +1,33 @@
+/************************************************************/
+/*    NAME:                                               */
+/*    ORGN: MIT                                             */
+/*    FILE: BWSI.h                                          */
+/*    DATE:                                                 */
+/************************************************************/
+
+#ifndef BWSI_HEADER
+#define BWSI_HEADER
+
+#include "MOOS/libMOOS/MOOSLib.h"
+
+class BWSI : public CMOOSApp
+{
+ public:
+   BWSI();
+   ~BWSI();
+
+ protected: // Standard MOOSApp functions to overload  
+   bool OnNewMail(MOOSMSG_LIST &NewMail);
+   bool Iterate();
+   bool OnConnectToServer();
+   bool OnStartUp();
+
+ protected:
+   void RegisterVariables();
+
+ private: // Configuration variables
+
+ private: // State variables
+};
+
+#endif 
