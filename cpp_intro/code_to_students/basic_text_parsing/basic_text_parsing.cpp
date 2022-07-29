@@ -17,7 +17,6 @@ double calculate_heading(double x1, double y1, double x2, double y2)
     return heading;
 }
 
-// This is a unit test of the calculate_distance function
 int main()
 {
     double distance, heading;
@@ -33,9 +32,9 @@ int main()
 	std::string current_value;
 
 	while (std::getline(ss, current_key, '=')) {
+        
         // print current_key to standard output 
 		std::cout << "current key = " << current_key << std::endl;
-        // add key to our vector of keys
 
         // return an error if there is no value after the "="
 		if (!std::getline(ss, current_value, ',')) {
