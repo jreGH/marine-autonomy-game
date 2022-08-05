@@ -28,6 +28,17 @@ class BWSI : public CMOOSApp
  private: // Configuration variables
 
  private: // State variables
+    //--------------------------------------------
+    // BWSI added
+    // the node report strings
+    std::vector<std::string> _nodeReports;
+    // our node report dictionaries of active contacts
+    std::vector<std::map<std::string, std::string>> _activeContacts;
+    // type of contacts we will follow
+    std::string _typeToFollow;
+    std::string _myTeam;
+    //
+    //--------------------------------------------
 };
 
 #endif 

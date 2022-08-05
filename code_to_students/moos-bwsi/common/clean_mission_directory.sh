@@ -37,7 +37,8 @@ done
 #-------------------------------------------------
 # Part 2: Remove all the files
 #-------------------------------------------------
-
+grep File *moos | grep -v TimeStamp | awk '{print $4}' | xargs -ixxx sh -c 'rm -rf ${VERBOSE} "$1"_[0-9]*' x-sh xxx
+rm -rf ${VERBOSE}  targ_*
 rm -rf ${VERBOSE}  MOOSLog_*
 rm -f  ${VERBOSE}  *~
 rm -f  ${VERBOSE}  *.moos++

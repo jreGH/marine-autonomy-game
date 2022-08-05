@@ -6,7 +6,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Thu Jul 28 22:30:26 2022
+# Make data base, printed on Sat Jul 30 15:40:24 2022
 
 # Variables
 
@@ -20,7 +20,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 XDG_SESSION_CLASS = user
 # environment
 VSCODE_AGENT_FOLDER = /home/tuna/.vscode-server
-# makefile (from 'Makefile', line 15)
+# makefile (from 'Makefile', line 17)
 SRC = ${NAME}.cpp ${NAME}_Info.cpp main.cpp
 # environment
 XDG_SESSION_TYPE = tty
@@ -42,7 +42,7 @@ VSCODE_NLS_CONFIG = {"locale":"en","availableLanguages":{}}
 _ = /home/tuna/.vscode-server/bin/3b889b090b5ad5793f524b5d1d39fda662b96a2a/node
 # makefile (from 'Makefile', line 1)
 MAKEFILE_LIST :=  Makefile
-# makefile (from 'Makefile', line 7)
+# makefile (from 'Makefile', line 9)
 MOOSCORE_INCLUDE = ${HOME}/moos-ivp/MOOS/MOOSCore/Core/libMOOS/include/
 # 'override' directive
 GNUMAKEFLAGS := 
@@ -58,16 +58,16 @@ VSCODE_CWD = /home/tuna
 SSH_CONNECTION = 168.245.148.224 50927 174.138.32.89 22
 # environment
 PATH = /home/tuna/.vscode-server/bin/3b889b090b5ad5793f524b5d1d39fda662b96a2a/bin/remote-cli:/home/tuna/.local/bin:/home/tuna/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/tuna/.local/bin:/home/tuna/moos-ivp/bin:/home/tuna/moos-ivp/scripts
-# makefile (from 'Makefile', line 9)
+# makefile (from 'Makefile', line 11)
 MOOSCOMM_INCLUDE = ${HOME}/moos-ivp/MOOS/MOOSCore/Core/libMOOS/Comms/include
 # environment
 XDG_RUNTIME_DIR = /run/user/1000
-# makefile (from 'Makefile', line 3)
+# makefile (from 'Makefile', line 5)
 MOOS_LIBDIR = ${HOME}/moos-ivp/lib
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # environment
-VSCODE_IPC_HOOK_CLI = /run/user/1000/vscode-ipc-b4416d96-2b24-41a8-b1b0-278a24a07bad.sock
+VSCODE_IPC_HOOK_CLI = /run/user/1000/vscode-ipc-d3c32dd6-4edb-4a58-a352-2a300d645569.sock
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
 # environment
@@ -96,7 +96,7 @@ APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # automatic
 ^D = $(patsubst %/,%,$(dir $^))
-# makefile (from 'Makefile', line 8)
+# makefile (from 'Makefile', line 10)
 MOOSUTIL_INCLUDE = ${HOME}/moos-ivp/MOOS/MOOSCore/Core/libMOOS/Utils/include
 # environment
 MAKELEVEL := 0
@@ -112,9 +112,9 @@ XDG_SESSION_ID = 110
 USER = tuna
 # makefile
 .DEFAULT_GOAL := all
-# makefile (from 'Makefile', line 10)
+# makefile (from 'Makefile', line 12)
 GETPOT_INCLUDE = ${HOME}/moos-ivp/MOOS/MOOSCore/Core/libMOOS/Thirdparty/getpot/include/
-# makefile (from 'Makefile', line 5)
+# makefile (from 'Makefile', line 7)
 MOOS_INCLUDE = ${HOME}/moos-ivp/include/ivp/
 # makefile (from 'Makefile', line 1)
 NAME = BWSI
@@ -122,7 +122,7 @@ NAME = BWSI
 %D = $(patsubst %/,%,$(dir $%))
 # default
 MAKE_COMMAND := make
-# makefile (from 'Makefile', line 16)
+# makefile (from 'Makefile', line 18)
 INCL = ${NAME}.h
 # default
 .VARIABLES := 
@@ -134,7 +134,7 @@ MAKEFLAGS = pqrR
 MFLAGS = -pqrR
 # environment
 SSH_CLIENT = 168.245.148.224 50927 22
-# makefile (from 'Makefile', line 11)
+# makefile (from 'Makefile', line 13)
 POCOBITS_INCLUDE = ${HOME}/moos-ivp/MOOS/MOOSCore/Core/libMOOS/Thirdparty/PocoBits/include
 # automatic
 +D = $(patsubst %/,%,$(dir $+))
@@ -148,15 +148,17 @@ MAKEFILES :=
 <F = $(notdir $<)
 # environment
 LC_ALL = C
-# makefile (from 'Makefile', line 12)
+# makefile (from 'Makefile', line 14)
 LIBS = -lMOOS -lmbutil -lpthread -lm
 # automatic
 ^F = $(notdir $^)
 # default
 SUFFIXES := 
-# makefile (from 'Makefile', line 4)
-MOOSCORE_LIBDIR = ${HOME}/moos-ivp/build/MOOS/MOOSCore/lib/
 # makefile (from 'Makefile', line 6)
+MOOSCORE_LIBDIR = ${HOME}/moos-ivp/build/MOOS/MOOSCore/lib/
+# makefile (from 'Makefile', line 3)
+INSTALL_DIR = ${HOME}/moos-bwsi/behaviors/bin
+# makefile (from 'Makefile', line 8)
 MOOSAPP_INCLUDE = ${HOME}/moos-ivp/MOOS/MOOSCore/Core/libMOOS/App/include
 # default
 .INCLUDE_DIRS = /usr/include /usr/local/include /usr/include
@@ -169,7 +171,7 @@ LANG = C
 # environment
 MOTD_SHOWN = pam
 # variable set hash-table stats:
-# Load=79/1024=8%, Rehash=0, Collisions=10/110=9%
+# Load=80/1024=8%, Rehash=0, Collisions=10/114=9%
 
 # Pattern-specific Variable Values
 
@@ -193,14 +195,14 @@ BWSI.cpp:
 #  Modification time never checked.
 #  File has not been updated.
 
-all: clean default
+all: clean default install
 #  Command line target.
 #  Implicit rule search has been done.
 #  File does not exist.
 #  File has been updated.
 #  Needs to be updated (-q is set).
 # variable set hash-table stats:
-# Load=0/32=0%, Rehash=0, Collisions=0/3=0%
+# Load=0/32=0%, Rehash=0, Collisions=0/6=0%
 
 # Not a target:
 .SUFFIXES:
@@ -211,7 +213,7 @@ all: clean default
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-07-28 22:29:36.039557534
+#  Last modified 2022-07-30 14:37:37.060613457
 #  File has been updated.
 #  Successfully updated.
 
@@ -225,7 +227,7 @@ default: BWSI.cpp BWSI_Info.cpp main.cpp
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  recipe to execute (from 'Makefile', line 21):
+#  recipe to execute (from 'Makefile', line 23):
 	g++ -Wall -o p${NAME} ${SRC} -I${MOOS_INCLUDE} -I${MOOSCORE_INCLUDE} -I${MOOSUTIL_INCLUDE} -I${MOOSCOMM_INCLUDE} -I${GETPOT_INCLUDE} -I${POCOBITS_INCLUDE} -I${MOOSAPP_INCLUDE} -L${MOOS_LIBDIR} -L${MOOSCORE_LIBDIR} ${LIBS}
 
 # Not a target:
@@ -263,25 +265,34 @@ clean:
 # automatic
 # ? := 
 # variable set hash-table stats:
-# Load=8/32=25%, Rehash=0, Collisions=1/11=9%
-#  recipe to execute (from 'Makefile', line 24):
+# Load=8/32=25%, Rehash=0, Collisions=3/14=21%
+#  recipe to execute (from 'Makefile', line 30):
 	rm -f *.o
+	rm -f ${INSTALL_DIR}/p${NAME}
+
+install:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  recipe to execute (from 'Makefile', line 26):
+	mkdir -p ${INSTALL_DIR}
+	mv p${NAME} ${INSTALL_DIR}
 
 # files hash-table stats:
-# Load=9/1024=1%, Rehash=0, Collisions=0/28=0%
+ 
+# Load=10/1024=1%, Rehash=0, Collisions=0/31=0%
 # VPATH Search Paths
 
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 19 / storage = 174 B / avg = 9 B
-# current buf: size = 8162 B / used = 174 B / count = 19 / avg = 9 B
+# strcache buffers: 1 (0) / strings = 20 / storage = 182 B / avg = 9 B
+# current buf: size = 8162 B / used = 182 B / count = 20 / avg = 9 B
 
-# strcache performance: lookups = 33 / hit rate = 42%
- 
+# strcache performance: lookups = 36 / hit rate = 44%
 # hash-table stats:
-# Load=19/8192=0%, Rehash=0, Collisions=1/33=3%
-# Finished Make data base on Thu Jul 28 22:30:26 2022
+# Load=20/8192=0%, Rehash=0, Collisions=1/36=3%
+# Finished Make data base on Sat Jul 30 15:40:24 2022
 
  

@@ -1,17 +1,46 @@
 //--------    FILE: jellyfish.bhv   -------------
-
-
+initialize DEPLOY = false
+initialize RETURN = false
+initialize FIRST_POSITION = true
 
 //---------------------------------------------
 // Behavior logic
+// o ROOT
+// |--o INACTIVE
+// |--o ACTIVE
+//    |--o STATIONKEEPING
+//    |--o LOITERING
+//       |--o POSITION_ONE
+//       |--o POSITION_TWO
+
+Set MODE = ACTIVE {
+  DEPLOY = true
+} INACTIVE
+
+Set MODE = LOITERING {
+  MODE = ACTIVE
+  RETURN = false
+}
+
+Set MODE = POSITION_ONE {
+  MODE = ACTIVE:LOITERING
+  RETURN = false
+  FIRST_POSITION = true
+} POSITION_TWO
+
+Set MODE = STATIONKEEPING {
+  MODE = ACTIVE
+  RETURN = true
+}
+
 
 //----------------------------------------------
 Behavior=BHV_Waypoint
 { 
   name      = watch_one
   pwt       = 100
-  condition = DUMMY_COND==true 
-  endflag   = DUMMY_END=true
+  condition = MODE == POSITION_ONE
+  endflag   = FIRST_POSITION = false
 
   updates    = WPT_UPDATE
   perpetual  = true
@@ -42,8 +71,8 @@ Behavior=BHV_Waypoint
 {
   name      = watch_two
   pwt       = 100
-  condition = DUMMY_COND = true
-  endflag   = DUMMY_END = true
+  condition = MODE == POSITION_TWO
+  endflag   = RETURN = true
 
   updates    = WPT_UPDATE
   perpetual  = true
@@ -75,8 +104,9 @@ Behavior = BHV_StationKeep
    // ---------------------------
    name         = station-keep          // example
    pwt          = 100                   // default
-   condition    = DUMMY_COND = true
-   endflag      = DUMMY_END = true
+   condition    = MODE == STATIONKEEPING
+   endflag      = RETURN =false
+   endflag      = FIRST_POSITION = true
    duration     = 300
 
    // Parameters specific to this behavior

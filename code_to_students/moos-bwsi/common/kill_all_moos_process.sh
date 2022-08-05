@@ -1,5 +1,8 @@
 #!/bin/bash
 
+ls ${HOME}/moos-ivp/bin | cut -c1-15 | xargs -ixxx pkill -9 xxx
+ls ${HOME}/moos-bwsi/behaviors/bin | cut -c1-15 | xargs -ixxx pkill -9 xxx
+
 # We no longer use the "-q" option because it is not supported on
 # the mac
 
@@ -28,7 +31,7 @@ killall -9 pLocalizePinger turnview
 
 killall -9 MOOSDB iRemote MOOSRemote iGPS iGPSMonitor pNav  \
         pHelm pHelmIvP pMarineViewer iMarineSim uSimMarine  \
-        pLogger iPWMController MOOSDump pAntler umm         \
+        pLogger pRealm iPWMController MOOSDump pAntler umm         \
         iINS iDepth pScheduler pThermoTrack pNaFCon pSearch \
         pHuxley pMessageSim pBeamform uTermCommand          \
         pBearingTrack uMissionTester pTestBug2
@@ -80,6 +83,6 @@ killall -9 pParticle uFldContactRangeSensorHP pUUVPath         \
 
 killall -9 uSpeechRec uDialogManager
 
-killall -9 pAntler pLogger 
+killall -9 pAntler pLogger pRealm 
 
 echo Done - Killed all MOOS-Related Processes.....
