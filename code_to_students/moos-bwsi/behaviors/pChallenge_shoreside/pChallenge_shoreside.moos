@@ -1,0 +1,9 @@
+//------------------------------------------------
+// pChallenge_shoreside config block
+
+ProcessConfig = pChallenge_shoreside
+{
+   AppTick   = 4
+   CommsTick = 4
+}
+

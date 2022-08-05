@@ -1,0 +1,9 @@
+//------------------------------------------------
+// pChallenge_fish config block
+
+ProcessConfig = pChallenge_fish
+{
+   AppTick   = 4
+   CommsTick = 4
+}
+

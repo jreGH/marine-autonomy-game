@@ -1,0 +1,104 @@
+//---------------------------------------------------------------------------
+// Prescribed behaviors for Challenge 1
+//----------------------------------------------------------------------------
+initialize SAFETY = true
+
+Behavior = BHV_OpRegion
+{
+	// General Behavior Parameters
+	// ---------------------------
+	name         = op_region                 // example
+		pwt          = 100                       // default
+		condition    = SAFETY=true               // example
+		//updates      = OPREGION_UPDATES          // example
+
+		// Parameters specific to this behavior
+		// ------------------------------------
+		max_time = 0              // default (seconds)
+		max_depth = 0              // default (meters)
+		min_altitude = 0              // default (meters)
+		//reset_var = OPREGION_RESET // example
+		trigger_entry_time = 1              // default (seconds)
+		trigger_exit_time = 0.5            // default (seconds) 
+
+		polygon = pts={-200,-600:-200,-200:900,200:900,-200}, label=area_x
+
+		breached_altitude_flag = SAY_MOOS = Sir, the min altitude has been excceded
+		breached_depth_flag = SAY_MOOS = Sir, the max depth has been excceded
+		breached_poly_flag = SAY_MOOS = Sir, the op region has been violated
+		breached_time_flag = SAY_MOOS = Sir, the maximum mission time has been exceeded
+
+		visual_hints = vertex_color = brown  // default
+		visual_hints = vertex_size  = 3      // default
+		visual_hints = edge_color   = aqua   // default
+		visual_hints = edge_size    = 1      // default
+}
+
+//Behavior = BHV_AvoidCollision
+//{
+//	// General Behavior Parameters
+//	// ---------------------------
+//	name         = avdcollision_A                    // example
+//		pwt          = 200                               // example
+//		condition    = SAFETY = true                      // example
+//		//updates      =                                   // example
+//		endflag      = MISSION = complete                // end on mission completion
+//		templating   = disallowed                        // standalone mission
+//
+//
+//		// General Contact Behavior Parameters
+//		// -----------------------------------
+//		bearing_lines = white:0, green:0.65, yellow:0.8, red:1.0   // example
+//
+//		contact = jaws             // example
+//		decay = 15,30            // default (seconds)
+//		extrapolate = true             // default
+//		on_no_contact_ok = true             // default
+//		time_on_leg = 60               // default (seconds)
+//
+//
+//		// Parameters specific to this behavior
+//		// ------------------------------------
+//		completed_dist = 5000              // ends when range exceeds this value in m
+//		max_util_cpa_dist = 75               // default
+//		min_util_cpa_dist = 10               // default
+//		no_alert_request = false            // default
+//		pwt_grade = quasi            // default
+//		pwt_inner_dist = 50               // default
+//		pwt_outer_dist = 200              // default
+//}
+
+//Behavior = BHV_AvoidCollision
+//{
+//	// General Behavior Parameters
+//	// ---------------------------
+//	name         = avdcollision_B                    // example
+//		pwt          = 200                               // example
+//		condition    = SAFETY = true                     // example
+//		// updates      = CONTACT_INFO                   // example
+//		endflag      = MISSION = complete                // example
+//		templating   = disallowed                             // example
+//
+//
+//		// General Contact Behavior Parameters
+//		// -----------------------------------
+//		bearing_lines = white:0, green:0.65, yellow:0.8, red:1.0   // example
+//
+//		contact = kraken           
+//		decay = 15,30            // default (seconds)
+//		extrapolate = true             // extrapolate contact position
+//		on_no_contact_ok = true             // default
+//		time_on_leg = 60               // time projection for CPA calculation (seconds)
+//
+//
+//		// Parameters specific to this behavior
+//		// ------------------------------------
+//		completed_dist = 5000              // ends when range exceeds this value in m
+//		max_util_cpa_dist = 75               // default
+//		min_util_cpa_dist = 10               // default
+//		no_alert_request = false            // default
+//		pwt_grade = quasi            // default
+//		pwt_inner_dist = 50               // default
+//		pwt_outer_dist = 200              // default
+//}
+//

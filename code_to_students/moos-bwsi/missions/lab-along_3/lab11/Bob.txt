@@ -1,0 +1,6409 @@
+*************************************
+*  This is Antler, head of MOOS...  *
+*  P. Newman 2008                   *
+*************************************
+
+
+|****** Launch ******|
+
+Unless directed otherwise using system path to locate binaries 
+   [000] Process: MOOSDB          ~ MOOSDB          launched successfully
+------------------- MOOSDB V10 -------------------
+  Hosting  community                [1;32m"Bob"
+[0m  Name look up is                   [31moff
+[0m  Asynchronous support is           [1;32mon
+[0m  Connect to this server on port    [32m9001[0m
+--------------------------------------------------
+[1;33mnetwork performance data published on localhost:9020
+listen with "nc -u -lk 9020"
+[0m[0m1659024177.5360   disabling nagle
+[0m   [001] Process: uProcessWatch   ~ uProcessWatch   launched successfully
+[32muProcessWatch launching as uProcessWatch
+[0m
+1659024177.5922 [33m140269028628224- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001    [002] Process: pShare          ~ pShare          launched successfully
+1659024177.6477 [33m140262483420928- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001    [003] Process: uSimMarine      ~ uSimMarine      launched successfully
+
+------------[1;32mCONNECT[0m-------------
+  Handshaking   :  [32mOK
+[0m  Client's name :  [32muProcessWatch[0m
+  Type          :  [1;33mAsynchronous[0m
+  Priority      :  [32mnormal[0m
+  Total Clients :  [32m1[0m
+--------------------------------
+
+  Handshaking as uProcessWatch          [1;32m[ok]
+[0m  DB reports async support is           [1;32m[on]
+[0m  DB is running on                      [1;32mauv-jre
+[0m  Timing skew estimation is             [33m[off] (not needed)
+[0m--------------------------------------------------
+
+[32muSimMarine launching as uSimMarine
+[0m
+1659024177.7152 [33m139762446882560- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001    [004] Process: pLogger         ~ pLogger         launched successfully
+1659024177.7669 [33m140174473975552- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 
+------------[1;32mCONNECT[0m-------------
+  Handshaking   :  [32mOK
+[0m  Client's name :  [32mpShare[0m
+  Type          :  [1;33mAsynchronous[0m
+  Priority      :  [32mnormal[0m
+  Total Clients :  [32m2[0m
+--------------------------------
+   [005] Process: pNodeReporter   ~ pNodeReporter   launched successfully
+
+  Handshaking as pShare                 [1;32m[ok]
+[0m  DB reports async support is           [1;32m[on]
+[0m  DB is running on                      [1;32mauv-jre
+[0m  Timing skew estimation is             [33m[off] (not needed)
+[0m--------------------------------------------------
+
+[32mpNodeReporter launching as pNodeReporter
+[0m
+1659024177.8457 [33m140461648967424- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001    [006] Process: pMarinePID      ~ pMarinePID      launched successfully
+[32mpMarinePID launching as pMarinePID
+[0m
+1659024177.8783 [33m139685741926144- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 
+------------[1;32mCONNECT[0m-------------
+  Handshaking   :  [32mOK
+[0m  Client's name :  [32muSimMarine[0m
+  Type          :  [1;33mAsynchronous[0m
+  Priority      :  [32mnormal[0m
+  Total Clients :  [32m3[0m
+--------------------------------
+   [007] Process: pHelmIvP        ~ pHelmIvP        launched successfully
+
+  Handshaking as uSimMarine             [1;32m[ok]
+[0m  DB reports async support is           [1;32m[on]
+[0m  DB is running on                      [1;32mauv-jre
+[0m  Timing skew estimation is             [33m[off] (not needed)
+[0m--------------------------------------------------
+
+Sim connected
+1659024177.9275 [33m139640016701184- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001    [008] Process: pHostInfo       ~ pHostInfo       launched successfully
+[32mpHostInfo launching as pHostInfo
+[0m
+1659024178.0062 [33m139820610291456- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 
+------------[1;32mCONNECT[0m-------------
+  Handshaking   :  [32mOK
+[0m  Client's name :  [32mpLogger[0m
+  Type          :  [1;33mAsynchronous[0m
+  Priority      :  [32mnormal[0m
+  Total Clients :  [32m4[0m
+--------------------------------
+
+  Handshaking as pLogger                [1;32m[ok]
+[0m  DB reports async support is           [1;32m[on]
+[0m  DB is running on                      [1;32mauv-jre
+[0m  Timing skew estimation is             [33m[off] (not needed)
+[0m--------------------------------------------------
+
+   [009] Process: uFldNodeBroker  ~ uFldNodeBroker  launched successfully
+[32muFldNodeBroker launching as: uFldNodeBroker
+[0m
+1659024178.0661 [33m140641625110272- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001    [010] Process: uLoadWatch      ~ uLoadWatch      launched successfully
+[32muLoadWatch launching as uLoadWatch
+[0m
+1659024178.1147 [33m140592197519104- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 
+------------[1;32mCONNECT[0m-------------
+  Handshaking   :  [32mOK
+[0m  Client's name :  [32mpNodeReporter[0m
+  Type          :  [1;33mAsynchronous[0m
+  Priority      :  [32mnormal[0m
+  Total Clients :  [32m5[0m
+--------------------------------
+
+  Handshaking as pNodeReporter          [1;32m[ok]
+[0m  DB reports async support is           [1;32m[on]
+[0m  DB is running on                      [1;32mauv-jre
+[0m  Timing skew estimation is             [33m[off] (not needed)
+[0m--------------------------------------------------
+
+   [011] Process: uMemWatch       ~ uMemWatch       launched successfully
+[32muMemWatch launching as uMemWatch
+[0m
+1659024178.1903 [33m140036480448256- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001    [012] Process: iSay            ~ iSay            launched successfully
+[32miSay launching as iSay
+[0m
+
+------------[1;32mCONNECT[0m-------------
+  Handshaking   :  [32mOK
+[0m  Client's name :  [32mpMarinePID[0m
+  Type          :  [1;33mAsynchronous[0m
+  Priority      :  [32mnormal[0m
+  Total Clients :  [32m6[0m
+--------------------------------
+
+  Handshaking as pMarinePID             [1;32m[ok]
+[0m  DB reports async support is           [1;32m[on]
+[0m  DB is running on                      [1;32mauv-jre
+[0m  Timing skew estimation is             [33m[off] (not needed)
+[0m--------------------------------------------------
+
+   [013] Process: pContactMgrV20  ~ pContactMgrV20  launched successfully
+[32mpBasicContactMgrV20 launching as pContactMgrV20
+[0m
+1659024178.2855 [33m140262147876608- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 ***************************************************
+*  uProcessWatch starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  SUMMARY_WAIT
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  NOWATCH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  NOWATCH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  NOWATCH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  WATCH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  WATCH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  WATCH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  WATCH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  WATCH_ALL
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  ALLOW_RETRACTIONS
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+uProcessWatch is Running:
+ |-Baseline AppTick   @ 1.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 1 Hz
+
+
+   [014] Process: pRealm          ~ pRealm          launched successfully
+1659024178.3096 [33m139649876035328- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 
+------------[1;32mCONNECT[0m-------------
+  Handshaking   :  [32mOK
+[0m  Client's name :  [32mpHelmIvP[0m
+  Type          :  [1;33mAsynchronous[0m
+  Priority      :  [32mnormal[0m
+  Total Clients :  [32m7[0m
+--------------------------------
+
+  Handshaking as pHelmIvP               [1;32m[ok]
+[0m  DB reports async support is           [1;32m[on]
+[0m  DB is running on                      [1;32mauv-jre
+[0m  Timing skew estimation is             [33m[off] (not needed)
+[0m--------------------------------------------------
+
+[32mpRealm launching as pRealm
+[0m
+---------------------- [1;33mROUTING INFORMATION[0m ------------------------------------
+[1;32mStandard Routes:
+[0m   none
+[1;32mWildcard Routes:
+[0m  routing for variables matching "NODE*" from sources matching "*": 
+  --> localhost:9203       as <src_name> [udp]
+[1;32mListening on:
+[0m  <-- localhost:9201      [udp]
+-------------------------------------------------------------------------------
+pShare is Running:
+ |-Baseline AppTick   @ 40.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ |--Iterate Mode 2 :
+   -Regular iterate at 40 Hz. 
+   |-Dynamic message delivery at an unlimited rate
+
+
+[33m+ subs of "pShare" to variables matching "NODE*:*"[0m
+[33m+ subs of "pShare" to variables matching "NODE*:*"[0m
+[33m+ subs of "pShare" to variables matching "NODE*:*"[0m
+[33m+ subs of "pShare" to variables matching "NODE*:*"[0m
+[33m+ subs of "pShare" to variables matching "NODE*:*"[0m
+[33m+ subs of "pShare" to variables matching "NODE*:*"[0m
+[33m+ subs of "pShare" to variables matching "NODE*:*"[0m
+[33m+ subs of "pShare" to variables matching "NODE*:*"[0m
+1659024178.3921 [33m139999441630976- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 ***************************************************
+*  uSimMarine starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  PREFIX
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  START_POS
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+uSimMarine started 
+uSimMarine is Running:
+ |-Baseline AppTick   @ 10.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 10 Hz
+
+
+
+------------[1;32mCONNECT[0m-------------
+  Handshaking   :  [32mOK
+[0m  Client's name :  [32mpHostInfo[0m
+  Type          :  [1;33mAsynchronous[0m
+  Priority      :  [32mnormal[0m
+  Total Clients :  [32m8[0m
+--------------------------------
+
+  Handshaking as pHostInfo              [1;32m[ok]
+[0m  DB reports async support is           [1;32m[on]
+[0m  DB is running on                      [1;32mauv-jre
+[0m  Timing skew estimation is             [33m[off] (not needed)
+[0m--------------------------------------------------
+
+pLogger is Running:
+ |-Baseline AppTick   @ 1.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 1 Hz
+
+
++ subs of "pNodeReporter" to "NAV_X" via wildcard "NAV_*:*"
++ subs of "pNodeReporter" to "NAV_Y" via wildcard "NAV_*:*"
++ subs of "pNodeReporter" to "NAV_LAT" via wildcard "NAV_*:*"
++ subs of "pNodeReporter" to "NAV_LONG" via wildcard "NAV_*:*"
++ subs of "pNodeReporter" to "NAV_HEADING" via wildcard "NAV_*:*"
++ subs of "pNodeReporter" to "NAV_SPEED" via wildcard "NAV_*:*"
++ subs of "pNodeReporter" to "NAV_DEPTH" via wildcard "NAV_*:*"
++ subs of "pNodeReporter" to "NAV_Z" via wildcard "NAV_*:*"
++ subs of "pNodeReporter" to "NAV_PITCH" via wildcard "NAV_*:*"
++ subs of "pNodeReporter" to "NAV_YAW" via wildcard "NAV_*:*"
++ subs of "pNodeReporter" to "NAV_HEADING_OVER_GROUND" via wildcard "NAV_*:*"
++ subs of "pNodeReporter" to "NAV_SPEED_OVER_GROUND" via wildcard "NAV_*:*"
+
+------------[1;32mCONNECT[0m-------------
+  Handshaking   :  [32mOK
+[0m  Client's name :  [32muFldNodeBroker[0m
+  Type          :  [1;33mAsynchronous[0m
+  Priority      :  [32mnormal[0m
+  Total Clients :  [32m9[0m
+--------------------------------
+
+  Handshaking as uFldNodeBroker         [1;32m[ok]
+[0m  DB reports async support is           [1;32m[on]
+[0m  DB is running on                      [1;32mauv-jre
+[0m  Timing skew estimation is             [33m[off] (not needed)
+[0m--------------------------------------------------
+
+
+------------[1;32mCONNECT[0m-------------
+  Handshaking   :  [32mOK
+[0m  Client's name :  [32muLoadWatch[0m
+  Type          :  [1;33mAsynchronous[0m
+  Priority      :  [32mnormal[0m
+  Total Clients :  [32m10[0m
+--------------------------------
+
+  Handshaking as uLoadWatch             [1;32m[ok]
+[0m  DB reports async support is           [1;32m[on]
+[0m  DB is running on                      [1;32mauv-jre
+[0m  Timing skew estimation is             [33m[off] (not needed)
+[0m--------------------------------------------------
+
+[33m+ subs of "uLoadWatch" to variables matching "*_ITER_GAP:*"[0m
+[33m+ subs of "uLoadWatch" to variables matching "*_ITER_LEN:*"[0m
+***************************************************
+*  pNodeReporter starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  GROUP
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  VESSEL_TYPE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+pNodeReporter is Running:
+ |-Baseline AppTick   @ 2.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 2 Hz
+
+
+[33m+ subs of "pNodeReporter" to variables matching "NAV_*:*"[0m
+[33m+ subs of "pNodeReporter" to variables matching "NAV_*:*"[0m
+[33m+ subs of "pNodeReporter" to variables matching "NAV_*:*"[0m
+[33m+ subs of "pNodeReporter" to variables matching "NAV_*:*"[0m
+[33m+ subs of "pNodeReporter" to variables matching "NAV_*:*"[0m
+[33m+ subs of "pNodeReporter" to variables matching "NAV_*:*"[0m
+[33m+ subs of "pNodeReporter" to variables matching "NAV_*:*"[0m
+[33m+ subs of "pNodeReporter" to variables matching "NAV_*:*"[0m
+[33m+ subs of "pNodeReporter" to variables matching "NAV_*:*"[0m
+[33m+ subs of "pNodeReporter" to variables matching "NAV_*:*"[0m
+[33m+ subs of "pNodeReporter" to variables matching "NAV_*:*"[0m
+[33m+ subs of "pNodeReporter" to variables matching "NAV_*:*"[0m
+[33m+ subs of "pNodeReporter" to variables matching "NAV_*:*"[0m
+[33m+ subs of "pNodeReporter" to variables matching "NAV_*:*"[0m
+
+------------[1;32mCONNECT[0m-------------
+  Handshaking   :  [32mOK
+[0m  Client's name :  [32muMemWatch[0m
+  Type          :  [1;33mAsynchronous[0m
+  Priority      :  [32mnormal[0m
+  Total Clients :  [32m11[0m
+--------------------------------
+
+  Handshaking as uMemWatch              [1;32m[ok]
+[0m  DB reports async support is           [1;32m[on]
+[0m  DB is running on                      [1;32mauv-jre
+[0m  Timing skew estimation is             [33m[off] (not needed)
+[0m--------------------------------------------------
+
+***************************************************
+*  pMarinePID starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  SPEED_FACTOR
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  MAXELEVATOR
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  MAXPITCH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  MAXTHRUST
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  MAXRUDDER
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  Z_TO_PITCH_PID_INTEGRAL_LIMIT
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  Z_TO_PITCH_PID_KI
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  Z_TO_PITCH_PID_KD
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  Z_TO_PITCH_PID_KP
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  PITCH_PID_INTEGRAL_LIMIT
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  PITCH_PID_KI
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  PITCH_PID_KD
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  PITCH_PID_KP
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  SPEED_PID_INTEGRAL_LIMIT
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  SPEED_PID_KI
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  SPEED_PID_KD
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  SPEED_PID_KP
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  YAW_PID_INTEGRAL_LIMIT
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  YAW_PID_KI
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  YAW_PID_KD
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  YAW_PID_KP
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  ACTIVE_START
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DEPTH_CONTROL
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  VERBOSE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+pMarinePID starting....
+ pMarinePID says: ** NEW CONTROLLER GAINS ARE **
+ pMarinePID says: YAW_PID_KP             = 0.400
+ pMarinePID says: YAW_PID_KD             = 0.100
+ pMarinePID says: YAW_PID_KI             = 0.000
+ pMarinePID says: YAW_PID_INTEGRAL_LIMIT = 0.070
+ pMarinePID says: MAXRUDDER              = 100.000
+ pMarinePID says: SPEED_PID_KP           = 1.000
+ pMarinePID says: SPEED_PID_KD           = 0.000
+ pMarinePID says: SPEED_PID_KI           = 0.000
+ pMarinePID says: SPEED_PID_INTEGRAL_LIMIT = 0.070
+ pMarinePID says: MAXTHRUST              = 100.000
+ pMarinePID says: Z_TO_PITCH_PID_KP      = 0.120
+ pMarinePID says: Z_TO_PITCH_PID_KD      = 0.000
+ pMarinePID says: Z_TO_PITCH_PID_KI      = 0.004
+ pMarinePID says: Z_TO_PITCH_PID_KI_LIMIT= 0.050
+ pMarinePID says: MAXELEVATOR            = 13.000
+ pMarinePID says: PITCH_PID_KP           = 0.500
+ pMarinePID says: PITCH_PID_KD           = 1.000
+ pMarinePID says: PITCH_PID_KI           = 0.000
+ pMarinePID says: PITCH_PID_KI_LIMIT     = 0.000
+ pMarinePID says: MAXPITCH               = 0.262
+Depth Control is ON
+pMarinePID is Running:
+ |-Baseline AppTick   @ 2.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 2 Hz
+
+
+
+------------[1;32mCONNECT[0m-------------
+  Handshaking   :  [32mOK
+[0m  Client's name :  [32mpContactMgrV20[0m
+  Type          :  [1;33mAsynchronous[0m
+  Priority      :  [32mnormal[0m
+  Total Clients :  [32m12[0m
+--------------------------------
+
+  Handshaking as pContactMgrV20         [1;32m[ok]
+[0m  DB reports async support is           [1;32m[on]
+[0m  DB is running on                      [1;32mauv-jre
+[0m  Timing skew estimation is             [33m[off] (not needed)
+[0m--------------------------------------------------
+
+***************************************************
+*  pHelmIvP starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  HOLD_ON_APPS
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DOMAIN
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DOMAIN
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DOMAIN
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  VERBOSE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BEHAVIORS
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+In Helm OnStartUp()
+Number of behavior files: 1
+Processing Behavior File: targ_Bob.bhv  START
+    Successfully found file: targ_Bob.bhv
+Processing Behavior File: targ_Bob.bhv  END
+[32mLoading behavior dynamic libraries specified in IVP_BEHAVIOR_DIRS...
+[0m  Environment variable IVP_BEHAVIOR_DIRS not set.
+Loading behavior dynamic libraries specified in IVP_BEHAVIOR_DIRS skipped.
+BehaviorSpec: Kind=[BHV_Loiter] (on line 34)
+  # of lines: 16
+[0]: [name      = loiter]
+[1]: [pwt       = 100]
+[2]: [condition = MODE==LOITERING]
+[3]: [updates   = UP_LOITER]
+[4]: [runflag   = VEHICLE_UNDERWAY = TRUE]
+[5]: [endflag   = VEHICLE_UNDERWAY = FALSE]
+[6]: [ipf_type = zaic_spd]
+[7]: [post_suffix = A]
+[8]: [speed = 1.4]
+[9]: [clockwise = false]
+[10]: [radius = 8.0]
+[11]: [nm_radius = 15.0]
+[12]: [polygon = radial:: x=-250.00,y=250.00, radius=10, pts=8, snap=1, label=Bob_LOITER]
+[13]: [visual_hints = nextpt_color=white, nextpt_lcolor=khaki]
+[14]: [visual_hints = edge_color=orange, vertex_color=white]
+[15]: [visual_hints = edge_size=1, vertex_size=2]
+BehaviorSpec: Kind=[BHV_CutRange] (on line 57)
+  # of lines: 19
+[0]: [name         = cutrange_]
+[1]: [pwt          = 5000]
+[2]: [condition    = MODE==NEVER]
+[3]: [condition    = CLOSE = true]
+[4]: [updates      = CONTACT_INFO]
+[5]: [endflag      = LOITER=true]
+[6]: [perpetual    = false]
+[7]: [bearing_lines = white:0, green:0.65, yellow:0.8, red:1.0]
+[8]: [contact = to-be-set]
+[9]: [decay = 15,30]
+[10]: [extrapolate = true]
+[11]: [on_no_contact_ok = true]
+[12]: [time_on_leg = 60]
+[13]: [giveup_dist = 200]
+[14]: [patience = 45]
+[15]: [pwt_inner_dist = 0]
+[16]: [pwt_outer_dist = 100]
+[17]: [pursueflag = PURSUIT=true]
+[18]: [giveupflag = PURSUIT=false]
+BehaviorSpec: Kind=[BHV_MaxSpeed] (on line 94)
+  # of lines: 6
+[0]: [name      = max_spd]
+[1]: [pwt       = 500]
+[2]: [updates   = MAX_SPEED_UPDATES]
+[3]: [condition = MODE==ACTIVE]
+[4]: [max_speed = 2.4]
+[5]: [tolerance = 0.2]
+BehaviorSpec: Kind=[BHV_ConstantSpeed] (on line 105)
+  # of lines: 10
+[0]: [name         = const_spd_transit]
+[1]: [pwt          = 100]
+[2]: [condition    = MODE==ACTIVE]
+[3]: [updates      = CONST_SPD_UPDATES]
+[4]: [basewidth = 0.2]
+[5]: [duration = 10000]
+[6]: [speed = 2.0]
+[7]: [speed_mismatch_var = SPEED_DIFF]
+[8]: [peakwidth = 0]
+[9]: [summitdelta = 0]
+BehaviorSpec: Kind=[BHV_ConstantDepth] (on line 124)
+  # of lines: 10
+[0]: [name         = const_depth]
+[1]: [pwt          = 100]
+[2]: [condition    = MODE==ACTIVE]
+[3]: [updates      = CONST_DEPTH_UPDATES]
+[4]: [basewidth = 0.2]
+[5]: [duration = 100000]
+[6]: [depth = 0.0]
+[7]: [depth_mismatch_var = DEPTH_DIFF]
+[8]: [peakwidth = 0]
+[9]: [summitdelta = 0]
+BehaviorSpec: Kind=[BHV_Waypoint] (on line 144)
+  # of lines: 12
+[0]: [name      = waypt_return]
+[1]: [pwt       = 100]
+[2]: [updates   = RETURN_UPDATES]
+[3]: [condition = MODE==RETURNING]
+[4]: [endflag   = STATION_KEEP = true]
+[5]: [endflag   = CLOSE = false]
+[6]: [speed = 1.3]
+[7]: [radius = 3.0]
+[8]: [nm_radius = 15.0]
+[9]: [point =  0,0]
+[10]: [repeat = 10]
+[11]: [lead = 8]
+BehaviorSpec: Kind=[BHV_StationKeep] (on line 162)
+  # of lines: 12
+[0]: [name         = station-keep]
+[1]: [pwt          = 100]
+[2]: [condition    = MODE==STATION-KEEPING]
+[3]: [inactiveflag = STATIONING = false]
+[4]: [activeflag   = STATIONING = true]
+[5]: [center_activate = true]
+[6]: [inner_radius = 5]
+[7]: [outer_radius = 10]
+[8]: [outer_speed = 1.0]
+[9]: [transit_speed = 1.3]
+[10]: [swing_time = 7]
+[11]: [visual_hints = vertex_size=0, edge_color=gray50]
+BehaviorSpec: Kind=[BHV_ConstantDepth] (on line 181)
+  # of lines: 7
+[0]: [name = survey_depth]
+[1]: [pwt = 100]
+[2]: [condition = MODE==LOITERING]
+[3]: [updates = DEPTH_UPDATES]
+[4]: [depth = 100]
+[5]: [depth_mismatch_var = DEPTH_DIFF]
+[6]: [duration = no-time-limit]
+BehaviorSet: Total # of specs: 8
+new_poly size: 8
+Checking Param Collective: loiter
+Checking Param Collective Done: Msg:[]
+loiter
+spec_build: 0  result:1
+Checking Param Collective: cutrange_
+Checking Param Collective Done: Msg:[]
+cutrange_
+spec_build: 1  result:1
+Checking Param Collective: max_spd
+Checking Param Collective Done: Msg:[]
+max_spd
+spec_build: 2  result:1
+Checking Param Collective: const_spd_transit
+Checking Param Collective Done: Msg:[]
+const_spd_transit
+spec_build: 3  result:1
+Checking Param Collective: const_depth
+Checking Param Collective Done: Msg:[]
+const_depth
+spec_build: 4  result:1
+Checking Param Collective: waypt_return
+Checking Param Collective Done: Msg:[]
+waypt_return
+spec_build: 5  result:1
+Checking Param Collective: station-keep
+Checking Param Collective Done: Msg:[]
+station-keep
+spec_build: 6  result:1
+Checking Param Collective: survey_depth
+Checking Param Collective Done: Msg:[]
+survey_depth
+spec_build: 7  result:1
+BehaviorSet: all_builds_ok: true
+total specs::8
+Total Behaviors now: 1
+Total Behaviors now: 2
+Total Behaviors now: 3
+Total Behaviors now: 4
+Total Behaviors now: 5
+Total Behaviors now: 6
+Total Behaviors now: 7
+Total Behaviors now: 8
+mode description: MODE#---,ACTIVE#---,INACTIVE#ACTIVE,STATION-KEEPING#ACTIVE,RETURNING#ACTIVE,LOITERING#ACTIVE,CHASING
+pHelmIvP is Running:
+ |-Baseline AppTick   @ 4.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 4 Hz
+
+
+
+------------[1;32mCONNECT[0m-------------
+  Handshaking   :  [32mOK
+[0m  Client's name :  [32miSay[0m
+  Type          :  [1;33mAsynchronous[0m
+  Priority      :  [32mnormal[0m
+  Total Clients :  [32m13[0m
+--------------------------------
+
+  Handshaking as iSay                   [1;32m[ok]
+[0m  DB reports async support is           [1;32m[on]
+[0m  DB is running on                      [1;32mauv-jre
+[0m  Timing skew estimation is             [33m[off] (not needed)
+[0m--------------------------------------------------
+
+***************************************************
+*  pHostInfo starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DEFAULT_HOSTIP_FORCE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+pHostInfo is Running:
+ |-Baseline AppTick   @ 1.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 1 Hz
+
+
+
+------------[1;32mCONNECT[0m-------------
+  Handshaking   :  [32mOK
+[0m  Client's name :  [32mpRealm[0m
+  Type          :  [1;33mAsynchronous[0m
+  Priority      :  [32mnormal[0m
+  Total Clients :  [32m14[0m
+--------------------------------
+
+  Handshaking as pRealm                 [1;32m[ok]
+[0m  DB reports async support is           [1;32m[on]
+[0m  DB is running on                      [1;32mauv-jre
+[0m  Timing skew estimation is             [33m[off] (not needed)
+[0m--------------------------------------------------
+
+***************************************************
+*  uFldNodeBroker starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BRIDGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BRIDGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BRIDGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BRIDGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BRIDGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BRIDGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BRIDGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  TRY_SHORE_HOST
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  TRY_SHORE_HOST
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+uFldNodeBroker is Running:
+ |-Baseline AppTick   @ 1.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 1 Hz
+
+
+---------------------- [1;33mROUTING INFORMATION[0m ------------------------------------
+[1;32mStandard Routes:
+[0m  routing for "NODE_BROKER_PING_0"
+  --> 10.116.0.2:9200      as NODE_BROKER_PING [udp] every notification 
+[1;32mWildcard Routes:
+[0m  routing for variables matching "NODE*" from sources matching "*": 
+  --> localhost:9203       as <src_name> [udp]
+[1;32mListening on:
+[0m  <-- localhost:9201      [udp]
+-------------------------------------------------------------------------------
+---------------------- [1;33mROUTING INFORMATION[0m ------------------------------------
+[1;32mStandard Routes:
+[0m  routing for "NODE_BROKER_PING_0"
+  --> 10.116.0.2:9200      as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_BROKER_PING_1"
+  --> localhost:9200       as NODE_BROKER_PING [udp] every notification 
+[1;32mWildcard Routes:
+[0m  routing for variables matching "NODE*" from sources matching "*": 
+  --> localhost:9203       as <src_name> [udp]
+[1;32mListening on:
+[0m  <-- localhost:9201      [udp]
+-------------------------------------------------------------------------------
+***************************************************
+*  uLoadWatch starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BREACH_TRIGGER
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  THRESH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  THRESH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  THRESH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  THRESH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+uLoadWatch is Running:
+ |-Baseline AppTick   @ 1.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 1 Hz
+
+
+[33m+ subs of "uLoadWatch" to variables matching "*_ITER_GAP:*"[0m
+[33m+ subs of "uLoadWatch" to variables matching "*_ITER_LEN:*"[0m
++ subs of "pShare" to "NODE_REPORT_LOCAL_FIRST" via wildcard "NODE*:*"
++ subs of "pShare" to "NODE_REPORT_LOCAL" via wildcard "NODE*:*"
++ subs of "uLoadWatch" to "PNODEREPORTER_ITER_LEN" via wildcard "*_ITER_LEN:*"
+* pHelmIvP says: pHelmIvP AllStop: ManualOverride
++ subs of "uLoadWatch" to "PHELMIVP_ITER_LEN" via wildcard "*_ITER_LEN:*"
+
+
+
+PID REPORT: (1)(1.97889/sec)
+PID_COURSE:  (Want):0.00000 (Curr):0.00000 (Diff):0.00000 RUDDER:-0.00000
+PID_SPEED:  (Want):0.00000 (Curr):0.00000 (Diff):0.00000 (Fctr):20.00000 THRUST:0.00000
+PID_DEPTH:  (Want):0.00000 (Curr):0.00000 (Diff):0.00000 ELEVATOR:0.00000
+***************************************************
+*  uMemWatch starting ...
+***************************************************
++ subs of "uLoadWatch" to "PMARINEPID_ITER_LEN" via wildcard "*_ITER_LEN:*"
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  WATCH_ONLY
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  ABSOLUTE_TIME_GAP
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+uMemWatch is Running:
+ |-Baseline AppTick   @ 0.4 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 0.4 Hz
+
+
++ subs of "uLoadWatch" to "UPROCESSWATCH_ITER_LEN" via wildcard "*_ITER_LEN:*"
+***************************************************
+*  pContactMgrV20 starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  CPA_RANGE_COLOR
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  ALERT_RANGE_COLOR
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DISPLAY_RADII
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  POST_CLOSEST_RANGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DISPLAY_RADII_ID
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DISPLAY_RADII
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  CONTACT_MAX_AGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  ALERT_VERBOSE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DECAY
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+pContactMgrV20 is Running:
+ |-Baseline AppTick   @ 2.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 2 Hz
+
+
+*+ subs of "uLoadWatch" to "PHELMIVP_ITER_GAP" via wildcard "*_ITER_GAP:*"
+***************************************************
+*  iSay starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  OS_MODE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  MIN_UTTER_INTERVAL
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  INTERVAL_POLICY
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DEFAULT_RATE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DEFAULT_VOICE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+iSay is Running:
+ |-Baseline AppTick   @ 4.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 4 Hz
+
+
+copied file to ./LOG_BOB_28_7_2022_____12_02_58/targ_Bob._bhv
+***************************************************
+*  pRealm starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  RELCAST_INTERVAL
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  SUMMARY_INTERVAL
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+pRealm is Running:
+ |-Baseline AppTick   @ 2.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 2 Hz
+
+
+  Added wildcard logging of AIS_REPORT          
+  Added wildcard logging of AIS_REPORT_LOCAL    
+  Added wildcard logging of APPCAST_REQ         
+  Added wildcard logging of AUX_MODE            
+  Added wildcard logging of BCM_DISPLAY_RADII   
+  Added wildcard logging of BCM_REPORT_REQUEST  
+  Added wildcard logging of BUOYANCY_CONTROL    
+  Added wildcard logging of BUOYANCY_RATE       
+  Added wildcard logging of CLOSE               
+  Added wildcard logging of CONST_DEPTH_UPDATES 
+  Added wildcard logging of CONST_SPD_UPDATES   
+  Added wildcard logging of CONTACT_INFO        
+  Added wildcard logging of CURRENT_X           
+  Added wildcard logging of CURRENT_Y           
+  Added wildcard logging of DB_EVENT            
+  Added wildcard logging of DB_RWSUMMARY        
+  Added wildcard logging of DB_TIME             
+  Added wildcard logging of DB_UPTIME           
+  Added wildcard logging of DEPLOY              
+  Added wildcard logging of DEPTH_UPDATES       
+  Added wildcard logging of DESIRED_DEPTH       
+  Added wildcard logging of DESIRED_ELEVATOR    
+  Added wildcard logging of DESIRED_HEADING     
+  Added wildcard logging of DESIRED_RUDDER      
+  Added wildcard logging of DESIRED_SPEED       
+  Added wildcard logging of DESIRED_THRUST      
+  Added wildcard logging of DESIRED_THRUST_L    
+  Added wildcard logging of DESIRED_THRUST_R    
+  Added wildcard logging of DRIFT_VECTOR        
+  Added wildcard logging of DRIFT_VECTOR_ADD    
+  Added wildcard logging of DRIFT_VECTOR_MULT   
+  Added wildcard logging of DRIFT_X             
+  Added wildcard logging of DRIFT_Y             
+  Added wildcard logging of EXITED_NORMALLY     
+  Added wildcard logging of HELM_MAP_CLEAR      
+  Added wildcard logging of HOST_INFO_REQUEST   
+  Added wildcard logging of IVPHELM_ALLSTOP     
+  Added wildcard logging of IVPHELM_CPU         
+  Added wildcard logging of IVPHELM_DOMAIN      
+  Added wildcard logging of IVPHELM_MODESET     
+  Added wildcard logging of IVPHELM_REGISTER    
+  Added wildcard logging of IVPHELM_REJOURNAL   
+  Added wildcard logging of IVPHELM_STATE       
+  Added wildcard logging of IVPHELM_SUMMARY     
+  Added wildcard logging of LOAD_WARNING        
+  Added wildcard logging of LOGGER_DIRECTORY    
+  Added wildcard logging of LOGGER_RESTART      
+  Added wildcard logging of LOITER              
+  Added wildcard logging of MAX_SPEED_UPDATES   
+  Added wildcard logging of MODE                
+  Added wildcard logging of MOOS_MANUAL_OVERIDE 
+  Added wildcard logging of MOOS_MANUAL_OVERRIDE
+  Added wildcard logging of NAV_DEPTH           
+  Added wildcard logging of NAV_HEADING         
+  Added wildcard logging of NAV_HEADING_OVER_GROUND
+  Added wildcard logging of NAV_SPEED           
+  Added wildcard logging of NAV_TRAJECTORY      
+  Added wildcard logging of NAV_TRANSP          
+  Added wildcard logging of NAV_X               
+  Added wildcard logging of NAV_Y               
+  Added wildcard logging of NAV_Z               
+  Added wildcard logging of NODE_BROKER_ACK     
+  Added wildcard logging of NODE_BROKER_PING_0  
+  Added wildcard logging of NODE_BROKER_PING_1  
+  Added wildcard logging of NODE_COLOR_CHANGE   
+  Added wildcard logging of NODE_GROUP_UPDATE   
+  Added wildcard logging of NODE_REPORT         
+  Added wildcard logging of NODE_REPORT_LOCAL_FIRST
+  Added wildcard logging of OBSTACLE_HIT        
+  Added wildcard logging of PCONTACTMGRV20_PID  
+  Added wildcard logging of PHELMIVP_PID        
+  Added wildcard logging of PID_REPORT          
+  Added wildcard logging of PID_VERBOSE         
+  Added wildcard logging of PLATFORM_COLOR      
+  Added wildcard logging of PLOGGER_CMD         
+  Added wildcard logging of PNODEREPORTER_PID   
+  Added wildcard logging of PNR_PAUSE           
+  Added wildcard logging of PROC_WATCH_ALL_OK   
+  Added wildcard logging of PROC_WATCH_EVENT    
+  Added wildcard logging of PROC_WATCH_SUMMARY  
+  Added wildcard logging of PROC_WATCH_TIME_WARP
+  Added wildcard logging of PSHARE_CMD          
+  Added wildcard logging of PSHARE_INPUT_SUMMARY
+  Added wildcard logging of PSHARE_OUTPUT_SUMMARY
+  Added wildcard logging of REALMCAST_REQ       
+  Added wildcard logging of RESTART_HELM        
+  Added wildcard logging of RETURN              
+  Added wildcard logging of RETURN_UPDATES      
+  Added wildcard logging of ROTATE_SPEED        
+  Added wildcard logging of SAY_FILTER          
+  Added wildcard logging of SAY_MOOS            
+  Added wildcard logging of SAY_VOLUME          
+  Added wildcard logging of SPEED_FACTOR        
+  Added wildcard logging of STATION_KEEP        
+  Added wildcard logging of THRUST_MODE_DIFFERENTIAL
+  Added wildcard logging of THRUST_MODE_REVERSE 
+  Added wildcard logging of TRIM_CONTROL        
+  Added wildcard logging of UFLDNODEBROKER_PID  
+  Added wildcard logging of UP_LOITER           
+  Added wildcard logging of USM_DRIFT_SUMMARY   
+  Added wildcard logging of USM_ENABLED         
+  Added wildcard logging of USM_FSUMMARY        
+  Added wildcard logging of USM_RESET           
+  Added wildcard logging of USM_SIM_PAUSED      
+  Added wildcard logging of USM_TURN_RATE       
+  Added wildcard logging of WATER_DEPTH         
++ subs of "uLoadWatch" to "PNODEREPORTER_ITER_GAP" via wildcard "*_ITER_GAP:*"
+*+ subs of "uLoadWatch" to "ISAY_ITER_LEN" via wildcard "*_ITER_LEN:*"
+
+
+
+PID REPORT: (2)(1.98891/sec)
+PID_COURSE:  (Want):0.00000 (Curr):0.00000 (Diff):0.00000 RUDDER:-0.00000
+PID_SPEED:  (Want):0.00000 (Curr):0.00000 (Diff):0.00000 (Fctr):20.00000 THRUST:0.00000
+PID_DEPTH:  (Want):0.00000 (Curr):0.00000 (Diff):0.00000 ELEVATOR:0.00000
++ subs of "uLoadWatch" to "PMARINEPID_ITER_GAP" via wildcard "*_ITER_GAP:*"
++ subs of "uLoadWatch" to "PCONTACTMGRV20_ITER_LEN" via wildcard "*_ITER_LEN:*"
+*+ subs of "uLoadWatch" to "ISAY_ITER_GAP" via wildcard "*_ITER_GAP:*"
++ subs of "uLoadWatch" to "PHOSTINFO_ITER_LEN" via wildcard "*_ITER_LEN:*"
++ subs of "uLoadWatch" to "PREALM_ITER_LEN" via wildcard "*_ITER_LEN:*"
++ subs of "pShare" to "NODE_BROKER_PING_0" via wildcard "NODE*:*"
++ subs of "pShare" to "NODE_BROKER_PING_1" via wildcard "NODE*:*"
++ subs of "uLoadWatch" to "UFLDNODEBROKER_ITER_LEN" via wildcard "*_ITER_LEN:*"
+dynamically creating outgoing route : NODE_REPORT_LOCAL_FIRST->NODE_REPORT_LOCAL_FIRST on localhost:9203
+dynamically creating outgoing route : NODE_REPORT_LOCAL->NODE_REPORT_LOCAL on localhost:9203
+---------------------- [1;33mROUTING INFORMATION[0m ------------------------------------
+[1;32mStandard Routes:
+[0m  routing for "NODE_BROKER_PING_0"
+  --> 10.116.0.2:9200      as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_BROKER_PING_1"
+  --> localhost:9200       as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_REPORT_LOCAL"
+  --> localhost:9203       as NODE_REPORT_LOCAL [udp] every notification 
+  routing for "NODE_REPORT_LOCAL_FIRST"
+  --> localhost:9203       as NODE_REPORT_LOCAL_FIRST [udp] every notification 
+[1;32mWildcard Routes:
+[0m  routing for variables matching "NODE*" from sources matching "*": 
+  --> localhost:9203       as <src_name> [udp]
+[1;32mListening on:
+[0m  <-- localhost:9201      [udp]
+-------------------------------------------------------------------------------
+---------------------- [1;33mROUTING INFORMATION[0m ------------------------------------
+[1;32mStandard Routes:
+[0m  routing for "NODE_BROKER_PING_0"
+  --> 10.116.0.2:9200      as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_BROKER_PING_1"
+  --> localhost:9200       as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_REPORT_LOCAL"
+  --> localhost:9203       as NODE_REPORT_LOCAL [udp] every notification 
+  routing for "NODE_REPORT_LOCAL_FIRST"
+  --> localhost:9203       as NODE_REPORT_LOCAL_FIRST [udp] every notification 
+[1;32mWildcard Routes:
+[0m  routing for variables matching "NODE*" from sources matching "*": 
+  --> localhost:9203       as <src_name> [udp]
+[1;32mListening on:
+[0m  <-- localhost:9201      [udp]
+-------------------------------------------------------------------------------
++ subs of "uLoadWatch" to "ULOADWATCH_ITER_LEN" via wildcard "*_ITER_LEN:*"
+*
+
+
+PID REPORT: (3)(1.99218/sec)
+PID_COURSE:  (Want):0.00000 (Curr):0.00000 (Diff):0.00000 RUDDER:-0.00000
+PID_SPEED:  (Want):0.00000 (Curr):0.00000 (Diff):0.00000 (Fctr):20.00000 THRUST:0.00000
+PID_DEPTH:  (Want):0.00000 (Curr):0.00000 (Diff):0.00000 ELEVATOR:0.00000
++ subs of "uLoadWatch" to "UPROCESSWATCH_ITER_GAP" via wildcard "*_ITER_GAP:*"
++ subs of "uLoadWatch" to "PCONTACTMGRV20_ITER_GAP" via wildcard "*_ITER_GAP:*"
+*WARNING : Message APPCAST_REQ from pMarineViewer is 153.696 ms delayed
++ subs of "pShare" to "NODE_BROKER_ACK" via wildcard "NODE*:*"
+copied file to ./LOG_BOB_28_7_2022_____12_02_58/targ_Bob._bhv
++ subs of "uLoadWatch" to "PREALM_ITER_GAP" via wildcard "*_ITER_GAP:*"
+*
+
+
+PID REPORT: (4)(1.99342/sec)
+PID_COURSE:  (Want):0.00000 (Curr):0.00000 (Diff):0.00000 RUDDER:-0.00000
+PID_SPEED:  (Want):0.00000 (Curr):0.00000 (Diff):0.00000 (Fctr):20.00000 THRUST:0.00000
+PID_DEPTH:  (Want):0.00000 (Curr):0.00000 (Diff):0.00000 ELEVATOR:0.00000
+*+ subs of "uLoadWatch" to "PHOSTINFO_ITER_GAP" via wildcard "*_ITER_GAP:*"
++ subs of "uLoadWatch" to "UFLDNODEBROKER_ITER_GAP" via wildcard "*_ITER_GAP:*"
+dynamically creating outgoing route : NODE_BROKER_ACK->NODE_BROKER_ACK on localhost:9203
+---------------------- [1;33mROUTING INFORMATION[0m ------------------------------------
+[1;32mStandard Routes:
+[0m  routing for "NODE_BROKER_ACK"
+  --> localhost:9203       as NODE_BROKER_ACK [udp] every notification 
+  routing for "NODE_BROKER_PING_0"
+  --> 10.116.0.2:9200      as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_BROKER_PING_1"
+  --> localhost:9200       as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_MESSAGE_LOCAL"
+  --> 10.116.0.2:9200      as NODE_MESSAGE [udp] every notification 
+  routing for "NODE_REPORT_LOCAL"
+  --> localhost:9203       as NODE_REPORT_LOCAL [udp] every notification 
+  routing for "NODE_REPORT_LOCAL_FIRST"
+  --> localhost:9203       as NODE_REPORT_LOCAL_FIRST [udp] every notification 
+[1;32mWildcard Routes:
+[0m  routing for variables matching "NODE*" from sources matching "*": 
+  --> localhost:9203       as <src_name> [udp]
+[1;32mListening on:
+[0m  <-- localhost:9201      [udp]
+-------------------------------------------------------------------------------
+---------------------- [1;33mROUTING INFORMATION[0m ------------------------------------
+[1;32mStandard Routes:
+[0m  routing for "NODE_BROKER_ACK"
+  --> localhost:9203       as NODE_BROKER_ACK [udp] every notification 
+  routing for "NODE_BROKER_PING_0"
+  --> 10.116.0.2:9200      as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_BROKER_PING_1"
+  --> localhost:9200       as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_MESSAGE_LOCAL"
+  --> 10.116.0.2:9200      as NODE_MESSAGE [udp] every notification 
+  routing for "NODE_REPORT_LOCAL"
+  --> localhost:9203       as NODE_REPORT_LOCAL [udp] every notification 
+  routing for "NODE_REPORT_LOCAL_FIRST"
+  --> localhost:9203       as NODE_REPORT_LOCAL_FIRST [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+[1;32mWildcard Routes:
+[0m  routing for variables matching "NODE*" from sources matching "*": 
+  --> localhost:9203       as <src_name> [udp]
+[1;32mListening on:
+[0m  <-- localhost:9201      [udp]
+-------------------------------------------------------------------------------
+---------------------- [1;33mROUTING INFORMATION[0m ------------------------------------
+[1;32mStandard Routes:
+[0m  routing for "NODE_BROKER_ACK"
+  --> localhost:9203       as NODE_BROKER_ACK [udp] every notification 
+  routing for "NODE_BROKER_PING_0"
+  --> 10.116.0.2:9200      as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_BROKER_PING_1"
+  --> localhost:9200       as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_MESSAGE_LOCAL"
+  --> 10.116.0.2:9200      as NODE_MESSAGE [udp] every notification 
+  routing for "NODE_REPORT_LOCAL"
+  --> localhost:9203       as NODE_REPORT_LOCAL [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+  routing for "NODE_REPORT_LOCAL_FIRST"
+  --> localhost:9203       as NODE_REPORT_LOCAL_FIRST [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+[1;32mWildcard Routes:
+[0m  routing for variables matching "NODE*" from sources matching "*": 
+  --> localhost:9203       as <src_name> [udp]
+[1;32mListening on:
+[0m  <-- localhost:9201      [udp]
+-------------------------------------------------------------------------------
+---------------------- [1;33mROUTING INFORMATION[0m ------------------------------------
+[1;32mStandard Routes:
+[0m  routing for "NODE_BROKER_ACK"
+  --> localhost:9203       as NODE_BROKER_ACK [udp] every notification 
+  routing for "NODE_BROKER_PING_0"
+  --> 10.116.0.2:9200      as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_BROKER_PING_1"
+  --> localhost:9200       as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_MESSAGE_LOCAL"
+  --> 10.116.0.2:9200      as NODE_MESSAGE [udp] every notification 
+  routing for "NODE_REPORT_LOCAL"
+  --> localhost:9203       as NODE_REPORT_LOCAL [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+  routing for "NODE_REPORT_LOCAL_FIRST"
+  --> localhost:9203       as NODE_REPORT_LOCAL_FIRST [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+  routing for "VIEW_SEGLIST"
+  --> 10.116.0.2:9200      as VIEW_SEGLIST [udp] every notification 
+[1;32mWildcard Routes:
+[0m  routing for variables matching "NODE*" from sources matching "*": 
+  --> localhost:9203       as <src_name> [udp]
+[1;32mListening on:
+[0m  <-- localhost:9201      [udp]
+-------------------------------------------------------------------------------
+---------------------- [1;33mROUTING INFORMATION[0m ------------------------------------
+[1;32mStandard Routes:
+[0m  routing for "NODE_BROKER_ACK"
+  --> localhost:9203       as NODE_BROKER_ACK [udp] every notification 
+  routing for "NODE_BROKER_PING_0"
+  --> 10.116.0.2:9200      as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_BROKER_PING_1"
+  --> localhost:9200       as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_MESSAGE_LOCAL"
+  --> 10.116.0.2:9200      as NODE_MESSAGE [udp] every notification 
+  routing for "NODE_REPORT_LOCAL"
+  --> localhost:9203       as NODE_REPORT_LOCAL [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+  routing for "NODE_REPORT_LOCAL_FIRST"
+  --> localhost:9203       as NODE_REPORT_LOCAL_FIRST [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+  routing for "VIEW_POINT"
+  --> 10.116.0.2:9200      as VIEW_POINT [udp] every notification 
+  routing for "VIEW_SEGLIST"
+  --> 10.116.0.2:9200      as VIEW_SEGLIST [udp] every notification 
+[1;32mWildcard Routes:
+[0m  routing for variables matching "NODE*" from sources matching "*": 
+  --> localhost:9203       as <src_name> [udp]
+[1;32mListening on:
+[0m  <-- localhost:9201      [udp]
+-------------------------------------------------------------------------------
+---------------------- [1;33mROUTING INFORMATION[0m ------------------------------------
+[1;32mStandard Routes:
+[0m  routing for "NODE_BROKER_ACK"
+  --> localhost:9203       as NODE_BROKER_ACK [udp] every notification 
+  routing for "NODE_BROKER_PING_0"
+  --> 10.116.0.2:9200      as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_BROKER_PING_1"
+  --> localhost:9200       as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_MESSAGE_LOCAL"
+  --> 10.116.0.2:9200      as NODE_MESSAGE [udp] every notification 
+  routing for "NODE_REPORT_LOCAL"
+  --> localhost:9203       as NODE_REPORT_LOCAL [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+  routing for "NODE_REPORT_LOCAL_FIRST"
+  --> localhost:9203       as NODE_REPORT_LOCAL_FIRST [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+  routing for "VIEW_CIRCLE"
+  --> 10.116.0.2:9200      as VIEW_CIRCLE [udp] every notification 
+  routing for "VIEW_POINT"
+  --> 10.116.0.2:9200      as VIEW_POINT [udp] every notification 
+  routing for "VIEW_SEGLIST"
+  --> 10.116.0.2:9200      as VIEW_SEGLIST [udp] every notification 
+[1;32mWildcard Routes:
+[0m  routing for variables matching "NODE*" from sources matching "*": 
+  --> localhost:9203       as <src_name> [udp]
+[1;32mListening on:
+[0m  <-- localhost:9201      [udp]
+-------------------------------------------------------------------------------
+---------------------- [1;33mROUTING INFORMATION[0m ------------------------------------
+[1;32mStandard Routes:
+[0m  routing for "NODE_BROKER_ACK"
+  --> localhost:9203       as NODE_BROKER_ACK [udp] every notification 
+  routing for "NODE_BROKER_PING_0"
+  --> 10.116.0.2:9200      as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_BROKER_PING_1"
+  --> localhost:9200       as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_MESSAGE_LOCAL"
+  --> 10.116.0.2:9200      as NODE_MESSAGE [udp] every notification 
+  routing for "NODE_REPORT_LOCAL"
+  --> localhost:9203       as NODE_REPORT_LOCAL [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+  routing for "NODE_REPORT_LOCAL_FIRST"
+  --> localhost:9203       as NODE_REPORT_LOCAL_FIRST [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+  routing for "VIEW_CIRCLE"
+  --> 10.116.0.2:9200      as VIEW_CIRCLE [udp] every notification 
+  routing for "VIEW_POINT"
+  --> 10.116.0.2:9200      as VIEW_POINT [udp] every notification 
+  routing for "VIEW_POLYGON"
+  --> 10.116.0.2:9200      as VIEW_POLYGON [udp] every notification 
+  routing for "VIEW_SEGLIST"
+  --> 10.116.0.2:9200      as VIEW_SEGLIST [udp] every notification 
+[1;32mWildcard Routes:
+[0m  routing for variables matching "NODE*" from sources matching "*": 
+  --> localhost:9203       as <src_name> [udp]
+[1;32mListening on:
+[0m  <-- localhost:9201      [udp]
+-------------------------------------------------------------------------------
+---------------------- [1;33mROUTING INFORMATION[0m ------------------------------------
+[1;32mStandard Routes:
+[0m  routing for "NODE_BROKER_ACK"
+  --> localhost:9203       as NODE_BROKER_ACK [udp] every notification 
+  routing for "NODE_BROKER_PING_0"
+  --> 10.116.0.2:9200      as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_BROKER_PING_1"
+  --> localhost:9200       as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_MESSAGE_LOCAL"
+  --> 10.116.0.2:9200      as NODE_MESSAGE [udp] every notification 
+  routing for "NODE_REPORT_LOCAL"
+  --> localhost:9203       as NODE_REPORT_LOCAL [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+  routing for "NODE_REPORT_LOCAL_FIRST"
+  --> localhost:9203       as NODE_REPORT_LOCAL_FIRST [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+  routing for "REALMCAST"
+  --> 10.116.0.2:9200      as REALMCAST  [udp] every notification 
+  routing for "VIEW_CIRCLE"
+  --> 10.116.0.2:9200      as VIEW_CIRCLE [udp] every notification 
+  routing for "VIEW_POINT"
+  --> 10.116.0.2:9200      as VIEW_POINT [udp] every notification 
+  routing for "VIEW_POLYGON"
+  --> 10.116.0.2:9200      as VIEW_POLYGON [udp] every notification 
+  routing for "VIEW_SEGLIST"
+  --> 10.116.0.2:9200      as VIEW_SEGLIST [udp] every notification 
+[1;32mWildcard Routes:
+[0m  routing for variables matching "NODE*" from sources matching "*": 
+  --> localhost:9203       as <src_name> [udp]
+[1;32mListening on:
+[0m  <-- localhost:9201      [udp]
+-------------------------------------------------------------------------------
+---------------------- [1;33mROUTING INFORMATION[0m ------------------------------------
+[1;32mStandard Routes:
+[0m  routing for "NODE_BROKER_ACK"
+  --> localhost:9203       as NODE_BROKER_ACK [udp] every notification 
+  routing for "NODE_BROKER_PING_0"
+  --> 10.116.0.2:9200      as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_BROKER_PING_1"
+  --> localhost:9200       as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_MESSAGE_LOCAL"
+  --> 10.116.0.2:9200      as NODE_MESSAGE [udp] every notification 
+  routing for "NODE_REPORT_LOCAL"
+  --> localhost:9203       as NODE_REPORT_LOCAL [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+  routing for "NODE_REPORT_LOCAL_FIRST"
+  --> localhost:9203       as NODE_REPORT_LOCAL_FIRST [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+  routing for "REALMCAST"
+  --> 10.116.0.2:9200      as REALMCAST  [udp] every notification 
+  routing for "VIEW_CIRCLE"
+  --> 10.116.0.2:9200      as VIEW_CIRCLE [udp] every notification 
+  routing for "VIEW_POINT"
+  --> 10.116.0.2:9200      as VIEW_POINT [udp] every notification 
+  routing for "VIEW_POLYGON"
+  --> 10.116.0.2:9200      as VIEW_POLYGON [udp] every notification 
+  routing for "VIEW_SEGLIST"
+  --> 10.116.0.2:9200      as VIEW_SEGLIST [udp] every notification 
+  routing for "WATCHCAST"
+  --> 10.116.0.2:9200      as WATCHCAST  [udp] every notification 
+[1;32mWildcard Routes:
+[0m  routing for variables matching "NODE*" from sources matching "*": 
+  --> localhost:9203       as <src_name> [udp]
+[1;32mListening on:
+[0m  <-- localhost:9201      [udp]
+-------------------------------------------------------------------------------
+---------------------- [1;33mROUTING INFORMATION[0m ------------------------------------
+[1;32mStandard Routes:
+[0m  routing for "NODE_BROKER_ACK"
+  --> localhost:9203       as NODE_BROKER_ACK [udp] every notification 
+  routing for "NODE_BROKER_PING_0"
+  --> 10.116.0.2:9200      as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_BROKER_PING_1"
+  --> localhost:9200       as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_MESSAGE_LOCAL"
+  --> 10.116.0.2:9200      as NODE_MESSAGE [udp] every notification 
+  routing for "NODE_REPORT_LOCAL"
+  --> localhost:9203       as NODE_REPORT_LOCAL [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+  routing for "NODE_REPORT_LOCAL_FIRST"
+  --> localhost:9203       as NODE_REPORT_LOCAL_FIRST [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+  routing for "REALMCAST"
+  --> 10.116.0.2:9200      as REALMCAST  [udp] every notification 
+  routing for "REALMCAST_CHANNELS"
+  --> 10.116.0.2:9200      as REALMCAST_CHANNELS [udp] every notification 
+  routing for "VIEW_CIRCLE"
+  --> 10.116.0.2:9200      as VIEW_CIRCLE [udp] every notification 
+  routing for "VIEW_POINT"
+  --> 10.116.0.2:9200      as VIEW_POINT [udp] every notification 
+  routing for "VIEW_POLYGON"
+  --> 10.116.0.2:9200      as VIEW_POLYGON [udp] every notification 
+  routing for "VIEW_SEGLIST"
+  --> 10.116.0.2:9200      as VIEW_SEGLIST [udp] every notification 
+  routing for "WATCHCAST"
+  --> 10.116.0.2:9200      as WATCHCAST  [udp] every notification 
+[1;32mWildcard Routes:
+[0m  routing for variables matching "NODE*" from sources matching "*": 
+  --> localhost:9203       as <src_name> [udp]
+[1;32mListening on:
+[0m  <-- localhost:9201      [udp]
+-------------------------------------------------------------------------------
+---------------------- [1;33mROUTING INFORMATION[0m ------------------------------------
+[1;32mStandard Routes:
+[0m  routing for "APPCAST"
+  --> 10.116.0.2:9200      as APPCAST    [udp] every notification 
+  routing for "NODE_BROKER_ACK"
+  --> localhost:9203       as NODE_BROKER_ACK [udp] every notification 
+  routing for "NODE_BROKER_PING_0"
+  --> 10.116.0.2:9200      as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_BROKER_PING_1"
+  --> localhost:9200       as NODE_BROKER_PING [udp] every notification 
+  routing for "NODE_MESSAGE_LOCAL"
+  --> 10.116.0.2:9200      as NODE_MESSAGE [udp] every notification 
+  routing for "NODE_REPORT_LOCAL"
+  --> localhost:9203       as NODE_REPORT_LOCAL [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+  routing for "NODE_REPORT_LOCAL_FIRST"
+  --> localhost:9203       as NODE_REPORT_LOCAL_FIRST [udp] every notification 
+  --> 10.116.0.2:9200      as NODE_REPORT [udp] every notification 
+  routing for "REALMCAST"
+  --> 10.116.0.2:9200      as REALMCAST  [udp] every notification 
+  routing for "REALMCAST_CHANNELS"
+  --> 10.116.0.2:9200      as REALMCAST_CHANNELS [udp] every notification 
+  routing for "VIEW_CIRCLE"
+  --> 10.116.0.2:9200      as VIEW_CIRCLE [udp] every notification 
+  routing for "VIEW_POINT"
+  --> 10.116.0.2:9200      as VIEW_POINT [udp] every notification 
+  routing for "VIEW_POLYGON"
+  --> 10.116.0.2:9200      as VIEW_POLYGON [udp] every notification 
+  routing for "VIEW_SEGLIST"
+  --> 10.116.0.2:9200      as VIEW_SEGLIST [udp] every notification 
+  routing for "WATCHCAST"
+  --> 10.116.0.2:9200      as WATCHCAST  [udp] every notification 
+[1;32mWildcard Routes:
+[0m  routing for variables matching "NODE*" from sources matching "*": 
+  --> localhost:9203       as <src_name> [udp]
+[1;32mListening on:
+[0m  <-- localhost:9201      [udp]
+-------------------------------------------------------------------------------
++ subs of "uLoadWatch" to "ULOADWATCH_ITER_GAP" via wildcard "*_ITER_GAP:*"
+*
+
+
+PID REPORT: (5)(1.99444/sec)
+ pMarinePID says: Paused Due To Tardy HELM Input: THRUST=0
+Paused Due To Tardy HELM Input: THRUST=0
+*+ subs of "pShare" to "NODE_REPORT" via wildcard "NODE*:*"
+  Added wildcard logging of CONTACTS_RECAP      
+  Added wildcard logging of NODE_MESSAGE_LOCAL  
+  Added wildcard logging of PROC_WATCH_FULL_SUMMARY
+  Added wildcard logging of REALMCAST           
+  Added wildcard logging of REALMCAST_CHANNELS  
+  Added wildcard logging of VIEW_CIRCLE         
+  Added wildcard logging of VIEW_POINT          
+  Added wildcard logging of VIEW_POLYGON        
+  Added wildcard logging of VIEW_SEGLIST        
+  Added wildcard logging of WATCHCAST           
+*
+
+
+PID REPORT: (6)(1.99499/sec)
+Paused Due To Tardy HELM Input: THRUST=0
++ subs of "uLoadWatch" to "UMEMWATCH_ITER_LEN" via wildcard "*_ITER_LEN:*"
+**
+
+
+PID REPORT: (7)(1.99556/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+*copied file to ./LOG_BOB_28_7_2022_____12_02_58/targ_Bob._bhv
+*
+
+
+PID REPORT: (8)(1.99597/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (9)(1.99625/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+*  Added wildcard logging of ALERT_VERBOSE       
+  Added wildcard logging of CONTACTS_LIST       
+  Added wildcard logging of CONTACT_CLOSEST     
+  Added wildcard logging of CONTACT_CLOSEST_RANGE
+  Added wildcard logging of CONTACT_CLOSEST_TIME
+  Added wildcard logging of ISAY_PID            
+  Added wildcard logging of PHOSTINFO_PID       
+  Added wildcard logging of PLOGGER_PID         
+  Added wildcard logging of PMARINEPID_PID      
+  Added wildcard logging of PREALM_PID          
+  Added wildcard logging of PSHARE_PID          
+  Added wildcard logging of ULOADWATCH_PID      
+  Added wildcard logging of UMEMWATCH_PID       
+  Added wildcard logging of UPROCESSWATCH_PID   
+  Added wildcard logging of USIMMARINE_PID      
+*
+
+
+PID REPORT: (10)(1.99651/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (11)(1.99666/sec)
+Paused Due To Tardy HELM Input: THRUST=0
++ subs of "uLoadWatch" to "UMEMWATCH_ITER_GAP" via wildcard "*_ITER_GAP:*"
+**
+
+
+PID REPORT: (12)(1.99686/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (13)(1.997/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+*  Added wildcard logging of PHELMIVP_MEM        
+*
+
+
+PID REPORT: (14)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (15)(1.99727/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (16)(1.99738/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (17)(1.99746/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (18)(1.99752/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (19)(1.9976/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (20)(1.99766/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (21)(1.99699/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (22)(1.99707/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (23)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (24)(1.99722/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (25)(1.99729/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (26)(1.99729/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (27)(1.99735/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (28)(1.99741/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (29)(1.99746/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (30)(1.9975/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (31)(1.99756/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (32)(1.99759/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (33)(1.99763/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (34)(1.99768/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (35)(1.9977/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (36)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (37)(1.99776/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (38)(1.99779/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (39)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (40)(1.99784/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (41)(1.99766/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (42)(1.99768/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (43)(1.9976/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (44)(1.99763/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (45)(1.99766/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (46)(1.99769/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (47)(1.99772/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (48)(1.99775/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (49)(1.99776/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (50)(1.99773/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (51)(1.99776/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (52)(1.99777/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (53)(1.99779/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (54)(1.99781/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (55)(1.99783/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (56)(1.99785/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (57)(1.99787/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (58)(1.99789/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (59)(1.99789/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (60)(1.99791/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (61)(1.99791/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (62)(1.99791/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (63)(1.99792/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (64)(1.99793/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (65)(1.99795/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (66)(1.99797/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (67)(1.99798/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (68)(1.99799/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (69)(1.998/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (70)(1.99799/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (71)(1.99799/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (72)(1.99801/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (73)(1.99801/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (74)(1.99802/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (75)(1.99804/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (76)(1.99793/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (77)(1.99794/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (78)(1.99796/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (79)(1.99797/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (80)(1.99797/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (81)(1.99798/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (82)(1.99799/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (83)(1.99801/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (84)(1.99802/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (85)(1.99803/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (86)(1.9979/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (87)(1.99791/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (88)(1.99793/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (89)(1.99794/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (90)(1.99795/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (91)(1.99796/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (92)(1.99797/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (93)(1.99798/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (94)(1.99795/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (95)(1.99767/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (96)(1.9976/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (97)(1.9976/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (98)(1.99755/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (99)(1.99757/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (100)(1.99757/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (101)(1.99733/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (102)(1.99734/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (103)(1.99736/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (104)(1.99737/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (105)(1.99738/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (106)(1.99739/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (107)(1.99741/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (108)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (109)(1.99743/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (110)(1.99744/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (111)(1.99745/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (112)(1.99746/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (113)(1.99747/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (114)(1.99748/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (115)(1.9975/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (116)(1.99751/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (117)(1.99752/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (118)(1.99753/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (119)(1.99754/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (120)(1.99755/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (121)(1.99756/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (122)(1.99757/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (123)(1.99758/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (124)(1.99751/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (125)(1.99746/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (126)(1.99745/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (127)(1.99744/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (128)(1.99733/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (129)(1.99733/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (130)(1.99734/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (131)(1.99733/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (132)(1.99734/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (133)(1.99734/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (134)(1.99734/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (135)(1.99735/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (136)(1.99736/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (137)(1.99737/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (138)(1.99738/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (139)(1.99739/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (140)(1.99728/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (141)(1.99729/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (142)(1.9973/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (143)(1.99731/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (144)(1.99731/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (145)(1.99732/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (146)(1.99732/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (147)(1.99732/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (148)(1.99733/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (149)(1.99734/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (150)(1.99735/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (151)(1.99733/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (152)(1.99734/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (153)(1.99735/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (154)(1.99736/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (155)(1.99737/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+*
+
+
+PID REPORT: (156)(1.99738/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (157)(1.99738/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (158)(1.99738/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (159)(1.99739/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (160)(1.9974/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (161)(1.99741/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (162)(1.99741/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (163)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (164)(1.99743/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (165)(1.99744/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (166)(1.99745/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (167)(1.99738/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (168)(1.99739/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (169)(1.9974/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (170)(1.99741/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (171)(1.99741/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (172)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (173)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (174)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (175)(1.99743/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (176)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (177)(1.99741/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (178)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (179)(1.99743/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (180)(1.99743/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (181)(1.99744/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (182)(1.99745/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (183)(1.99746/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (184)(1.99746/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (185)(1.99747/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (186)(1.99748/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (187)(1.99749/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (188)(1.9975/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (189)(1.9975/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (190)(1.99751/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (191)(1.99752/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (192)(1.99752/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (193)(1.99753/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (194)(1.99754/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (195)(1.99754/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (196)(1.99755/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (197)(1.99756/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (198)(1.99755/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (199)(1.99755/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (200)(1.99756/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (201)(1.99756/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (202)(1.99757/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (203)(1.99758/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (204)(1.99758/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (205)(1.99759/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (206)(1.9976/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (207)(1.9976/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (208)(1.9976/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (209)(1.99761/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (210)(1.99761/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (211)(1.99762/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (212)(1.99762/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (213)(1.99763/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (214)(1.99763/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (215)(1.99764/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (216)(1.99764/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (217)(1.99764/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (218)(1.99765/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (219)(1.99766/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (220)(1.99766/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (221)(1.99763/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (222)(1.99763/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (223)(1.99764/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (224)(1.99764/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (225)(1.99765/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (226)(1.99765/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (227)(1.99766/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (228)(1.99765/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (229)(1.99766/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (230)(1.99766/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (231)(1.99767/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (232)(1.99767/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (233)(1.99768/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (234)(1.99765/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (235)(1.99756/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (236)(1.99757/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (237)(1.99757/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (238)(1.99758/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (239)(1.99758/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (240)(1.99759/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (241)(1.9976/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (242)(1.9976/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (243)(1.99761/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (244)(1.99761/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (245)(1.99762/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (246)(1.99763/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (247)(1.99763/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (248)(1.99764/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (249)(1.99764/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (250)(1.99765/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (251)(1.99764/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (252)(1.99765/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (253)(1.99765/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (254)(1.99765/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (255)(1.99766/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (256)(1.99766/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (257)(1.99767/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (258)(1.99767/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (259)(1.99768/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (260)(1.99768/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (261)(1.99765/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (262)(1.99766/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (263)(1.99766/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (264)(1.99767/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (265)(1.99767/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (266)(1.99768/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (267)(1.99768/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (268)(1.99769/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (269)(1.99769/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (270)(1.9977/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (271)(1.9977/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (272)(1.99771/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (273)(1.9977/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (274)(1.99771/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (275)(1.99771/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (276)(1.99772/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (277)(1.99772/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (278)(1.99772/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (279)(1.99773/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (280)(1.99773/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (281)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (282)(1.99772/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (283)(1.99773/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (284)(1.99773/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (285)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (286)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (287)(1.99775/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (288)(1.99775/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (289)(1.99776/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (290)(1.99776/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (291)(1.99777/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (292)(1.99777/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (293)(1.99777/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (294)(1.99778/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (295)(1.99778/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (296)(1.99778/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (297)(1.99779/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (298)(1.99779/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (299)(1.99779/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (300)(1.99779/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (301)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (302)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (303)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (304)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (305)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (306)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (307)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (308)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (309)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (310)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (311)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (312)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (313)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (314)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (315)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (316)(1.99777/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (317)(1.99778/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (318)(1.99777/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (319)(1.99778/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (320)(1.99778/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (321)(1.99778/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (322)(1.99778/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (323)(1.99779/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (324)(1.99779/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (325)(1.99779/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (326)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (327)(1.9978/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (328)(1.99781/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (329)(1.99781/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (330)(1.99781/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (331)(1.99782/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (332)(1.99782/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (333)(1.99782/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (334)(1.99783/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (335)(1.99783/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (336)(1.99783/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (337)(1.99783/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (338)(1.99783/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (339)(1.99783/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (340)(1.99778/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (341)(1.99778/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (342)(1.99776/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (343)(1.99776/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (344)(1.99777/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (345)(1.99777/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (346)(1.99777/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (347)(1.99775/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (348)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (349)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (350)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (351)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (352)(1.99775/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (353)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (354)(1.99775/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (355)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (356)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (357)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (358)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (359)(1.99772/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (360)(1.99773/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (361)(1.99773/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (362)(1.99773/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (363)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (364)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (365)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (366)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (367)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (368)(1.99774/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (369)(1.9977/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (370)(1.9977/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (371)(1.9977/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (372)(1.9977/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (373)(1.9977/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (374)(1.99771/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (375)(1.99771/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (376)(1.99771/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (377)(1.99771/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (378)(1.99771/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (379)(1.99772/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (380)(1.99772/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (381)(1.99761/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (382)(1.99762/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (383)(1.99762/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (384)(1.99757/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (385)(1.99757/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (386)(1.99746/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (387)(1.99746/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (388)(1.99747/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (389)(1.99747/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (390)(1.99747/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (391)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (392)(1.99743/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (393)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (394)(1.99743/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (395)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (396)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (397)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (398)(1.99743/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (399)(1.99743/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (400)(1.99743/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (401)(1.99741/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (402)(1.99741/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (403)(1.99741/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (404)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (405)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (406)(1.99741/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (407)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (408)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (409)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (410)(1.99742/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (411)(1.99739/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (412)(1.99739/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (413)(1.99739/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (414)(1.99735/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (415)(1.99731/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (416)(1.99732/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (417)(1.99726/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (418)(1.99726/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (419)(1.99726/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (420)(1.99727/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (421)(1.99726/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (422)(1.99726/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (423)(1.99727/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (424)(1.99727/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (425)(1.99727/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (426)(1.99728/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (427)(1.99728/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (428)(1.99728/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (429)(1.99724/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (430)(1.99724/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (431)(1.99725/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (432)(1.99725/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (433)(1.99725/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (434)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (435)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (436)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (437)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (438)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (439)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (440)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (441)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (442)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (443)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (444)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (445)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (446)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (447)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (448)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (449)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (450)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (451)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (452)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (453)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (454)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (455)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (456)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (457)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (458)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (459)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (460)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (461)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (462)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (463)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (464)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (465)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (466)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (467)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (468)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (469)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (470)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (471)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (472)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (473)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (474)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (475)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (476)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (477)(1.99722/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (478)(1.99722/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (479)(1.99723/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (480)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (481)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (482)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (483)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (484)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (485)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (486)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (487)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (488)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (489)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (490)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+*
+
+
+PID REPORT: (491)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (492)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (493)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (494)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (495)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (496)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (497)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (498)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (499)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (500)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (501)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (502)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (503)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (504)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (505)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (506)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (507)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (508)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (509)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (510)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (511)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (512)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (513)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (514)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (515)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (516)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (517)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (518)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (519)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (520)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (521)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (522)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (523)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (524)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+***
+
+
+PID REPORT: (525)(1.99707/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (526)(1.99707/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (527)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+*
+
+
+PID REPORT: (528)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (529)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (530)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (531)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (532)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (533)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (534)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (535)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (536)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (537)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (538)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (539)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (540)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (541)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (542)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (543)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (544)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (545)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (546)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (547)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (548)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (549)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (550)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (551)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (552)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (553)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (554)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (555)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (556)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (557)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (558)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (559)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (560)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (561)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (562)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (563)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (564)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (565)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (566)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (567)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (568)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (569)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (570)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (571)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (572)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (573)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (574)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (575)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (576)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (577)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (578)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (579)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (580)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (581)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (582)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (583)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (584)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (585)(1.99707/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (586)(1.99707/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (587)(1.99707/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (588)(1.99707/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (589)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (590)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (591)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (592)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (593)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (594)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (595)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (596)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (597)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (598)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (599)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (600)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (601)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (602)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (603)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (604)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (605)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (606)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (607)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (608)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (609)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (610)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (611)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (612)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (613)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (614)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (615)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (616)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (617)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (618)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (619)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (620)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (621)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (622)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (623)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (624)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (625)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (626)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (627)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (628)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (629)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (630)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (631)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (632)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (633)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (634)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (635)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (636)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (637)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (638)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (639)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (640)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (641)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (642)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (643)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (644)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (645)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (646)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (647)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (648)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (649)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (650)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (651)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (652)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (653)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (654)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (655)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (656)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (657)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (658)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (659)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (660)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (661)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (662)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (663)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (664)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (665)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (666)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (667)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (668)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (669)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (670)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (671)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (672)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (673)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (674)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (675)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (676)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (677)(1.99707/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (678)(1.99707/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (679)(1.99707/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (680)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (681)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (682)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (683)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (684)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (685)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (686)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (687)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (688)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (689)(1.99708/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (690)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (691)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (692)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (693)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (694)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (695)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (696)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (697)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (698)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (699)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (700)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (701)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (702)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (703)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (704)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (705)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (706)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (707)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (708)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (709)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (710)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (711)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (712)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (713)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (714)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (715)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (716)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (717)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (718)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (719)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (720)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (721)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (722)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (723)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (724)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (725)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (726)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (727)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (728)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (729)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (730)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (731)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (732)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (733)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (734)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (735)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (736)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (737)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (738)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (739)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (740)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (741)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (742)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (743)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (744)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (745)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (746)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (747)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (748)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (749)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (750)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (751)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (752)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (753)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (754)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (755)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (756)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (757)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (758)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (759)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (760)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (761)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (762)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (763)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (764)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (765)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (766)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (767)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (768)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (769)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (770)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (771)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (772)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (773)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (774)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (775)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (776)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (777)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (778)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (779)(1.99709/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (780)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (781)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (782)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (783)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (784)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (785)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (786)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (787)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (788)(1.99711/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (789)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (790)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (791)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (792)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (793)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (794)(1.99712/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (795)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (796)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (797)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (798)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (799)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (800)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (801)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (802)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (803)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (804)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (805)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (806)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (807)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (808)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (809)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (810)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (811)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (812)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (813)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (814)(1.99713/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (815)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (816)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (817)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (818)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (819)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (820)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+*
+
+
+PID REPORT: (821)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (822)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (823)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (824)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (825)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (826)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (827)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (828)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (829)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (830)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (831)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (832)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (833)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (834)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (835)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (836)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (837)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (838)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (839)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (840)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (841)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (842)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (843)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (844)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (845)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (846)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (847)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (848)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (849)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (850)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (851)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (852)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (853)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (854)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (855)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (856)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (857)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (858)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (859)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (860)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (861)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (862)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (863)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (864)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (865)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (866)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (867)(1.99714/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (868)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (869)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (870)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (871)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (872)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (873)(1.99715/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (874)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (875)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (876)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (877)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (878)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (879)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (880)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (881)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (882)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (883)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (884)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (885)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (886)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (887)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (888)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (889)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (890)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (891)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (892)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (893)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (894)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (895)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (896)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (897)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (898)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (899)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (900)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (901)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (902)(1.99718/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (903)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (904)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (905)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (906)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (907)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (908)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (909)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (910)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (911)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (912)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (913)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (914)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (915)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (916)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (917)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (918)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (919)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (920)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (921)(1.9972/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (922)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (923)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (924)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (925)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (926)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (927)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (928)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (929)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (930)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (931)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (932)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (933)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (934)(1.99721/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (935)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (936)(1.99719/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (937)(1.99717/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (938)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (939)(1.99716/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (940)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (941)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (942)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (943)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (944)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (945)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (946)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (947)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (948)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (949)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (950)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (951)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (952)(1.9971/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (953)(1.99707/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (954)(1.99706/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (955)(1.99703/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (956)(1.99703/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (957)(1.99703/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (958)(1.99704/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (959)(1.99704/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (960)(1.99704/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (961)(1.99704/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (962)(1.99704/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (963)(1.99704/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (964)(1.99704/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (965)(1.99704/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (966)(1.99705/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (967)(1.99705/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (968)(1.99705/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (969)(1.99705/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (970)(1.99705/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (971)(1.99705/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (972)(1.99702/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (973)(1.99703/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (974)(1.99703/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (975)(1.99703/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (976)(1.99703/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (977)(1.99703/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (978)(1.99703/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (979)(1.99703/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (980)(1.99703/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (981)(1.99703/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (982)(1.99703/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (983)(1.99704/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+**
+
+
+PID REPORT: (984)(1.99704/sec)
+Paused Due To Tardy HELM Input: THRUST=0
+*Exception in DoReading() : remote side closed....
+1659024671.8202 [33m139999441630976- [0m                 Exception in DoReading() : remote side closed....
+Exception in DoReading() : remote side closed....
+Exception in DoReading() : remote side closed....
+Exception in DoReading() : remote side closed....
+1659024671.8210 [33m139762446882560- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 1659024671.8214 [33m140174473975552- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 1659024671.8217 [33m139640016701184- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 1659024671.8220 [33m139649876035328- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 Exception in DoReading() : remote side closed....
+Exception in DoReading() : remote side closed....
+Exception in DoReading() : remote side closed....
+Exception in DoReading() : remote side closed....
+Exception in DoReading() : remote side closed....
+Exception in DoReading() : remote side closed....
+dynamically creating outgoing route : NODE_REPORT->NODE_REPORT on localhost:9203
+Exception in DoReading() : remote side closed....
+1659024671.8316 [33m139685741926144- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 Exception in DoReading() : remote side closed....
+1659024671.8352 [33m140269028628224- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 1659024671.8353 [33m140262483420928- [0m                          disabling nagle
+[0m1659024671.8329
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001  [33m140641625110272- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 1659024671.8331 [33m139820610291456- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 1659024671.8336 [33m140262147876608- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 
+  Handshaking as pHelmIvP               Exception in hand shaking : remote side closed....--------------------------------------------------
+
+
+  Handshaking as iSay                   Exception in hand shaking : remote side closed....--------------------------------------------------
+
+
+  Handshaking as pLogger                Exception in hand shaking : remote side closed....--------------------------------------------------
+
+
+  Handshaking as uSimMarine             Exception in hand shaking : remote side closed....--------------------------------------------------
+
+1659024671.8369 [33m140592197519104- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 1659024671.8372 [33m140036480448256- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 Exception in DoReading() : remote side closed....
+1659024671.8376 [33m140461648967424- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001   contacting a MOOS server localhost:9001 -  try 00002   contacting a MOOS server localhost:9001 -  try 00002   contacting a MOOS server localhost:9001 -  try 00002   contacting a MOOS server localhost:9001 -  try 00002   contacting a MOOS server localhost:9001 -  try 00002   contacting a MOOS server localhost:9001 -  try 00002   contacting a MOOS server localhost:9001 -  try 00002   contacting a MOOS server localhost:9001 -  try 00002   contacting a MOOS server localhost:9001 -  try 00002   contacting a MOOS server localhost:9001 -  try 00002   contacting a MOOS server localhost:9001 -  try 00003   contacting a MOOS server localhost:9001 -  try 00003   contacting a MOOS server localhost:9001 -  try 00003 

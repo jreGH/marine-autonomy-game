@@ -1,0 +1,13 @@
+{
+    "makefile.extensionOutputFolder": "./.vscode",
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/tuna/moos-bwsi/behaviors/pChallenge",
+            "binaryPath": "/home/tuna/moos-bwsi/behaviors/pChallenge/pChallenge",
+            "binaryArgs": []
+        }
+    ],
+    "files.associations": {
+        "cmath": "cpp"
+    }
+}

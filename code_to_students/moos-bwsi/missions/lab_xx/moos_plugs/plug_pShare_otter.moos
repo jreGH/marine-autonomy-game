@@ -1,0 +1,12 @@
+//--------------------------------------------
+// pShare config block
+
+ProcessConfig = pShare
+{
+  AppTick = 2
+  CommsTick = 2
+
+  output = src_name = NODE*, route = localhost:9001
+  input = route = localhost:$(AUV_PORT)
+}
+

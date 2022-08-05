@@ -1,0 +1,170 @@
+//--------    FILE: jellyfish.bhv   -------------
+
+initialize   DEPLOY = false
+initialize   DEPLOY1 = false
+initialize   DEPLOY2 = false
+initialize   DEPLOY3 = false
+
+initialize   SPD = true
+initialize   RETURN = false
+initialize   LOITER_POS = pos_0
+
+
+//---------------------------------------------
+// Behavior logic
+
+Set MODE=Active{
+  DEPLOY=true
+} Inactive
+
+Set MODE=BEHAVIOR_ONE{
+  MODE=Active
+  DEPLOY1 = true
+  DEPLOY2 = false
+  DEPLOY3 = false
+  RETURN=false
+} 
+
+Set MODE=BEHAVIOR_TWO{
+  MODE=Active
+  DEPLOY1 = false
+  DEPLOY2 = true
+  DEPLOY3 = false
+  RETURN=false
+} 
+
+Set MODE=BEHAVIOR_THREE{
+  MODE=Active
+  DEPLOY1 = false
+  DEPLOY2 = false
+  DEPLOY3 = true
+  RETURN=false
+} 
+
+Set MODE=RETURNING{
+  MODE=Active
+  RETURN=true
+}
+
+ Behavior = BHV_StationKeep
+ {
+   // General Behavior Parameters
+   // ---------------------------
+   name         = station-keep          // example
+   pwt          = 100                   // default
+   condition    = MODE==RETURNING        // example
+  endflag    = RETURN = false
+  endflag    = DEPLOY = false
+  endflag    = MISSION = complete
+  duration = 10
+
+   // Parameters specific to this behavior
+   // ------------------------------------
+      center_activate = true   // default
+   hibernation_radius = -1      // default
+         inner_radius = 4       // default
+         outer_radius = 15      // default
+         outer_speed  = 1.2     // default
+       transit_speed  = 2.5     // default
+           //station_pt = 0,0     // default
+           swing_time = 0       // default
+
+         visual_hints = vertex_size  = 1           // default
+         visual_hints = edge_color   = light_blue  // default
+         visual_hints = edge_size    = 1           // default
+         visual_hints = label_color  = white       // default
+         visual_hints = vertex_color = red         // default
+ }
+
+//----------------------------------------------
+Behavior=BHV_ConstantSpeed
+{
+  name       = const_speed
+  pwt        = 200
+  condition  = SPD=true
+  condition  = DEPLOY = true
+  perpetual  = true
+  updates    = SPEED_UPDATE
+  endflag    = SPD = false
+
+     speed = 0.5
+		 duration = 10
+		 duration_reset = CONST_SPD_RESET=true
+	
+}
+
+Behavior=BHV_Waypoint
+{
+	name      = loiter_0
+	pwt       = 100
+	condition = MODE == BEHAVIOR_ONE
+	//updates    = WPT_UPDATE
+	perpetual  = true
+	lead = 8
+	lead_damper = 1
+	lead_to_start = true
+	speed = 12   // meters per second
+	capture_line = true
+	capture_radius = 5.0
+	slip_radius = 15.0
+	efficiency_measure = all
+	points = format=radial, label=loiter_0, x=-1.0625, y=-104.6875, radius=5, pts=6, snap=1
+	order = normal
+	repeat  = 100000 
+	visual_hints = nextpt_color=yellow
+	visual_hints = nextpt_vertex_size=8
+	visual_hints = nextpt_lcolor=gray70
+	visual_hints = vertex_color=dodger_blue, edge_color=white
+	visual_hints = vertex_size=5, edge_size=1
+}
+
+Behavior=BHV_Waypoint
+{
+	name      = loiter_1
+	pwt       = 100
+	condition = MODE == BEHAVIOR_TWO
+	//updates    = WPT_UPDATE
+	perpetual  = true
+	lead = 8
+	lead_damper = 1
+	lead_to_start = true
+	speed = 12   // meters per second
+	capture_line = true
+	capture_radius = 5.0
+	slip_radius = 15.0
+	efficiency_measure = all
+	points = format=radial, label=loiter_1, x=-63.5625, y=-229.6875, radius=5, pts=6, snap=1
+	order = normal
+	repeat  = 100000 
+	visual_hints = nextpt_color=yellow
+	visual_hints = nextpt_vertex_size=8
+	visual_hints = nextpt_lcolor=gray70
+	visual_hints = vertex_color=dodger_blue, edge_color=white
+	visual_hints = vertex_size=5, edge_size=1
+}
+
+Behavior=BHV_Waypoint
+{
+	name      = loiter_2
+	pwt       = 100
+	condition = MODE == BEHAVIOR_THREE
+	//updates    = WPT_UPDATE
+	perpetual  = true
+	lead = 8
+	lead_damper = 1
+	lead_to_start = true
+	speed = 12   // meters per second
+	capture_line = true
+	capture_radius = 5.0
+	slip_radius = 15.0
+	efficiency_measure = all
+	points = format=radial, label=loiter_2, x=-32.3125, y=-198.4375, radius=5, pts=6, snap=1
+	order = normal
+	repeat  = 100000 
+	visual_hints = nextpt_color=yellow
+	visual_hints = nextpt_vertex_size=8
+	visual_hints = nextpt_lcolor=gray70
+	visual_hints = vertex_color=dodger_blue, edge_color=white
+	visual_hints = vertex_size=5, edge_size=1
+}
+

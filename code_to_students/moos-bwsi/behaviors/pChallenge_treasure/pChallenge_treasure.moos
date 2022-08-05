@@ -1,0 +1,9 @@
+//------------------------------------------------
+// pChallenge_treasure config block
+
+ProcessConfig = pChallenge_treasure
+{
+   AppTick   = 4
+   CommsTick = 4
+}
+

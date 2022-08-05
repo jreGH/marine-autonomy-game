@@ -1,0 +1,696 @@
+*************************************
+*  This is Antler, head of MOOS...  *
+*  P. Newman 2008                   *
+*************************************
+
+
+|****** Launch ******|
+
+Unless directed otherwise using system path to locate binaries 
+   [000] Process: MOOSDB          ~ MOOSDB          launched successfully
+------------------- MOOSDB V10 -------------------
+  Hosting  community                [1;32m"Bob"
+[0m  Name look up is                   [31moff
+[0m  Asynchronous support is           [1;32mon
+[0m  Connect to this server on port    [32m9001[0m
+--------------------------------------------------
+[1;33mnetwork performance data published on localhost:9020
+listen with "nc -u -lk 9020"
+[0m[0m1658956772.4509   disabling nagle
+[0mError binding to listen socket - Is there another CommServer Running?
+This Server Is Quitting
+   [001] Process: uProcessWatch   ~ uProcessWatch   launched successfully
+[32muProcessWatch launching as uProcessWatch
+[0m
+1658956772.4949 [33m140234020869888- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001    [002] Process: pShare          ~ pShare          launched successfully
+1658956772.5431 [33m140004623283968- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001    [003] Process: uSimMarine      ~ uSimMarine      launched successfully
+[32muSimMarine launching as uSimMarine
+[0m
+1658956772.5940 [33m139970736011008- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 
+  Handshaking as uProcessWatch          [1;31m[fail]
+    "A client of this name ("uProcessWatch") already exists"
+[0m--------------------------------------------------
+
+   [004] Process: pLogger         ~ pLogger         launched successfully
+1658956772.6513 [33m140676704683776- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001    [005] Process: pNodeReporter   ~ pNodeReporter   launched successfully
+[32mpNodeReporter launching as pNodeReporter
+[0m
+1658956772.6976 [33m139640774182656- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 
+  Handshaking as pShare                 [1;31m[fail]
+    "A client of this name ("pShare") already exists"
+[0m--------------------------------------------------
+
+   [006] Process: pMarinePID      ~ pMarinePID      launched successfully
+[32mpMarinePID launching as pMarinePID
+[0m
+1658956772.7473 [33m139650881328896- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001    [007] Process: pHelmIvP        ~ pHelmIvP        launched successfully
+1658956772.7950 [33m140431186712320- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 
+  Handshaking as uSimMarine             [1;31m[fail]
+    "A client of this name ("uSimMarine") already exists"
+[0m--------------------------------------------------
+
+   [008] Process: pHostInfo       ~ pHostInfo       launched successfully
+[32mpHostInfo launching as pHostInfo
+[0m
+1658956772.8477 [33m139878534297344- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001    [009] Process: uFldNodeBroker  ~ uFldNodeBroker  launched successfully
+[32muFldNodeBroker launching as: uFldNodeBroker
+[0m
+
+  Handshaking as pLogger                [1;31m[fail]
+    "A client of this name ("pLogger") already exists"
+[0m--------------------------------------------------
+
+1658956772.8983 [33m140709638174464- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001    [010] Process: uLoadWatch      ~ uLoadWatch      launched successfully
+[32muLoadWatch launching as uLoadWatch
+[0m
+1658956772.9518 [33m139716185663232- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001    [011] Process: uMemWatch       ~ uMemWatch       launched successfully
+[32muMemWatch launching as uMemWatch
+[0m
+
+  Handshaking as pNodeReporter          [1;31m[fail]
+    "A client of this name ("pNodeReporter") already exists"
+[0m--------------------------------------------------
+
+1658956773.0104 [33m140135627052800- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001    [012] Process: iSay            ~ iSay            launched successfully
+[32miSay launching as iSay
+[0m
+1658956773.0597 [33m140581510567680- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001    [013] Process: pContactMgrV20  ~ pContactMgrV20  launched successfully
+[32mpBasicContactMgrV20 launching as pContactMgrV20
+[0m
+
+  Handshaking as pMarinePID             [1;31m[fail]
+    "A client of this name ("pMarinePID") already exists"
+[0m--------------------------------------------------
+
+1658956773.1004 [33m139626798532352- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001    [014] Process: pRealm          ~ pRealm          launched successfully
+[32mpRealm launching as pRealm
+[0m
+1658956773.1502 [33m139935587751680- [0m                          disabling nagle
+[0m
+-------------- moos connect ----------------------
+  contacting a MOOS server localhost:9001 -  try 00001 
+  Handshaking as pHelmIvP               [1;31m[fail]
+    "A client of this name ("pHelmIvP") already exists"
+[0m--------------------------------------------------
+
+
+  Handshaking as pHostInfo              [1;31m[fail]
+    "A client of this name ("pHostInfo") already exists"
+[0m--------------------------------------------------
+
+
+  Handshaking as uFldNodeBroker         [1;31m[fail]
+    "A client of this name ("uFldNodeBroker") already exists"
+[0m--------------------------------------------------
+
+
+  Handshaking as uLoadWatch             [1;31m[fail]
+    "A client of this name ("uLoadWatch") already exists"
+[0m--------------------------------------------------
+
+
+  Handshaking as uMemWatch              [1;31m[fail]
+    "A client of this name ("uMemWatch") already exists"
+[0m--------------------------------------------------
+
+
+  Handshaking as iSay                   [1;31m[fail]
+    "A client of this name ("iSay") already exists"
+[0m--------------------------------------------------
+
+
+  Handshaking as pContactMgrV20         [1;31m[fail]
+    "A client of this name ("pContactMgrV20") already exists"
+[0m--------------------------------------------------
+
+
+  Handshaking as pRealm                 [1;31m[fail]
+    "A client of this name ("pRealm") already exists"
+[0m--------------------------------------------------
+
+   [014] Process: MOOSDB          has quit
+***************************************************
+*  uProcessWatch starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  SUMMARY_WAIT
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  NOWATCH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  NOWATCH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  NOWATCH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  WATCH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  WATCH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  WATCH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  WATCH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  WATCH_ALL
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  ALLOW_RETRACTIONS
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+uProcessWatch is Running:
+ |-Baseline AppTick   @ 1.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 1 Hz
+
+
+[1;31mOnStartUp::exception ProcessIOConfigurationString "src_name" is a required field[0m
+pShare is Running:
+ |-Baseline AppTick   @ 40.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ |--Iterate Mode 2 :
+   -Regular iterate at 40 Hz. 
+   |-Dynamic message delivery at an unlimited rate
+
+
+***************************************************
+*  uSimMarine starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  PREFIX
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  START_POS
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+uSimMarine started 
+uSimMarine is Running:
+ |-Baseline AppTick   @ 10.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 10 Hz
+
+
+pLogger is Running:
+ |-Baseline AppTick   @ 1.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 1 Hz
+
+
+***************************************************
+*  pNodeReporter starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  GROUP
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  VESSEL_TYPE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+pNodeReporter is Running:
+ |-Baseline AppTick   @ 2.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 2 Hz
+
+
+***************************************************
+*  pMarinePID starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  SPEED_FACTOR
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  MAXELEVATOR
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  MAXPITCH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  MAXTHRUST
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  MAXRUDDER
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  Z_TO_PITCH_PID_INTEGRAL_LIMIT
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  Z_TO_PITCH_PID_KI
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  Z_TO_PITCH_PID_KD
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  Z_TO_PITCH_PID_KP
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  PITCH_PID_INTEGRAL_LIMIT
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  PITCH_PID_KI
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  PITCH_PID_KD
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  PITCH_PID_KP
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  SPEED_PID_INTEGRAL_LIMIT
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  SPEED_PID_KI
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  SPEED_PID_KD
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  SPEED_PID_KP
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  YAW_PID_INTEGRAL_LIMIT
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  YAW_PID_KI
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  YAW_PID_KD
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  YAW_PID_KP
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  ACTIVE_START
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DEPTH_CONTROL
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  VERBOSE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+pMarinePID starting....
+Depth Control is ON
+pMarinePID is Running:
+ |-Baseline AppTick   @ 2.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 2 Hz
+
+
+***************************************************
+*  pHelmIvP starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  HOLD_ON_APPS
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DOMAIN
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DOMAIN
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DOMAIN
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  VERBOSE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BEHAVIORS
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+In Helm OnStartUp()
+Number of behavior files: 1
+Processing Behavior File: targ_Bob.bhv  START
+    Successfully found file: targ_Bob.bhv
+Processing Behavior File: targ_Bob.bhv  END
+[32mLoading behavior dynamic libraries specified in IVP_BEHAVIOR_DIRS...
+[0m  Environment variable IVP_BEHAVIOR_DIRS not set.
+Loading behavior dynamic libraries specified in IVP_BEHAVIOR_DIRS skipped.
+BehaviorSpec: Kind=[BHV_Loiter] (on line 34)
+  # of lines: 16
+[0]: [name      = loiter]
+[1]: [pwt       = 100]
+[2]: [condition = MODE==LOITERING]
+[3]: [updates   = UP_LOITER]
+[4]: [runflag   = VEHICLE_UNDERWAY = TRUE]
+[5]: [endflag   = VEHICLE_UNDERWAY = FALSE]
+[6]: [ipf_type = zaic_spd]
+[7]: [post_suffix = A]
+[8]: [speed = 1.4]
+[9]: [clockwise = false]
+[10]: [radius = 8.0]
+[11]: [nm_radius = 15.0]
+[12]: [polygon = radial:: x=-250.00,y=250.00, radius=10, pts=8, snap=1, label=Bob_LOITER]
+[13]: [visual_hints = nextpt_color=white, nextpt_lcolor=khaki]
+[14]: [visual_hints = edge_color=orange, vertex_color=white]
+[15]: [visual_hints = edge_size=1, vertex_size=2]
+BehaviorSpec: Kind=[BHV_CutRange] (on line 57)
+  # of lines: 20
+[0]: [name         = cutrange_]
+[1]: [pwt          = 5000]
+[2]: [condition    = MODE==NEVER]
+[3]: [condition    = CLOSE = true]
+[4]: [updates      = CONTACT_INFO]
+[5]: [spawnflag   = LOITER=false]
+[6]: [endflag      = LOITER=true]
+[7]: [perpetual    = false]
+[8]: [bearing_lines = white:0, green:0.65, yellow:0.8, red:1.0]
+[9]: [contact = to-be-set]
+[10]: [decay = 15,30]
+[11]: [extrapolate = true]
+[12]: [on_no_contact_ok = true]
+[13]: [time_on_leg = 60]
+[14]: [giveup_dist = 200]
+[15]: [patience = 45]
+[16]: [pwt_inner_dist = 0]
+[17]: [pwt_outer_dist = 100]
+[18]: [pursueflag = PURSUIT=true]
+[19]: [giveupflag = PURSUIT=false]
+BehaviorSpec: Kind=[BHV_MaxSpeed] (on line 94)
+  # of lines: 6
+[0]: [name      = max_spd]
+[1]: [pwt       = 500]
+[2]: [updates   = MAX_SPEED_UPDATES]
+[3]: [condition = MODE==ACTIVE]
+[4]: [max_speed = 2.4]
+[5]: [tolerance = 0.2]
+BehaviorSpec: Kind=[BHV_ConstantSpeed] (on line 105)
+  # of lines: 10
+[0]: [name         = const_spd_transit]
+[1]: [pwt          = 100]
+[2]: [condition    = MODE==ACTIVE]
+[3]: [updates      = CONST_SPD_UPDATES]
+[4]: [basewidth = 0.2]
+[5]: [duration = 10000]
+[6]: [speed = 2.0]
+[7]: [speed_mismatch_var = SPEED_DIFF]
+[8]: [peakwidth = 0]
+[9]: [summitdelta = 0]
+BehaviorSpec: Kind=[BHV_ConstantDepth] (on line 124)
+  # of lines: 10
+[0]: [name         = const_depth]
+[1]: [pwt          = 100]
+[2]: [condition    = MODE==ACTIVE]
+[3]: [updates      = CONST_DEPTH_UPDATES]
+[4]: [basewidth = 0.2]
+[5]: [duration = 100000]
+[6]: [depth = 0.0]
+[7]: [depth_mismatch_var = DEPTH_DIFF]
+[8]: [peakwidth = 0]
+[9]: [summitdelta = 0]
+BehaviorSpec: Kind=[BHV_Waypoint] (on line 144)
+  # of lines: 12
+[0]: [name      = waypt_return]
+[1]: [pwt       = 100]
+[2]: [updates   = RETURN_UPDATES]
+[3]: [condition = MODE==RETURNING]
+[4]: [endflag   = STATION_KEEP = true]
+[5]: [endflag   = CLOSE = false]
+[6]: [speed = 1.3]
+[7]: [radius = 3.0]
+[8]: [nm_radius = 15.0]
+[9]: [point =  0,0]
+[10]: [repeat = 10]
+[11]: [lead = 8]
+BehaviorSpec: Kind=[BHV_StationKeep] (on line 162)
+  # of lines: 12
+[0]: [name         = station-keep]
+[1]: [pwt          = 100]
+[2]: [condition    = MODE==STATION-KEEPING]
+[3]: [inactiveflag = STATIONING = false]
+[4]: [activeflag   = STATIONING = true]
+[5]: [center_activate = true]
+[6]: [inner_radius = 5]
+[7]: [outer_radius = 10]
+[8]: [outer_speed = 1.0]
+[9]: [transit_speed = 1.3]
+[10]: [swing_time = 7]
+[11]: [visual_hints = vertex_size=0, edge_color=gray50]
+BehaviorSpec: Kind=[BHV_ConstantDepth] (on line 181)
+  # of lines: 7
+[0]: [name = survey_depth]
+[1]: [pwt = 100]
+[2]: [condition = MODE==LOITERING]
+[3]: [updates = DEPTH_UPDATES]
+[4]: [depth = 100]
+[5]: [depth_mismatch_var = DEPTH_DIFF]
+[6]: [duration = no-time-limit]
+BehaviorSet: Total # of specs: 8
+new_poly size: 8
+Checking Param Collective: loiter
+Checking Param Collective Done: Msg:[]
+loiter
+spec_build: 0  result:1
+Checking Param Collective: cutrange_
+Checking Param Collective Done: Msg:[]
+cutrange_
+spec_build: 1  result:1
+Checking Param Collective: max_spd
+Checking Param Collective Done: Msg:[]
+max_spd
+spec_build: 2  result:1
+Checking Param Collective: const_spd_transit
+Checking Param Collective Done: Msg:[]
+const_spd_transit
+spec_build: 3  result:1
+Checking Param Collective: const_depth
+Checking Param Collective Done: Msg:[]
+const_depth
+spec_build: 4  result:1
+Checking Param Collective: waypt_return
+Checking Param Collective Done: Msg:[]
+waypt_return
+spec_build: 5  result:1
+Checking Param Collective: station-keep
+Checking Param Collective Done: Msg:[]
+station-keep
+spec_build: 6  result:1
+Checking Param Collective: survey_depth
+Checking Param Collective Done: Msg:[]
+survey_depth
+spec_build: 7  result:1
+BehaviorSet: all_builds_ok: true
+total specs::7
+Total Behaviors now: 1
+Total Behaviors now: 2
+Total Behaviors now: 3
+Total Behaviors now: 4
+Total Behaviors now: 5
+Total Behaviors now: 6
+Total Behaviors now: 7
+mode description: MODE#---,ACTIVE#---,INACTIVE#ACTIVE,STATION-KEEPING#ACTIVE,RETURNING#ACTIVE,LOITERING#ACTIVE,CHASING
+pHelmIvP is Running:
+ |-Baseline AppTick   @ 4.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 4 Hz
+
+
+***************************************************
+*  pHostInfo starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DEFAULT_HOSTIP_FORCE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+pHostInfo is Running:
+ |-Baseline AppTick   @ 1.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 1 Hz
+
+
+***************************************************
+*  uFldNodeBroker starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BRIDGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BRIDGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BRIDGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BRIDGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BRIDGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BRIDGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BRIDGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  TRY_SHORE_HOST
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  TRY_SHORE_HOST
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+uFldNodeBroker is Running:
+ |-Baseline AppTick   @ 1.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 1 Hz
+
+
+***************************************************
+*  uLoadWatch starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  BREACH_TRIGGER
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  THRESH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  THRESH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  THRESH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  THRESH
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+uLoadWatch is Running:
+ |-Baseline AppTick   @ 1.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 1 Hz
+
+
+***************************************************
+*  uMemWatch starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  WATCH_ONLY
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  ABSOLUTE_TIME_GAP
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+uMemWatch is Running:
+ |-Baseline AppTick   @ 0.4 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 0.4 Hz
+
+
+***************************************************
+*  iSay starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  OS_MODE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  MIN_UTTER_INTERVAL
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  INTERVAL_POLICY
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DEFAULT_RATE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DEFAULT_VOICE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+iSay is Running:
+ |-Baseline AppTick   @ 4.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 4 Hz
+
+
+***************************************************
+*  pContactMgrV20 starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  CPA_RANGE_COLOR
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  ALERT_RANGE_COLOR
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DISPLAY_RADII
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  POST_CLOSEST_RANGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DISPLAY_RADII_ID
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DISPLAY_RADII
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  CONTACT_MAX_AGE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  ALERT_VERBOSE
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  DECAY
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+pContactMgrV20 is Running:
+ |-Baseline AppTick   @ 2.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 2 Hz
+
+
+***************************************************
+*  pRealm starting ...
+***************************************************
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  RELCAST_INTERVAL
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  SUMMARY_INTERVAL
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  COMMSTICK
++++++++++++++++++++++++++++++++++++++++++++++++++
+param =  APPTICK
+pRealm is Running:
+ |-Baseline AppTick   @ 2.0 Hz
+ |--Comms is Full Duplex and Asynchronous
+ -Iterate Mode 0 :
+   |-Regular iterate and message delivery at 2 Hz
+
+
+
+
+|***** Shutdown *****|
+
+
+   Signalling pRealm          [OK]
+   Signalling pContactMgrV20  [OK]
+   Signalling iSay            [OK]
+   Signalling uMemWatch       [OK]
+   Signalling uLoadWatch      [OK]
+   Signalling uFldNodeBroker  [OK]
+   Signalling pHostInfo       [OK]
+   Signalling pHelmIvP        [OK]
+   Signalling pMarinePID      [OK]
+   Signalling pNodeReporter   [OK]
+   Signalling pLogger         [OK]
+   Signalling uSimMarine      [OK]
+   Signalling pShare          [OK]
+   Signalling uProcessWatch   [OK]
+
+   All spawned processes shutdown.
+
+   That was the MOOS 
+

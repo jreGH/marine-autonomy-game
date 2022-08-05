@@ -1,0 +1,13 @@
+//------------------------------------------
+// pNodeReporter config block
+
+ProcessConfig = pNodeReporter
+{
+  AppTick    = 2
+  CommsTick	 = 2
+
+  platform_type   = kayak
+  platform_color  = yellow
+  platform_length = 4
+}
+
