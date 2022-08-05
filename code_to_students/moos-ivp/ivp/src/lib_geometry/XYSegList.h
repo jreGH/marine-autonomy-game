@@ -30,20 +30,25 @@
 #include <string>
 #include "XYObject.h"
 #include "XYPoint.h"
+#include "EdgeTagSet.h"
 #include <iostream>
 
 class XYSegList : public XYObject {
 public:
-  XYSegList() {}
+  XYSegList() {m_transparency=0.1;}
   virtual ~XYSegList() {}
 
   // XYSegList create and edit functions
   void   add_vertex(const XYPoint&, std::string s="");
   void   add_vertex(double, double, double=0, std::string s="");       
+  void   mod_vertex(unsigned int, double, double, double=0, std::string s="");       
+  
   void   alter_vertex(double, double, double=0, std::string s="");
   void   delete_vertex(double, double);
   void   delete_vertex(unsigned int);
   void   insert_vertex(double, double, double=0, std::string s="");
+  void   set_edge_tags(EdgeTagSet v) {m_edge_tags=v;}
+  void   pop_last_vertex();
   void   clear();
 
 public:
@@ -57,6 +62,7 @@ public:
   void   reverse();
   void   new_center(double x, double y);
   void   new_centroid(double x, double y);
+  bool   is_clockwise() const;
   bool   valid() const;
 
 public:
@@ -68,6 +74,10 @@ public:
   std::string get_vprop(unsigned int) const;
   double get_center_x() const;
   double get_center_y() const;
+
+  XYPoint get_center_pt() const;
+  XYPoint get_centroid_pt() const;
+
   double get_centroid_x() const;
   double get_centroid_y() const;
   double get_min_x() const;
@@ -80,16 +90,20 @@ public:
   double dist_to_ctr(double x, double y) const;
   double max_dist_to_ctr() const;
   bool   segs_cross(bool loop=true) const;
-  double length();
+  double length() const;
 
   std::string get_spec(unsigned int vertex_prec=1) const;
   std::string get_spec(std::string param) const;
   std::string get_spec(unsigned int vertex_prec, std::string param) const;
   std::string get_spec_pts(unsigned int vertex_prec=1) const;
+  std::string get_spec_pts_label(unsigned int vertex_prec=1) const;
+  std::string get_spec_inactive() const;
 
   unsigned int closest_vertex(double, double) const; 
   unsigned int closest_segment(double, double, bool implseg=true) const;
 
+  EdgeTagSet get_edge_tags() const {return(m_edge_tags);}
+  
 protected:
   void   grow_pt_by_pct(double, double, double, double&, double&);
   void   grow_pt_by_amt(double, double, double, double&, double&);
@@ -101,12 +115,10 @@ protected:
   std::vector<double> m_vz;
   std::vector<std::string> m_vprop;
 
+  EdgeTagSet m_edge_tags;
+  
   double   m_transparency;
 
 };
 
 #endif
-
-
-
-

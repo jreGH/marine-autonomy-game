@@ -69,6 +69,8 @@ void showHelpAndExit()
   blk("      Display MOOS publications and subscriptions.        ");
   mag("  --version,-v                                            ");
   blk("      Display release version of uFldNodeBroker.          ");
+  mag("  --web,-w                                                ");
+  blk("      Open browser to: https://oceanai.mit.edu/ivpman/apps/uFldNodeBroker ");
   blk("                                                          ");
   blk("Note: If argv[2] does not otherwise match a known option, ");
   blk("      then it will be interpreted as a run alias. This is ");
@@ -82,7 +84,6 @@ void showHelpAndExit()
 
 void showExampleConfigAndExit()
 {
-  blk("                                                                ");
   blu("=============================================================== ");
   blu("uFldNodeBroker Example MOOS Configuration                       ");
   blu("=============================================================== ");
@@ -92,17 +93,22 @@ void showExampleConfigAndExit()
   blk("  AppTick   = 4                                                 ");
   blk("  CommsTick = 4                                                 ");
   blk("                                                                ");
-  blk("  KEYWORD        = lemon                                        ");
+  //  blk("  KEYWORD        = lemon                                        ");
+  //  blk("                                                                ");
+  blk("  auto_bridge_realmcast = true  (default)                       ");
+  blk("  auto_bridge_appcast   = true  (default)                       ");
   blk("                                                                ");
-  blk("  TRY_SHORE_HOST = pshare_route=localhost:9200                  ");
-  blk("  TRY_SHORE_HOST = pshare_route=192.168.0.122:9301              ");
-  blk("  TRY_SHORE_HOST = pshare_route=multicast_8                     ");
+  blk("  try_shore_host = pshare_route=localhost:9200                  ");
+  blk("  try_shore_host = pshare_route=192.168.0.122:9301              ");
+  blk("  try_shore_host = pshare_route=multicast_8                     ");
   blk("                                                                ");
-  blk("  BRIDGE = src=VIEW_POLYGON                                     ");
-  blk("  BRIDGE = src=VIEW_POINT                                       ");
-  blk("  BRIDGE = src=VIEW_SEGLIST                                     ");
+  blk("  bridge = src=VIEW_POLYGON                                     ");
+  blk("  bridge = src=VIEW_POINT                                       ");
+  blk("  bridge = src=VIEW_SEGLIST                                     ");
   blk("                                                                ");
-  blk("  BRIDGE = src=NODE_REPORT_LOCAL, alias=NODE_REPORT             ");
+  blk("  bridge = src=NODE_REPORT_LOCAL, alias=NODE_REPORT             ");
+  blk("                                                                ");
+  blk("  app_logging = true  // {true or file} By default disabled     ");
   blk("}                                                               ");
   blk("                                                                ");
   exit(0);

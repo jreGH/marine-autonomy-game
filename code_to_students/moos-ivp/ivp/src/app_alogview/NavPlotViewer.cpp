@@ -40,7 +40,8 @@ NavPlotViewer::NavPlotViewer(int x, int y, int w, int h, const char *l)
   : MarineViewer(x,y,w,h,l)
 {
   m_hash_shade   = 0.35;
-
+  m_verbose      = false;
+  
   m_trails       = "window"; // "none, to-present, window, all"
   m_curr_time    = 0;
   m_step_by_secs = true;
@@ -494,7 +495,7 @@ void NavPlotViewer::drawNavPlot(unsigned int index, bool alt_nav)
   BearingLine bng_line;
   
   if(m_vehi_settings.isViewableVehicles())
-    drawCommonVehicle(record, bng_line, vehi_color, vname_color, vname_draw);
+    drawCommonVehicle(record, bng_line, vehi_color, vname_color, vname_draw, 1);
 }
 
 
@@ -597,19 +598,19 @@ void NavPlotViewer::drawVPlugPlot(unsigned int index)
   const map<string, XYCircle>& circles = geo_shapes.getCircles();
   const map<string, XYMarker>& markers = geo_shapes.getMarkers();
 
-  drawPolygons(polys);
-  drawGrids(grids);
-  drawSegLists(segls);
-  //drawSeglrs(seglrs);
-  drawCircles(circles);
-  drawPoints(points);
-  drawMarkers(markers);
-
   double global_logstart = m_dbroker.getGlobalLogStart();
   double utc_timestamp = global_logstart + m_curr_time;
 
+  drawPolygons(polys,  utc_timestamp);
+  drawSegLists(segls,  utc_timestamp);
+  drawCircles(circles, utc_timestamp);
+  drawPoints(points,   utc_timestamp);
+  drawMarkers(markers, utc_timestamp);
   drawRangePulses(rpulses, utc_timestamp);
   drawCommsPulses(cpulses, utc_timestamp);
+  //drawSeglrs(seglrs);
+
+  drawGrids(grids);
 }
 
 //-------------------------------------------------------------

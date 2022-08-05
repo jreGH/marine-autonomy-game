@@ -43,7 +43,7 @@ using namespace std;
 MarinePID::MarinePID()
 {
   m_has_control    = false;
-  m_allow_overide  = true;
+  m_allow_override = true;
   m_allstop_posted = false;
   m_depth_control  = true;
   m_verbose        = "terse";
@@ -84,6 +84,15 @@ MarinePID::MarinePID()
   m_max_sat_dep_debug = false;
 
   m_ignore_nav_yaw = false;
+
+  m_reset_hdg_i_zero_error  = false;
+  m_reset_spd_i_zero_error  = false;
+  m_reset_dep_i_zero_error  = false;
+  m_reset_pch_i_zero_error  = false;
+  m_reset_hdg_i_new_desired = false;
+  m_reset_spd_i_new_desired = false;
+  m_reset_dep_i_new_desired = false;
+  m_reset_pch_i_new_desired = false;
 }
 
 //--------------------------------------------------------------------
@@ -91,8 +100,17 @@ MarinePID::MarinePID()
 
 bool MarinePID::OnNewMail(MOOSMSG_LIST &NewMail)
 {
+  AppCastingMOOSApp::OnNewMail(NewMail);
+  
   double curr_time = MOOSTime();
+  
+  string mail_debug;
 
+  if(m_max_sat_hdg_debug) {
+    mail_debug = uintToString(m_iteration) + ":";
+    mail_debug += doubleToString(curr_time,3) + ":";
+  }
+  
   MOOSMSG_LIST::iterator p;
   for(p=NewMail.begin(); p!=NewMail.end(); p++) {
     CMOOSMsg &msg = *p;
@@ -116,7 +134,7 @@ bool MarinePID::OnNewMail(MOOSMSG_LIST &NewMail)
 	  MOOSDebugWrite("pMarinePID Control Is On");
 	}
 	else if(MOOSStrCmp(msg.m_sVal, "TRUE")) {
-	  if(m_allow_overide) {
+	  if(m_allow_override) {
 	    m_has_control = false;
 	    MOOSTrace("\n");
 	    MOOSDebugWrite("pMarinePID Control Is Off");
@@ -133,8 +151,11 @@ bool MarinePID::OnNewMail(MOOSMSG_LIST &NewMail)
       }
       else if(!m_ignore_nav_yaw && (key == "NAV_YAW"))
 	m_current_heading = angle360(-MOOSRad2Deg(msg.m_dfVal));
-      else if(key == "NAV_HEADING")
+      else if(key == "NAV_HEADING") {
 	m_current_heading = angle360(msg.m_dfVal);
+	if(m_max_sat_hdg_debug)
+	  mail_debug += doubleToStringX(m_current_heading,2) + ",";
+      }
       else if(key == "NAV_SPEED")
 	m_current_speed = msg.m_dfVal;
       else if(key == "NAV_DEPTH")
@@ -157,6 +178,8 @@ bool MarinePID::OnNewMail(MOOSMSG_LIST &NewMail)
 	m_desired_depth = msg.m_dfVal;
       }
   }
+  if(m_max_sat_hdg_debug)
+    Notify("PID_MAIL_DBG", mail_debug);
   return(true);
 }
 
@@ -165,11 +188,13 @@ bool MarinePID::OnNewMail(MOOSMSG_LIST &NewMail)
 
 bool MarinePID::Iterate()
 {
-  m_iteration++;
+  AppCastingMOOSApp::Iterate();
+
   postCharStatus();
 
   if(!m_has_control) {
     postAllStop();
+    AppCastingMOOSApp::PostReport(); 
     return(false);
   }
 
@@ -189,6 +214,7 @@ bool MarinePID::Iterate()
     m_paused = true;
     Notify("DESIRED_THRUST", 0.0);
     m_current_thrust = 0;
+    AppCastingMOOSApp::PostReport(); 
     return(true);
   }
   
@@ -199,6 +225,7 @@ bool MarinePID::Iterate()
     m_paused = true;
     Notify("DESIRED_THRUST", 0.0);
     m_current_thrust = 0;
+    AppCastingMOOSApp::PostReport(); 
     return(true);
   }
 
@@ -239,8 +266,11 @@ bool MarinePID::Iterate()
   vector<string> pid_report;
   if(m_verbose == "verbose") {
     pid_report = m_pengine.getPIDReport();
-    for(unsigned int i=0; i<pid_report.size(); i++)
+    for(unsigned int i=0; i<pid_report.size(); i++) {
       cout << pid_report[i] << endl;
+      string report = uintToString(m_iteration) + ":" + pid_report[i];
+      Notify("PID_REPORT", report);
+    }
   }
   m_pengine.clearReport();
 
@@ -259,25 +289,26 @@ bool MarinePID::Iterate()
   // Added April 2019 by mikerb
   // Simple quick check if max saturation event occurred
   // If so, and debug was turned on, report debug info for the event
-  if(m_pengine.getMaxSatHdg()) {
+  if(m_max_sat_hdg_debug && m_pengine.getMaxSatHdg()) {
     Notify("PID_MAX_SAT_HDG", "true");
     string debug_info = m_pengine.getMaxSatHdgStr();
     if(debug_info != "")
       Notify("PID_MAX_SAT_HDG_DEBUG", debug_info);
   }
-  if(m_pengine.getMaxSatSpd()) {
+  if(m_max_sat_spd_debug && m_pengine.getMaxSatSpd()) {
     Notify("PID_MAX_SAT_SPD", "true");
     string debug_info = m_pengine.getMaxSatSpdStr();
     if(debug_info != "")
       Notify("PID_MAX_SAT_SPD_DEBUG", debug_info);
   }
-  if(m_pengine.getMaxSatDep()) {
+  if(m_max_sat_dep_debug && m_pengine.getMaxSatDep()) {
     Notify("PID_MAX_SAT_DEp", "true");
     string debug_info = m_pengine.getMaxSatDepStr();
     if(debug_info != "")
       Notify("PID_MAX_SAT_DEP_DEBUG", debug_info);
   }
-  
+
+  AppCastingMOOSApp::PostReport(); 
   return(true);
 }
   
@@ -325,6 +356,8 @@ bool MarinePID::OnConnectToServer()
 
 void MarinePID::registerVariables()
 {
+  AppCastingMOOSApp::RegisterVariables();
+  
   Register("NAV_HEADING", 0);
   Register("NAV_SPEED", 0);
   Register("NAV_DEPTH", 0);
@@ -337,6 +370,8 @@ void MarinePID::registerVariables()
   Register("MOOS_MANUAL_OVERIDE", 0);
   Register("MOOS_MANUAL_OVERRIDE", 0);
 
+  // OVERRIDE is correct spelling, OVERIDE is legacy supported
+  
   if(m_ignore_nav_yaw)
     UnRegister("NAV_YAW");
   else
@@ -348,6 +383,7 @@ void MarinePID::registerVariables()
 
 bool MarinePID::OnStartUp()
 {
+  AppCastingMOOSApp::OnStartUp();
   cout << "pMarinePID starting...." << endl;
   
   m_start_time = MOOSTime();
@@ -359,11 +395,13 @@ bool MarinePID::OnStartUp()
   
   STRING_LIST::iterator p;
   for(p=sParams.begin(); p!=sParams.end(); p++) {
+    string orig  = *p;
     string sLine = *p;
     string param = toupper(biteStringX(sLine, '='));
-    string value = sLine;
+    string value = tolower(sLine);
     double dval  = atof(value.c_str());
-    
+
+    bool handled = true;
     if(param == "SPEED_FACTOR")
       m_speed_factor = vclip(dval, 0, 100);
     else if(param == "SIM_INSTABILITY")
@@ -373,25 +411,47 @@ bool MarinePID::OnStartUp()
     else if(param == "TARDY_NAV_THRESHOLD")
       m_tardy_nav_thresh = vclip_min(dval, 0);
     else if(param == "ACTIVE_START") 
-      setBooleanOnString(m_has_control, value);
+      handled = setBooleanOnString(m_has_control, value);
     else if(param == "MAX_SAT_HDG_DEBUG") 
-      setBooleanOnString(m_max_sat_hdg_debug, value);
+      handled = setBooleanOnString(m_max_sat_hdg_debug, value);
     else if(param == "MAX_SAT_SPD_DEBUG") 
-      setBooleanOnString(m_max_sat_spd_debug, value);
+      handled = setBooleanOnString(m_max_sat_spd_debug, value);
     else if(param == "MAX_SAT_DEP_DEBUG") 
-      setBooleanOnString(m_max_sat_dep_debug, value);
+      handled = setBooleanOnString(m_max_sat_dep_debug, value);
     else if(param == "IGNORE_NAV_YAW") 
-      setBooleanOnString(m_ignore_nav_yaw, value);
+      handled = setBooleanOnString(m_ignore_nav_yaw, value);
+    else if(param == "RESET_HEADING_I_AT_ZERO_ERROR") 
+      handled = setBooleanOnString(m_reset_hdg_i_zero_error, value);
+    else if(param == "RESET_SPEED_I_AT_ZERO_ERROR") 
+      handled = setBooleanOnString(m_reset_spd_i_zero_error, value);
+    else if(param == "RESET_DEPTH_I_AT_ZERO_ERROR") 
+      handled = setBooleanOnString(m_reset_dep_i_zero_error, value);
+    else if(param == "RESET_PITCH_I_AT_ZERO_ERROR") 
+      handled = setBooleanOnString(m_reset_pch_i_zero_error, value);
+    else if(param == "RESET_HEADING_I_AT_NEW_DESIRED") 
+      handled = setBooleanOnString(m_reset_hdg_i_new_desired, value);
+    else if(param == "RESET_SPEED_I_AT_NEW_DESIRED") 
+      handled = setBooleanOnString(m_reset_spd_i_new_desired, value);
+    else if(param == "RESET_DEPTH_I_AT_NEW_DESIRED") 
+      handled = setBooleanOnString(m_reset_dep_i_new_desired, value);
+    else if(param == "RESET_PITCH_I_AT_NEW_DESIRED") 
+      handled = setBooleanOnString(m_reset_pch_i_new_desired, value);
     //else if(param == "OK_SKEW") 
     //  handled = handleConfigSkewAny(value);
     else if(param == "VERBOSE") {
       if((sLine == "true") || (sLine == "verbose"))
 	m_verbose = "verbose";
-      if(sLine == "terse") 
+      else if(sLine == "terse") 
 	m_verbose = "terse";
-      if(sLine == "quiet")
+      else if(sLine == "quiet")
 	m_verbose = "quiet";
+      else
+	handled = false;
     }
+
+    if(!handled)
+      reportUnhandledConfigWarning(orig);
+
   }
 
   bool ok_yaw = handleYawSettings();
@@ -449,6 +509,9 @@ bool MarinePID::handleYawSettings()
   m_pengine.setPID(0, crsPID);
   if(m_max_sat_hdg_debug)
     m_pengine.setDebugHdg();
+
+  if(m_reset_hdg_i_zero_error || m_reset_hdg_i_new_desired)
+    m_pengine.setHdgIntegralReset(m_reset_hdg_i_zero_error, m_reset_hdg_i_new_desired);
   
   MOOSDebugWrite(MOOSFormat("** NEW CONTROLLER GAINS ARE **"));
   MOOSDebugWrite(MOOSFormat("YAW_PID_KP             = %.3f",yaw_pid_Kp));
@@ -498,6 +561,9 @@ bool MarinePID::handleSpeedSettings()
   m_pengine.setPID(1, spdPID);
   if(m_max_sat_spd_debug)
     m_pengine.setDebugSpd();
+
+  if(m_reset_spd_i_zero_error || m_reset_spd_i_new_desired)
+    m_pengine.setSpdIntegralReset(m_reset_spd_i_zero_error, m_reset_spd_i_new_desired);
   
   MOOSDebugWrite(MOOSFormat("SPEED_PID_KP           = %.3f",spd_pid_Kp));
   MOOSDebugWrite(MOOSFormat("SPEED_PID_KD           = %.3f",spd_pid_Kd));
@@ -567,6 +633,9 @@ bool MarinePID::handleDepthSettings()
   ztopPID.SetGains(z_top_pid_Kp, z_top_pid_Kd, z_top_pid_Ki);
   ztopPID.SetLimits(z_top_pid_ilim, 100);
   m_pengine.setPID(2, ztopPID);
+
+  if(m_reset_dep_i_zero_error || m_reset_dep_i_new_desired)
+    m_pengine.setDepIntegralReset(m_reset_dep_i_zero_error, m_reset_dep_i_new_desired);
   
   MOOSDebugWrite(MOOSFormat("Z_TO_PITCH_PID_KP      = %.3f",z_top_pid_Kp));
   MOOSDebugWrite(MOOSFormat("Z_TO_PITCH_PID_KD      = %.3f",z_top_pid_Kd));
@@ -604,6 +673,9 @@ bool MarinePID::handleDepthSettings()
   if(m_max_sat_dep_debug)
     m_pengine.setDebugDep();
 
+  if(m_reset_pch_i_zero_error || m_reset_pch_i_new_desired)
+    m_pengine.setPchIntegralReset(m_reset_pch_i_zero_error, m_reset_pch_i_new_desired);
+
   MOOSDebugWrite(MOOSFormat("PITCH_PID_KP           = %.3f",pitch_pid_Kp));
   MOOSDebugWrite(MOOSFormat("PITCH_PID_KD           = %.3f",pitch_pid_Kd));
   MOOSDebugWrite(MOOSFormat("PITCH_PID_KI           = %.3f",pitch_pid_Ki));
@@ -615,9 +687,11 @@ bool MarinePID::handleDepthSettings()
 
 
 
-
-
-
-
-
-
+bool MarinePID::buildReport()
+{
+  m_msgs << "hello" << endl;
+  //m_msgs << "Number of good messages: " << m_good_message_count << endl;
+  //m_msgs << "Number of bad  messages: " << m_bad_message_count  << endl;
+  
+  return(true);
+}

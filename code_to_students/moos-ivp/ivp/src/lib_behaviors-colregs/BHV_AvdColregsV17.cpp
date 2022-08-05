@@ -113,23 +113,24 @@ bool BHV_AvdColregsV17::setParam(string param, string value)
   double dval = atof(value.c_str());
   bool   non_neg_number = (isNumber(value) && (dval >= 0));
 
+  if(param == "pwt_inner_dist") {
+    return(setMinPartOfPairOnString(m_pwt_inner_dist,
+				    m_pwt_outer_dist, value));
+  }  
+  else if(param == "pwt_outer_dist") { 
+    return(setMaxPartOfPairOnString(m_pwt_inner_dist,
+				    m_pwt_outer_dist, value));
+  }
+
+  else if(param == "min_util_cpa_dist") {
+    return(setMinPartOfPairOnString(m_min_util_cpa_dist,
+				    m_max_util_cpa_dist, value));
+  }    
+  else if(param == "max_util_cpa_dist") {
+    return(setMaxPartOfPairOnString(m_min_util_cpa_dist,
+				    m_max_util_cpa_dist, value));
+  }
   
-  if((param == "pwt_outer_dist") && non_neg_number) {
-    m_pwt_outer_dist = dval;
-    // enforce: inner_dist <= outer_dist <= completed_dist
-    if(m_pwt_outer_dist < m_pwt_inner_dist)
-      m_pwt_inner_dist = m_pwt_outer_dist;
-    if(m_pwt_outer_dist > m_completed_dist)
-      m_completed_dist = m_pwt_outer_dist;
-  }  
-  else if((param == "pwt_inner_dist") && non_neg_number) {
-    m_pwt_inner_dist = dval;
-    // enforce: inner_dist <= outer_dist <= completed_dist
-    if(m_pwt_inner_dist > m_pwt_outer_dist)
-      m_pwt_outer_dist = m_pwt_inner_dist;
-    if(m_pwt_inner_dist > m_completed_dist)
-      m_completed_dist = m_pwt_inner_dist;
-  }  
   else if((param == "completed_dist") && non_neg_number) {
     m_completed_dist = dval;
     // enforce: inner_dist <= outer_dist <= completed_dist
@@ -137,14 +138,6 @@ bool BHV_AvdColregsV17::setParam(string param, string value)
       m_pwt_outer_dist = m_completed_dist;
     if(m_completed_dist < m_pwt_inner_dist)
       m_pwt_inner_dist = m_completed_dist;
-  }
-  else if((param == "min_util_cpa_dist") && non_neg_number) {
-    m_min_util_cpa_dist = dval;
-  }
-  else if((param == "max_util_cpa_dist") && non_neg_number) {
-    m_max_util_cpa_dist = dval;
-    if(m_max_util_cpa_dist < m_min_util_cpa_dist)
-      m_min_util_cpa_dist = m_max_util_cpa_dist;
   }
   else if((param == "turn_radius") && non_neg_number) 
     m_turn_radius = dval;
@@ -168,31 +161,40 @@ bool BHV_AvdColregsV17::setParam(string param, string value)
   else
     return(false);
 
+  // Safety check, in case user did not explicitly set completed dist
+  if(m_completed_dist < m_pwt_outer_dist)
+    m_completed_dist = m_pwt_outer_dist;
+  
+
+  
   return(true);
 }
 
 //-----------------------------------------------------------
 // Procedure: onHelmStart()
+//      Note: This function is called when the helm starts, even if,
+//            especially if, the behavior is just a template at start
+//            time to be spawned later. 
+//      Note: An alert request will be sent to the contact manager if
+//            the behavior is configured with templating enabled, and
+//            an updates variable has been provided.  In the rare case
+//            that the above is true but the user still does not want
+//            an alert request generated, this can be done by setting
+//            m_no_alert_request to true.
 
 void BHV_AvdColregsV17::onHelmStart()
 {
-  if(m_no_alert_request || (m_update_var == ""))
+  if(m_no_alert_request || (m_update_var == "") || !m_dynamically_spawnable)
     return;
 
-  string s_alert_range = doubleToStringX(m_pwt_outer_dist,1);
-  string s_cpa_range   = doubleToStringX(m_completed_dist,1);
-  string s_alert_templ = "name=$[VNAME] # contact=$[VNAME]";
-
-  string alert_request = "id=avdcol_" + getDescriptor();
-  alert_request += ", var=" + m_update_var;
-  alert_request += ", val=" + s_alert_templ;
-  alert_request += ", alert_range=" + s_alert_range;
-  alert_request += ", cpa_range=" + s_cpa_range;
-
-  if(m_contact_type_required != "")
-    alert_request += ", contact_type=" + m_contact_type_required;
-    
-  postMessage("BCM_ALERT_REQUEST", alert_request);
+  string alert_templ = m_update_var + "=name=$[VNAME] # contact=$[VNAME]";
+  string request = "id=" + getDescriptor();
+  request += ", on_flag=" + alert_templ;
+  request += ",alert_range=" + doubleToStringX(m_pwt_outer_dist,1);
+  request += ", cpa_range=" + doubleToStringX(m_completed_dist,1);
+  request = augmentSpec(request, getFilterSummary());
+  
+  postMessage("BCM_ALERT_REQUEST", request);
 }
 
 
@@ -201,8 +203,13 @@ void BHV_AvdColregsV17::onHelmStart()
 
 void BHV_AvdColregsV17::onIdleState() 
 {
-  if(updatePlatformInfo())
-    postStatusInfo();
+  if(!updatePlatformInfo())
+    return;
+  
+  postStatusInfo();
+
+  if(!filterCheckHolds() || (m_contact_range >= m_completed_dist))
+    setComplete();  
 }
 
 //-----------------------------------------------------------
@@ -237,32 +244,20 @@ IvPFunction *BHV_AvdColregsV17::onRunState()
 {
   m_iterations++;
 
-  bool prev_cn_port_of_os = m_cn_port_of_os;
+  bool prev_cn_port_of_os = m_cnos.cn_port_of_os();
 
   if(!updatePlatformInfo())
     return(0);
-  if(!checkContactGroupRestrictions())
-    return(0);
 
   m_cn_crossed_os_port_star = false;
-  if((m_iterations > 1) && (m_cn_port_of_os != prev_cn_port_of_os))
+  if((m_iterations > 1) && (m_cnos.cn_port_of_os() != prev_cn_port_of_os))
     m_cn_crossed_os_port_star = true;
 
-  postMessage("CN_FORE_OF_OS_"+m_contact, m_cn_fore_of_os);
-  postMessage("CN_PORT_OF_OS_"+m_contact, m_cn_port_of_os);
-
-  postMessage("CN_CROSSED_OS_PORT_STAR_"+m_contact, m_cn_crossed_os_port_star);
-  
-  if(m_contact_range >= m_completed_dist) {
+  if(!filterCheckHolds() || (m_contact_range >= m_completed_dist)) {
     setComplete();
     return(0);
   }
 
-  if(m_cn_retired) {
-    setComplete();
-    return(0);
-  }
-  
   double curr_time = getBufferCurrTime();
   addHeading(m_cnh, curr_time);
   double os_cn_rel_bng = relBearing(m_osx, m_osy, m_osh, m_cnx, m_cny);
@@ -424,7 +419,7 @@ void BHV_AvdColregsV17::checkModeOvertaking()
 
   // Part 1B: check rate of closure. Regardless of whether in this mode 
   // or not, if not actually overtaking, then not in overtaking mode.
-  if(m_rate_of_closure < 0) {
+  if(m_cnos.rate_of_closure() < 0) {
     resetAvoidModes();
     return;
   }
@@ -434,7 +429,7 @@ void BHV_AvdColregsV17::checkModeOvertaking()
   // criteria. Release/entry conditions are not same, to prevent mode thrashing.
   //=====================================================================  
   if(m_avoid_mode == "overtaking") {
-    if((m_cn_os_rel_bng > 337.5) || (m_cn_os_rel_bng < 22.5)){
+    if((m_cnos.cn_os_rel_bng() > 337.5) || (m_cnos.cn_os_rel_bng() < 22.5)){
       // Rule 13(d) Any subsequent alteration of the bearing between
       // the two vessels shall not make the overtaking vessel a
       // crossing vessel within the meaning of these Rules or relieve
@@ -448,11 +443,11 @@ void BHV_AvdColregsV17::checkModeOvertaking()
     // re-think which side we are trying to pass the contact.
     double thrash_buffer = 5; // degrees
     if(m_avoid_submode == "port") {  // possibly exit the port submode
-      if((m_os_cn_rel_bng > 180) && (m_os_cn_rel_bng < (360-thrash_buffer)))
+      if((m_cnos.os_cn_rel_bng() > 180) && (m_cnos.os_cn_rel_bng() < (360-thrash_buffer)))
 	m_avoid_submode = "starboard";
     }
     else { // possibly exit the starboard submode
-      if(m_os_cn_rel_bng < thrash_buffer)
+      if(m_cnos.os_cn_rel_bng() < thrash_buffer)
 	m_avoid_submode = "port";
     }
     return;
@@ -468,14 +463,14 @@ void BHV_AvdColregsV17::checkModeOvertaking()
   // Part 3A: Check if contact angle (relbng from cn to os) criteria is met
   double corb_min = 180 - m_overtaking_bng_range;
   double corb_max = 180 + m_overtaking_bng_range;
-  if((m_cn_os_rel_bng < corb_min) || (m_cn_os_rel_bng > corb_max)) {
+  if((m_cnos.cn_os_rel_bng() < corb_min) || (m_cnos.cn_os_rel_bng() > corb_max)) {
     resetAvoidModes();
     return;
   }
   // Part 3B: Check if ownship is on a trajectory to pass the contact
   // Not the same as checking for rate-of-closer/range-rate. It's possible
   // to be closing range but not on a trajectory to pass/overtake.
-  if(!m_os_passes_cn) {
+  if(!m_cnos.os_passes_cn()) {
     resetAvoidModes();
     return;
   }
@@ -487,7 +482,7 @@ void BHV_AvdColregsV17::checkModeOvertaking()
 
   // Determine which side we should aspire to pass on based on present
   // trajectory.
-  if(m_cn_port_of_os) 
+  if(m_cnos.cn_port_of_os()) 
     m_avoid_submode = "starboard";
   else
     m_avoid_submode = "port";
@@ -550,20 +545,20 @@ void BHV_AvdColregsV17::checkModeHeadOn()
   // prevent mode thrashing.
   // =====================================================================
   if(m_avoid_mode == "headon") {
-    if((m_contact_range > m_min_util_cpa_dist) && (m_rate_of_closure < 0)) {
+    if((m_contact_range > m_min_util_cpa_dist) && (m_cnos.rate_of_closure() < 0)) {
       postMessage(debug_var, debug_msg + "release due to opening range");
       resetAvoidModes();
     }
-    if(m_os_aft_of_cn) {
+    if(m_cnos.os_aft_of_cn()) {
       postMessage(debug_var, debug_msg + "release due to os aft of cn");
       resetAvoidModes();
     }
 
     // Check if vehicles have progressed (due to other influences) passing
     // to the left, to point where passing to right is no longer wanted.
-    if(m_os_starboard_of_cn && m_cn_starboard_of_os) {
-      double os_bng_extra = m_os_cn_rel_bng - m_headon_abs_relbng_thresh;
-      double cn_bng_extra = m_cn_os_rel_bng - m_headon_abs_relbng_thresh;
+    if(m_cnos.os_star_of_cn() && m_cnos.cn_star_of_os()) {
+      double os_bng_extra = m_cnos.os_cn_rel_bng() - m_headon_abs_relbng_thresh;
+      double cn_bng_extra = m_cnos.cn_os_rel_bng() - m_headon_abs_relbng_thresh;
       double tot_bng_extra = os_bng_extra + cn_bng_extra;
       if((os_bng_extra > 5) || (cn_bng_extra > 5) || ((tot_bng_extra > 7.5))) {
 	resetAvoidModes();
@@ -666,11 +661,11 @@ void BHV_AvdColregsV17::checkModeGiveWay()
     
     // transition to cpa mode if past cpa and opening
     if(m_contact_range > m_min_util_cpa_dist) {
-      if(m_rate_of_closure < 0) 
+      if(m_cnos.rate_of_closure() < 0) 
         resetAvoidModes("cpa");
     }
     // transition to cpa mode if ownship now on contact's starboard side
-    if(m_os_starboard_of_cn)
+    if(m_cnos.os_star_of_cn())
       resetAvoidModes("cpa");
     return;
   }
@@ -680,7 +675,7 @@ void BHV_AvdColregsV17::checkModeGiveWay()
   //=====================================================================  
 
   // Check contact angle, (alpha<247.5). Check rel bearing, (beta > 112.5)
-  if((m_cn_os_rel_bng < 247.5) || (m_os_cn_rel_bng > 112.5)) {
+  if((m_cnos.cn_os_rel_bng() < 247.5) || (m_cnos.os_cn_rel_bng() > 112.5)) {
     resetAvoidModes();
     return;
   }
@@ -697,12 +692,12 @@ void BHV_AvdColregsV17::checkModeGiveWay()
   // a healthy distance, then the giveway behavior will try to achieve
   // its goal by crossing the bow, setting the avoid_submode to "bow".
   string mvar1 = "XCN_BOW_DIST_" + toupper(m_contact);
-  postMessage(mvar1, m_os_crosses_cn_bow_dist);
+  postMessage(mvar1, m_cnos.os_crosses_cn_bow_dist());
 
-  if(m_os_crosses_cn_bow) {
+  if(m_cnos.os_crosses_cn_bow()) {
     // Criteria A: os crossing cn by by a healthy amount
     double acceptable_dist  = (2*m_max_util_cpa_dist + m_min_util_cpa_dist) / 3; 
-    if(m_os_crosses_cn_bow_dist > acceptable_dist)
+    if(m_cnos.os_crosses_cn_bow_dist() > acceptable_dist)
       m_avoid_submode = "bow";
     // Criteria B: os cannot cut behind cn even if it wanted to.
     double turn_gap = 0;
@@ -727,7 +722,7 @@ void BHV_AvdColregsV17::checkModeGiveWay()
   // and travelling the same general direction.
   double os_spd_in_cn_hdg = speedInHeading(m_osh, m_osv, m_cnh);
   
-  if(!m_os_crosses_cn_bow_or_stern && (os_spd_in_cn_hdg > 0))
+  if(!m_cnos.os_crosses_cn_bow_or_stern() && (os_spd_in_cn_hdg > 0))
     m_avoid_submode = "bow";
 
 }
@@ -811,7 +806,7 @@ void BHV_AvdColregsV17::checkModeStandOn()
       resetAvoidModes();
       return;
     }
-    if((m_contact_range > m_min_util_cpa_dist) && (m_rate_of_closure < 0)) {
+    if((m_contact_range > m_min_util_cpa_dist) && (m_cnos.rate_of_closure() < 0)) {
       resetAvoidModes();
       return;
     }
@@ -822,15 +817,15 @@ void BHV_AvdColregsV17::checkModeStandOn()
   //=====================================================================  
 
   // Part 3A: First criteria is based on relative bearing and contact angle
-  if((m_os_cn_rel_bng < 247.5) || (m_cn_os_rel_bng > 112.5))
+  if((m_cnos.os_cn_rel_bng() < 247.5) || (m_cnos.cn_os_rel_bng() > 112.5))
     return;
   
   // Part 2B: If meet relative bearing criteria but not crossing, reject.
-  if(!m_cn_crosses_os_bow_or_stern)
+  if(!m_cnos.cn_crosses_os_bow_or_stern())
     return;
   
   // Part 2C: If rate of closure is less than zero, ie "opening", return;
-  if(m_rate_of_closure < 0)
+  if(m_cnos.rate_of_closure() < 0)
     return;
   
   // Passed the four criteria, set the mode and submode
@@ -848,7 +843,7 @@ void BHV_AvdColregsV17::checkModeStandOn()
     return;
 
   if((m_avoid_mode == "standon") && (m_contact_range <= m_max_util_cpa_dist) &&
-     (m_os_curr_cpa_dist <= m_min_util_cpa_dist)){
+     (m_cnos.os_curr_cpa_dist() <= m_min_util_cpa_dist)){
     // assert 17.a.ii actions if:
     //    1) a stand on vessel
     //    2) range closer than pwt_inner (already taking max action)
@@ -861,7 +856,7 @@ void BHV_AvdColregsV17::checkModeStandOn()
   // Part 3A: The "neither" submode is terminal. Can never go to any
   // other submode, and any other submode can transition to "neither".
   // It indicates ownship has crossed to the port side of contact.
-  if((m_avoid_mode == "standon") && m_os_port_of_cn) 
+  if((m_avoid_mode == "standon") && m_cnos.os_port_of_cn()) 
     m_avoid_submode = "neither";
 
   if((m_avoid_mode == "standon") && (m_avoid_submode == "neither"))
@@ -899,14 +894,14 @@ void BHV_AvdColregsV17::checkModeStandOn()
   double half_util_cpa_dist = (m_max_util_cpa_dist + m_min_util_cpa_dist) / 2;
 
   // Bearing Range #1 --------------------------------
-  if(m_os_cn_rel_bng > 350) {
-    if(m_cn_crosses_os_bow_dist >= m_min_util_cpa_dist) {
+  if(m_cnos.os_cn_rel_bng() > 350) {
+    if(m_cnos.cn_crosses_os_bow_dist() >= m_min_util_cpa_dist) {
       if(cn_turn_rate_ok && (cn_turn_rate < 0))
 	m_avoid_submode = "bow";
       else
 	m_avoid_submode = "unsure_bow";
     }
-    else if(m_cn_crosses_os_bow_dist > 0) {
+    else if(m_cnos.cn_crosses_os_bow_dist() > 0) {
       if(cn_turn_rate_ok && (cn_turn_rate < 0))
 	m_avoid_submode = "unsure_bow";
       else
@@ -917,20 +912,20 @@ void BHV_AvdColregsV17::checkModeStandOn()
     }
   }
   // Bearing Range #2 --------------------------------
-  else if(m_os_cn_rel_bng > 315) {
-    if(m_cn_crosses_os_bow_dist >= half_util_cpa_dist) {
+  else if(m_cnos.os_cn_rel_bng() > 315) {
+    if(m_cnos.cn_crosses_os_bow_dist() >= half_util_cpa_dist) {
       if(cn_turn_rate_ok && (cn_turn_rate < 3))
 	m_avoid_submode = "bow";
       else
 	m_avoid_submode = "unsure_bow";
     }
-    else if(m_cn_crosses_os_bow_dist >= m_min_util_cpa_dist) {
+    else if(m_cnos.cn_crosses_os_bow_dist() >= m_min_util_cpa_dist) {
       if(cn_turn_rate_ok && (cn_turn_rate < 0.1))
 	m_avoid_submode = "bow";
       else
 	m_avoid_submode = "unsure_bow";
     }
-    else if(m_cn_crosses_os_bow_dist > 0) {
+    else if(m_cnos.cn_crosses_os_bow_dist() > 0) {
       if(cn_turn_rate_ok && (cn_turn_rate < 0))
 	m_avoid_submode = "unsure_bow";
       else
@@ -941,16 +936,16 @@ void BHV_AvdColregsV17::checkModeStandOn()
     }
   }
   // Bearing Range #3 --------------------------------
-  else if(m_os_cn_rel_bng >= 270) {
-    if(m_cn_crosses_os_bow_dist >= m_max_util_cpa_dist) 
+  else if(m_cnos.os_cn_rel_bng() >= 270) {
+    if(m_cnos.cn_crosses_os_bow_dist() >= m_max_util_cpa_dist) 
       m_avoid_submode = "bow";
-    else if(m_cn_crosses_os_bow_dist >= half_util_cpa_dist) {
+    else if(m_cnos.cn_crosses_os_bow_dist() >= half_util_cpa_dist) {
       if(cn_turn_rate_ok && (cn_turn_rate < 0.1))
 	m_avoid_submode = "bow";
       else
 	m_avoid_submode = "unsure_bow";
     }
-    else if(m_cn_crosses_os_bow_dist > 0) {
+    else if(m_cnos.cn_crosses_os_bow_dist() > 0) {
       if(cn_turn_rate_ok && (cn_turn_rate < 0))
 	m_avoid_submode = "unsure_bow";
       else
@@ -962,13 +957,13 @@ void BHV_AvdColregsV17::checkModeStandOn()
   }
   // Bearing Range #4 --------------------------------
   else { //   180 < os_cn_rel_bng < 270
-    if(m_cn_crosses_os_bow_dist >= half_util_cpa_dist) {
+    if(m_cnos.cn_crosses_os_bow_dist() >= half_util_cpa_dist) {
       if(cn_turn_rate_ok && (cn_turn_rate < 0.1))
 	m_avoid_submode = "unsure_bow";
       else
 	m_avoid_submode = "unsure";
     }
-    else if(m_cn_crosses_os_bow_dist > 0) 
+    else if(m_cnos.cn_crosses_os_bow_dist() > 0) 
       m_avoid_submode = "unsure";
     else 
       m_avoid_submode = "stern";
@@ -1003,7 +998,7 @@ void BHV_AvdColregsV17::checkModeStandOnOT()
       resetAvoidModes();
       return;
     }
-    if(m_rate_of_closure < 0) {
+    if(m_cnos.rate_of_closure() < 0) {
       resetAvoidModes();
       return;
     }
@@ -1024,17 +1019,17 @@ void BHV_AvdColregsV17::checkModeStandOnOT()
   
   if(m_avoid_mode != "standon_ot") {
     // Check if contact is within bearings for standon mode (due to overtaking)
-    if((m_os_cn_rel_bng < 112.5) || (m_os_cn_rel_bng > 247.5)) {
+    if((m_cnos.os_cn_rel_bng() < 112.5) || (m_cnos.os_cn_rel_bng() > 247.5)) {
       resetAvoidModes();
       return;
     }
     // Check if contact is on trajectory to pass ownship
-    if(!m_cn_passes_os) {
+    if(!m_cnos.cn_passes_os()) {
       resetAvoidModes();
       return;
     }
     // Check if cpa is of concern
-    if(m_os_curr_cpa_dist > m_max_util_cpa_dist) {
+    if(m_cnos.os_curr_cpa_dist() > m_max_util_cpa_dist) {
       resetAvoidModes();
       return;
     }
@@ -1054,7 +1049,7 @@ void BHV_AvdColregsV17::checkModeStandOnOT()
     return;
 
   if((m_avoid_mode == "standon_ot") && (m_contact_range <= m_max_util_cpa_dist) &&
-     (m_os_curr_cpa_dist <= m_min_util_cpa_dist)){
+     (m_cnos.os_curr_cpa_dist() <= m_min_util_cpa_dist)){
     // assert 17.a.ii actions if:
     //    1) a stand on vessel
     //    2) range closer than pwt_inner (already taking max action)
@@ -1063,7 +1058,7 @@ void BHV_AvdColregsV17::checkModeStandOnOT()
     return;
   }
 
-  if(m_cn_port_of_os)
+  if(m_cnos.cn_port_of_os())
     m_avoid_submode = "port";
   else
     m_avoid_submode = "starboard";
@@ -1296,10 +1291,10 @@ bool BHV_AvdColregsV17::findDecelerateSpeedRange(double& minv, double& maxv)
   // Part 3: Find the range
   double spd_domain_delta = m_domain.getVarDelta("speed");
   for(double spd=0; spd <= m_osv; spd+=spd_domain_delta) {
-    if(m_os_curr_cpa_dist >= m_max_util_cpa_dist)
-      minv = m_os_curr_cpa_dist;
-    if(m_os_curr_cpa_dist >= m_min_util_cpa_dist)
-      maxv = m_os_curr_cpa_dist;
+    if(m_cnos.os_curr_cpa_dist() >= m_max_util_cpa_dist)
+      minv = m_cnos.os_curr_cpa_dist();
+    if(m_cnos.os_curr_cpa_dist() >= m_min_util_cpa_dist)
+      maxv = m_cnos.os_curr_cpa_dist();
   }
 
   if(minv > m_osv)
@@ -1342,10 +1337,10 @@ bool BHV_AvdColregsV17::findAccelerateSpeedRange(double& minv, double& maxv)
   double spd_delta = m_domain.getVarDelta("speed");
   double max_spd   = m_domain.getVarHigh("speed");
   for(double spd=max_spd; spd >= m_osv; spd-=spd_delta) {
-    if(m_os_curr_cpa_dist <= m_max_util_cpa_dist)
-      maxv = m_os_curr_cpa_dist;
-    if(m_os_curr_cpa_dist <= m_min_util_cpa_dist)
-      minv = m_os_curr_cpa_dist;
+    if(m_cnos.os_curr_cpa_dist() <= m_max_util_cpa_dist)
+      maxv = m_cnos.os_curr_cpa_dist();
+    if(m_cnos.os_curr_cpa_dist() <= m_min_util_cpa_dist)
+      minv = m_cnos.os_curr_cpa_dist();
   }
   
   if(minv > m_osv)
@@ -1507,15 +1502,11 @@ bool BHV_AvdColregsV17::getRelBngRate(double& result)
 
 void BHV_AvdColregsV17::postStatusInfo()
 {
-  string suffix = "_" + toupper(m_contact);
-  postMessage("AVDCOL_RANGE" + suffix, m_contact_range);
-
+  // Part 1: Post the seglist if relevant
   string full_mode = m_avoid_mode;
   if(m_avoid_submode != "none")
     full_mode += ":" + m_avoid_submode;
   
-  postMessage("COLREGS_AVOID_MODE" + suffix, full_mode);
-
   if((m_avoid_mode != "none") && (m_avoid_mode != "complete")) {
     m_bearing_segl.clear();
     m_bearing_segl.set_label(m_us_name + m_descriptor);
@@ -1529,7 +1520,17 @@ void BHV_AvdColregsV17::postStatusInfo()
 
   postMessage("VIEW_SEGLIST", m_bearing_segl.get_spec());
 
+  // Part 2: Post contact specific, useful for debugging but
+  // typically not appropriate when there are many contacts
+  if(!postingPerContactInfo())
+    return;
 
+  string suffix = "_" + toupper(m_contact);
+
+  postMessage("CN_FORE_OF_OS_" + suffix, m_cnos.cn_fore_of_os());
+  postMessage("CN_PORT_OF_OS_" + suffix, m_cnos.cn_port_of_os());
+  postMessage("CN_CROSSED_OS_PORT_STAR_" + suffix, m_cn_crossed_os_port_star);
+  
   unsigned int avoid_mode_ix = 0;
   if(m_avoid_mode == "complete")
     avoid_mode_ix = 3;
@@ -1568,6 +1569,9 @@ void BHV_AvdColregsV17::postStatusInfo()
   else if(m_avoid_mode == "cpa") {
     avoid_mode_ix = 50;
   }
+
+  postMessage("AVDCOL_RANGE" + suffix, m_contact_range);
+  postMessage("COLREGS_AVOID_MODE" + suffix, full_mode);
 
   string summary = "mode=" + m_avoid_mode + ":" + m_avoid_submode;
 

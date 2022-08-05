@@ -71,6 +71,8 @@ void showHelpAndExit()
   blk("      Display MOOS publications and subscriptions.              ");
   mag("  --version,-v                                                  ");
   blk("      Display the release version of uProcessWatch.             ");
+  mag("  --web,-w                                                      ");
+  blk("      Open browser to: https://oceanai.mit.edu/ivpman/apps/uProcessWatch ");
   blk("                                                                ");
   blk("Note: If argv[2] does not otherwise match a known option,       ");
   blk("      then it will be interpreted as a run alias. This is       ");
@@ -107,6 +109,8 @@ void showExampleConfigAndExit()
   blk("  summary_wait = 10 // Seconds. Default is -1.                  ");
   blk("                                                                ");
   blk("  post_mapping = PROC_WATCH_FULL_SUMMARY, UPW_FULL_SUMMARY      ");
+  blk("                                                                ");
+  blk("  app_logging = true  // {true or file} By default disabled     ");
   blk("}                                                               ");
   blk("                                                                ");
   exit(0);
@@ -141,6 +145,8 @@ void showInterfaceAndExit()
   blk("  PROC_WATCH_SUMMARY      = All Present                         ");
   blk("  PROC_WATCH_EVENT        = Process [pMarinePID] is noted to be ");
   blk("                            present.                            ");
+  blk("  PROC_WATCH_ALL_OK       = true/false                          ");
+  blk("  PROC_WATCH_TIME_WARP    = 10                                  ");
   blk("                                                                ");
   exit(0);
 }

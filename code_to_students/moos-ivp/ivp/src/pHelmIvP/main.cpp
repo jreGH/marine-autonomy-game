@@ -25,6 +25,7 @@
 #include <vector>
 #include <string>
 #include "MBUtils.h"
+#include "OpenURL.h"
 #include "HelmIvP.h"
 #include "HelmIvP_Info.h"
 
@@ -35,7 +36,7 @@ int main(int argc, char *argv[])
   string mission_file;
   string run_command = argv[0];
   string verbose_setting;
-
+  
   vector<string>  bhv_files;
 
   for(int i=1; i<argc; i++) {
@@ -54,12 +55,14 @@ int main(int argc, char *argv[])
       mission_file = argv[i];
     else if(strBegins(argi, "--alias="))
       run_command = argi.substr(8);
+    else if((argi == "-w") || (argi == "--web") || (argi == "-web"))
+      openURLX("https://oceanai.mit.edu/ivpman/apps/pHelmIvP");
     else if(strEnds(argi, ".bhv"))
       bhv_files.push_back(argv[i]);
     else if(i==2)
       run_command = argi;
   }
-  
+
   if(mission_file == "")
     showHelpAndExit();
   

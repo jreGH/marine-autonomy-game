@@ -23,6 +23,7 @@
 
 #include <string>
 #include "MBUtils.h"
+#include "OpenURL.h"
 #include "TermUtils.h"
 #include "ColorParse.h"
 #include "AppCastMonitor.h"
@@ -38,6 +39,7 @@ int main(int argc, char *argv[])
   bool   terse_mode = false;
   string initial_proc;
   string initial_node;
+  string refresh_mode;
   
   for(int i=1; i<argc; i++) {
     string argi = argv[i];
@@ -59,6 +61,10 @@ int main(int argc, char *argv[])
       initial_node = argi.substr(7);
     else if(strBegins(argi, "--proc="))
       initial_proc = argi.substr(7);
+    else if((argi == "--paused") || (argi == "-p"))
+      refresh_mode = "paused";
+    else if((argi == "-w") || (argi == "--web") || (argi == "-web"))
+      openURLX("https://oceanai.mit.edu/ivpman/apps/uMAC");
     else if(i==2)
       run_command = argi;
   }
@@ -80,6 +86,9 @@ int main(int argc, char *argv[])
   UMAC.setTerseMode(terse_mode);
   UMAC.setInitialNode(initial_node);
   UMAC.setInitialProc(initial_proc);
+  if(refresh_mode == "paused")
+    UMAC.setRefreshPaused();
+  
   // start the UMAC in its own thread
   MOOSAppRunnerThread appRunner(&UMAC, (char*)(run_command.c_str()), 
 				mission_file.c_str(), argc, argv);

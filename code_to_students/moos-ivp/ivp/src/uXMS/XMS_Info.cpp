@@ -101,6 +101,8 @@ void showHelpAndExit()
   blk("    Minimum real-time seconds between terminal reports.         ");
   mag("  --version,-v                                                  ");
   blk("    Display the release version of uXMS.                        ");
+  mag("  --web,-w                                                      ");
+  blk("      Open browser to: https://oceanai.mit.edu/ivpman/apps/uXMS ");
   blk("                                                                ");
   blk("Shortcuts                                                       ");
   blk("                                                                ");
@@ -149,6 +151,8 @@ void showExampleConfigAndExit()
   blk("                                                                ");
   blk("  refresh_mode = events     // default (or streaming/paused)    ");
   blk("  content_mode = scoping    // default (or history,procs)       ");
+  blk("                                                                ");
+  blk("  app_logging = true  // {true or file} By default disabled     ");
   blk("}                                                               ");
   blk("                                                                ");
   exit(0);

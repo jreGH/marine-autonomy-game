@@ -27,8 +27,8 @@
 #define IVP_BEHAVIOR_HEADER
 
 #include <map>
-#include <vector>
 #include <string>
+#include <vector>
 #include "IvPFunction.h"
 #include "InfoBuffer.h"
 #include "CPAEngine.h"
@@ -58,10 +58,16 @@ public:
   virtual void onInactiveState() {}
   virtual void onIdleToRunState() {}
   virtual void onRunToIdleState() {}
+  virtual void onEveryState(std::string) {}
   virtual void postConfigStatus() {}
+  virtual void onParamUpdate(std::string) {}
+  virtual std::string checkParamCollective() {return("");}
+  virtual std::string expandMacros(std::string);
   virtual std::string getInfo(std::string)  {return("");}
   virtual double getDoubleInfo(std::string) {return(0);}
   virtual double getMemSize() {return(0);}
+  virtual bool isConstraint() {return(false);}
+  virtual std::string isDeprecated() {return("");}
   
   bool   setParamCommon(std::string, std::string);
   void   setInfoBuffer(const InfoBuffer*);
@@ -82,29 +88,61 @@ public:
   void   clearMessages()                 {m_messages.clear();}
   void   resetStateOK()                  {m_bhv_state_ok=true;}
 
-  void    postMessage(std::string, std::string, std::string key="");
   void    noteLastRunCheck(bool, double);
-
+  
+  void    setDynamicallySpawned(bool v)   {m_dynamically_spawned=v;}
+  void    setDynamicallySpawnable(bool v) {m_dynamically_spawnable=v;}
+  void    setSpawnBaseName(std::string s) {m_spawn_basename=s;}
+  bool    isDynamicallySpawned() const    {return(m_dynamically_spawned);}
+  bool    isDynamicallySpawnable() const  {return(m_dynamically_spawnable);}
+  std::string getSpawnBaseName() const    {return(m_spawn_basename);}
+  
  protected:
   bool    setBehaviorName(std::string str);
   bool    augBehaviorName(std::string str);
   void    setBehaviorType(std::string str) {m_behavior_type = str;}
   void    setPriorityWt(double);
 
+  std::string getOwnshipName() const {return(m_us_name);}
+  
   void    addInfoVars(std::string, std::string="");
   void    setComplete();
   void    postBadConfig(std::string);
-  void    postMessage(std::string, double, std::string key="");
 
+  void    postFlags(const std::string&, bool repeat=false);
+  void    postFlags(const std::vector<VarDataPair>&, bool repeat=false);
+  void    postFlag(const VarDataPair&, bool repeat=false);
+
+  void    postMessage(std::string, std::string, double, std::string key="");
+  void    postMessage(std::string, std::string, std::string key="");
+  void    postMessage(std::string, double, std::string key="");
   void    postBoolMessage(std::string, bool, std::string key="");
   void    postIntMessage(std::string, double, std::string key="");
   void    postRepeatableMessage(std::string, double);
   void    postRepeatableMessage(std::string, std::string);
   void    postEMessage(std::string);
   void    postWMessage(std::string);
+  void    postEventMessage(std::string);
+  void    postRepeatableEventMessage(std::string);
   void    postRetractWMessage(std::string);
-  void    postFlags(const std::string&, bool repeat=false);
 
+  void    postXMessage(std::string, std::string, double, std::string key="");
+  void    postXMessage(std::string, std::string, std::string key="");
+  void    postXMessage(std::string, double, std::string key="");
+  void    postXMessage(std::string, bool, std::string key="");
+  void    postGMessage(std::string, std::string, double, std::string key="");
+  void    postGMessage(std::string, std::string, std::string key="");
+  void    postGMessage(std::string, double, std::string key="");
+  void    postGMessage(std::string, bool, std::string key="");
+  void    postOffboardMessage(std::string dest, std::string var,
+			      std::string sval, std::string key="");
+  void    postOffboardMessage(std::string dest, std::string var,
+			      double dval, std::string key="");
+  void    postOffboardMessage(std::string dest, std::string var,
+			      bool bval, std::string key="");
+  void    postOffboardMessage(std::string dest, VarDataPair pair,
+			      std::string key="");
+  
   void    postDurationStatus();
   bool    durationExceeded();
   void    durationReset();
@@ -114,26 +152,45 @@ public:
   bool    checkNoStarve();
 
   void    setHelmIteration(unsigned int iter) {m_helm_iter=iter;}
-  
+  void    setConfigPosted(bool v=true) {m_config_posted=v;}
+
+  double  getBehaviorTOC() const {return(m_time_of_creation);} 
+  double  getBehaviorAge() const;
+    
+  bool                     getConfigPosted() const {return(m_config_posted);}
   double                   getPriorityWt() {return(m_priority_wt);}
-  double                   getBufferCurrTime();
-  double                   getBufferLocalTime();
-  double                   getBufferMsgTimeVal(std::string);
-  double                   getBufferTimeVal(std::string);
+  double                   getBufferCurrTime() const;
+  double                   getBufferLocalTime() const;
+  double                   getBufferMsgTimeVal(std::string) const;
+  bool                     getBufferVarUpdated(std::string) const;
+  double                   getBufferTimeVal(std::string) const;
+  double                   getBufferDoubleVal(std::string);
   double                   getBufferDoubleVal(std::string, bool&);
   std::string              getBufferStringVal(std::string);
   std::string              getBufferStringVal(std::string, bool&);
   std::vector<double>      getBufferDoubleVector(std::string, bool&);
   std::vector<std::string> getBufferStringVector(std::string, bool&);
   std::vector<std::string> getStateSpaceVars();
+  std::string              getOwnGroup();
 
+  bool                     getBufferDoubleValX(std::string, double&);
+  bool                     getBufferStringValX(std::string, std::string&);
+  
   std::vector<std::string> getUpdateResults() const {return(m_update_results);}
+
+  std::string expandCtrMacro(std::string sdata, std::string macro, unsigned int&);
   
 protected:
   const InfoBuffer* m_info_buffer;
 
   std::string m_us_name;       
   std::string m_descriptor;    
+
+  double m_osx;   // Current ownship x position (meters) 
+  double m_osy;   // Current ownship y position (meters) 
+  double m_osh;   // Current ownship heading (degrees 0-359)
+  double m_osv;   // Current ownship speed (meters) 
+
   std::string m_contact; // Name for contact in InfoBuffer
   std::string m_behavior_type;
   std::string m_duration_status;
@@ -147,16 +204,24 @@ protected:
   std::vector<std::string>       m_info_vars_no_warning;
 
   std::vector<VarDataPair>       m_messages;
+  std::vector<VarDataPair>       m_event_messages;
   std::vector<LogicCondition>    m_logic_conditions;
   std::vector<VarDataPair>       m_spawn_flags;
   std::vector<VarDataPair>       m_run_flags;
+  std::vector<VarDataPair>       m_runx_flags;
   std::vector<VarDataPair>       m_active_flags;
   std::vector<VarDataPair>       m_inactive_flags;
   std::vector<VarDataPair>       m_end_flags;
   std::vector<VarDataPair>       m_idle_flags;
+  std::vector<VarDataPair>       m_config_flags;
   std::map<std::string, double>  m_starve_vars;
   std::map<std::string, std::string> m_remap_vars;
- 
+
+  // Info about behaviors that are dynamically spawned
+  std::string m_spawn_basename;
+  bool        m_dynamically_spawned;
+  bool        m_dynamically_spawnable;
+  
   IvPDomain  m_domain;        
   double     m_priority_wt; 
 
@@ -190,6 +255,18 @@ protected:
   bool        m_last_runcheck_post;
   double      m_last_runcheck_time;
   
+  bool        m_config_posted;
+
+  double      m_time_of_creation;
+  
+
+  unsigned int m_macro_ctr;
+  unsigned int m_macro_ctr_01;
+  unsigned int m_macro_ctr_02;
+  unsigned int m_macro_ctr_03;
+  unsigned int m_macro_ctr_04;
+  unsigned int m_macro_ctr_05;
+
   // The state_ok flag shouldn't be set to true once it has been 
   // set to false. So prevent subclasses from setting this directly.
   // This variable should only be accessible via (1) postEMessage()
@@ -199,7 +276,3 @@ private:
 };
 
 #endif
-
-
-
-

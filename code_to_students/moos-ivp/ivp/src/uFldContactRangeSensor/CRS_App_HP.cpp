@@ -139,6 +139,8 @@ bool CRS_App::OnStartUp()
       handled = setSensorArc(value);
     else if((param != "apptick") && (param != "commstick"))
       handled = false;
+    else if(param == "ignore_group") 
+      handled = setNonWhiteVarOnString(m_ignore_group, value);
 
     if(!handled)
       reportConfigWarning("Unhandled config: " + origl);
@@ -173,9 +175,9 @@ bool CRS_App::OnConnectToServer()
 void CRS_App::registerVariables()
 {
   AppCastingMOOSApp::RegisterVariables();
-  m_Comms.Register("NODE_REPORT", 0);
-  m_Comms.Register("NODE_REPORT_LOCAL", 0);
-  m_Comms.Register("CRS_RANGE_REQUEST", 0);
+  Register("NODE_REPORT", 0);
+  Register("NODE_REPORT_LOCAL", 0);
+  Register("CRS_RANGE_REQUEST", 0);
 }
 
 //---------------------------------------------------------
@@ -184,6 +186,7 @@ void CRS_App::registerVariables()
 //            X=29.66,Y=-23.49,LAT=43.825089, LON=-70.330030,
 //            SPD=2.00, HDG=119.06,YAW=119.05677,DEPTH=0.00,   
 //            LENGTH=4.0,MODE=ENGAGED
+//   Returns: true if proper report received, even if ignored
 
 bool CRS_App::handleNodeReport(const string& node_report_str)
 {
@@ -192,6 +195,12 @@ bool CRS_App::handleNodeReport(const string& node_report_str)
   if(!new_node_record.valid())
     return(false);
 
+  string group = new_node_record.getGroup();
+  if(m_ignore_group != "") {
+    if(tolower(m_ignore_group) == tolower(group))
+      return(true);
+  }
+  
   string vname = new_node_record.getName();
   if(vname == "") {
     reportRunWarning("Unhandled NODE_REPORT. Missing Vehicle/Node name.");
@@ -352,7 +361,7 @@ void CRS_App::postRangePulse(const string& node, const string& color,
     pulse.set_color("fill", color);
   }
   string spec = pulse.get_spec();
-  m_Comms.Notify("VIEW_RANGE_PULSE", spec);
+  Notify("VIEW_RANGE_PULSE", spec);
 }
 
 //------------------------------------------------------------
@@ -380,11 +389,11 @@ void CRS_App::postNodeRangeReport(const string& rec_name,
 
   if((m_report_vars == "short") || (m_report_vars == "both")) {
     string full_str = "vname=" + rec_name + "," + str;
-    m_Comms.Notify("CRS_RANGE_REPORT", full_str);
+    Notify("CRS_RANGE_REPORT", full_str);
   }
 
   if((m_report_vars == "long") || (m_report_vars == "both"))
-    m_Comms.Notify("CRS_RANGE_REPORT_" + toupper(rec_name), str);
+    Notify("CRS_RANGE_REPORT_" + toupper(rec_name), str);
 
   // Phase 2: Possibly Post the "ground-truth" reports
   if((m_rn_algorithm != "") && m_ground_truth) {
@@ -394,11 +403,11 @@ void CRS_App::postNodeRangeReport(const string& rec_name,
     
     if((m_report_vars == "short") || (m_report_vars == "both")) {
       string full_str = "vname=" + rec_name + "," + str;
-      m_Comms.Notify("CRS_RANGE_REPORT_GT", full_str);
+      Notify("CRS_RANGE_REPORT_GT", full_str);
     }
     
     if((m_report_vars == "long") || (m_report_vars == "both"))
-      m_Comms.Notify("CRS_RANGE_REPORT_GT_" + toupper(rec_name), str);
+      Notify("CRS_RANGE_REPORT_GT_" + toupper(rec_name), str);
   }
 
 }
@@ -695,6 +704,7 @@ bool CRS_App::buildReport()
   m_msgs << "Ping Color:               " << m_ping_color             << endl;
   m_msgs << "Echo Color:               " << m_echo_color             << endl;
   m_msgs << "Ground Truth Reporting:   " << boolToString(m_ground_truth) << endl;
+  m_msgs << "Ignore Group:             " << m_ignore_group << endl;
 
   // Part 2: Build a report on the Vehicles
   m_msgs << endl;

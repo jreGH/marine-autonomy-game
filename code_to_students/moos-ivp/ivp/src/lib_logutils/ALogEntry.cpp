@@ -63,6 +63,35 @@ void ALogEntry::set(double timestamp, const std::string& varname,
 
 
 //--------------------------------------------------------
+// Procedure: getSummary()
+
+string ALogEntry::getSummary() const
+{
+  string summary;
+
+  summary += doubleToString(m_timestamp) + "  ";
+  summary += padString(m_varname, 20, false) + "  ";
+
+  summary += "(" + m_node.substr(0,3) + ")";
+  summary += padString(m_source, 25, false) + "  ";
+  if(m_isnum)
+    summary += doubleToStringX(m_dval);
+  else
+    summary += m_sval;
+
+  return(summary);
+}
+
+
+//--------------------------------------------------------
+// Procedure: tokenField
+
+bool ALogEntry::tokenField(const string& field, double& value) const
+{
+  return(tokParse(m_sval, field, ',', '=', value));
+}
+
+//--------------------------------------------------------
 // Procedure: overloaded less than operator
 
 bool operator< (const ALogEntry& one, const ALogEntry& two)
@@ -83,6 +112,7 @@ bool operator== (const ALogEntry& one, const ALogEntry& two)
      (one.getSource() == two.getSource())   &&
      (one.getSrcAux() == two.getSrcAux())   &&
      (one.getStringVal() == two.getStringVal()) &&
+     (one.getNode() == two.getNode()) &&
      (one.getDoubleVal() == two.getDoubleVal()) &&
      (one.isNumerical() == two.isNumerical())   &&
      (one.getRawLine() == two.getRawLine())   &&
@@ -91,18 +121,13 @@ bool operator== (const ALogEntry& one, const ALogEntry& two)
   return(false);
 }
 
-
 //--------------------------------------------------------
-// Procedure: tokenField
+// Procedure: overload not-equals operator
 
-bool ALogEntry::tokenField(const string& field, double& value) const
+bool operator!= (const ALogEntry& one, const ALogEntry& two)
 {
-  return(tokParse(m_sval, field, ',', '=', value));
+  if(one == two)
+    return(false);
+
+  return(true);
 }
-
-
-
-
-
-
-

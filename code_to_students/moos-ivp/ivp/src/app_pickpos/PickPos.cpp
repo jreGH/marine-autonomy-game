@@ -39,7 +39,7 @@ using namespace std;
 PickPos::PickPos()
 {
   // By default, positions and headings are rounded to nearest integer
-  m_pt_snap   = 1;
+  m_pt_snap   = 0.1;
   m_hdg_snap   = 1;
   m_spd_snap   = 0.1;
 
@@ -68,15 +68,24 @@ PickPos::PickPos()
   m_circ_y = 0;
   m_circ_rad = 0;
   m_circ_set = false;
-
   
   m_pick_amt = 10;
 
   m_vnames  = false;
+  m_colors  = false;
   m_verbose = false;
 
+  m_reverse_names = false;
+  
   m_grp_type = "random";
   m_output_type = "full";
+
+  m_headers_enabled = false;
+
+  m_global_nearest = -1;
+  
+  setVNameCache();
+  setColorCache();
 }
 
 
@@ -154,6 +163,64 @@ bool PickPos::setOutputType(string str)
     return(true);
   }
   return(false);
+}
+
+//---------------------------------------------------------
+// Procedure: setVNames()
+
+bool PickPos::setVNames(string str)
+{
+  m_vnames = true;
+  
+  vector<string> names = parseString(str, ',');
+  for(unsigned int i=0; i<names.size(); i++) {
+    string name = stripBlankEnds(names[i]);
+    if(strContainsWhite(name))
+      return(false);
+    if(strContains(name, '*'))
+      return(false);
+    if(strContains(name, '"'))
+      return(false);
+    if(strContains(name, '\"'))
+      return(false);
+    if(strContains(name, ')'))
+      return(false);
+    if(strContains(name, '('))
+      return(false);
+    if(strContains(name, '$'))
+      return(false);
+  }
+
+  for(unsigned int i=0; i<names.size(); i++) {
+    string name = stripBlankEnds(names[i]);
+    if(i < m_vname_cache.size())
+      m_vname_cache[i] = name;
+  }
+    
+  return(true);
+}
+
+//---------------------------------------------------------
+// Procedure: setColors()
+
+bool PickPos::setColors(string str)
+{
+  m_colors = true;
+  
+  vector<string> colors = parseString(str, ',');
+  for(unsigned int i=0; i<colors.size(); i++) {
+    string color = stripBlankEnds(colors[i]);
+    if(!isColor(color))
+      return(false);
+  }
+
+  for(unsigned int i=0; i<colors.size(); i++) {
+    string color = stripBlankEnds(colors[i]);
+    if(i < m_color_cache.size())
+      m_color_cache[i] = color;
+  }
+    
+  return(true);
 }
 
 
@@ -372,10 +439,6 @@ bool PickPos::addPosFile(string filename)
       m_file_positions.push_back(lines[i]);
   }
 
-  for(unsigned int i=0; i<m_file_positions.size(); i++)
-    cout << "[" << i << "]:" << m_file_positions[i] << endl;
-
-  
   return(true);
 }
 
@@ -395,20 +458,39 @@ bool PickPos::pick()
   else if(m_circ_set)
     pickPosByCircle();
 
-  if(m_verbose) {
-    cout << "heading type: " << m_hdg_type << endl;
-    cout << "  heading val1: " << m_hdg_val1 << endl;
-    cout << "  heading val2: " << m_hdg_val2 << endl;
-    cout << "  heading val3: " << m_hdg_val3 << endl;
-    cout << "speed type: " << m_spd_type << endl;
-    cout << "  speed val1: " << m_spd_val1 << endl;
-    cout << "  speed val2: " << m_spd_val2 << endl;
-  }
+  if(m_hdg_type != "none")
+    pickHeadingVals();
+
+  if(m_spd_type != "none")
+    pickSpeedVals();
+
+  if(m_vname_cache.size() != 0)
+    pickVehicleNames();
   
-  pickHeadingVals();
-  pickSpeedVals();
-  pickVehicleNames();
-  pickGroupNames();
+  if(m_colors)
+    pickColors();
+
+  if(m_groups.size() != 0)
+    pickGroupNames();
+
+  if(m_headers_enabled) {
+    cout << "# Values chosen by the pickpos utility" << endl;
+    cout << "# " << m_arg_summary << endl;
+  }
+
+  if(m_verbose) {
+    if(m_hdg_type != "none") {
+      cout << "heading type: " << m_hdg_type << endl;
+      cout << "  heading val1: " << m_hdg_val1 << endl;
+      cout << "  heading val2: " << m_hdg_val2 << endl;
+      cout << "  heading val3: " << m_hdg_val3 << endl;
+    }
+    if(m_spd_type != "none") {
+      cout << "speed type: " << m_spd_type << endl;
+      cout << "  speed val1: " << m_spd_val1 << endl;
+      cout << "  speed val2: " << m_spd_val2 << endl;
+    }
+  }
   printChoices();
   
   return(true);
@@ -425,7 +507,7 @@ void PickPos::pickPosByFile()
   if(m_pick_amt > choices) {
     cout << "Cannot pick " << m_pick_amt << " positions." << endl;
     cout << "File(s) only had " << choices << " lines." << endl;
-    return;
+    exit(1);
   }
   srand(time(NULL));
 
@@ -450,84 +532,42 @@ void PickPos::pickPosByFile()
 }
 
 //---------------------------------------------------------
-// Procedure: pickPosByPoly
+// Procedure: pickPosByPoly()
 
 void PickPos::pickPosByPoly()
 {
   if(m_fld_generator.size() == 0) {
     cout << "Cannot pick " << m_pick_amt << " positions." << endl;
     cout << "No polygons have been specified." << endl;
-    return;
+    exit(1);
   }
   srand(time(NULL));
 
   m_fld_generator.setSnap(m_pt_snap);
+  m_fld_generator.setBufferDist(m_buffer_dist);
+  m_fld_generator.setFlexBuffer(true);
+  m_fld_generator.generatePoints(m_pick_amt);
 
-  vector<XYPoint> points;
-  for(unsigned int i=0; i<m_pick_amt; i++) {
-    double adjustable_buffer_dist = m_buffer_dist;
- 
-    XYPoint pick_pt;
-
-    unsigned int tries = 0;
-    
-    bool done = false;
-    while(!done && (tries < m_max_tries)) {
-      pick_pt = m_fld_generator.generatePoint();
-
-      if(i==0) {
-	done = true;
-      }
-      else {
-	bool found_neighbor_too_close = false;
-	for(unsigned int j=0; j<points.size(); j++) {
-	  double dist = distPointToPoint(pick_pt, points[j]);
-	  if(dist < adjustable_buffer_dist)
-	    found_neighbor_too_close = true;
-	}
-	if(!found_neighbor_too_close)
-	  done = true;
-	else
-	  tries++;
-      }
-
-      // Smart adjustment of buffer_dist
-      if(m_max_tries > 10) {
-	if(tries > (m_max_tries * 0.8)) {
-	  double floor = m_max_tries * 0.8;
-	  double window = m_max_tries - floor;
-	  double pct = 1 - (tries - floor) / window;
-	  cout << "   " << pct << endl;
-	  adjustable_buffer_dist = pct * m_buffer_dist;
-	}
-      }
-      
-    }
+  vector<XYPoint> points = m_fld_generator.getPoints();
+  if(points.size() != m_pick_amt) {
+    cout << "Unable to squeeze " << m_pick_amt << " pts in given region." << endl;
+    cout << "Wanted: " << m_pick_amt << ", Found: " << points.size() << endl;
+    exit(2);
+  }
+  
+  for(unsigned int i=0; i<points.size(); i++) {
+    XYPoint pick_pt = points[i];
     
     double x = pick_pt.get_vx();
     double y = pick_pt.get_vy();
-
     string s="x="+doubleToStringX(x,2)+",y="+doubleToStringX(y,2);
-
-    points.push_back(pick_pt);
+    
     m_pick_positions.push_back(s);
     m_near_positions.push_back(0);
   }    
 
-
-  // Create an array of Booleans the same size as num of file choices
-  for(unsigned int i=0; i<m_pick_amt; i++) {
-    double closest = -1;
-    for(unsigned int j=0; j<m_pick_amt; j++) {
-      if(i!=j) {
-	double dist = distPointToPoint(points[i], points[j]);
-	if((closest == -1) || (dist < closest))
-	  closest = dist;
-      }
-    }
-    m_near_positions[i] = closest;
-  }
-
+  m_near_positions = m_fld_generator.getNearestVals();
+  m_global_nearest = m_fld_generator.getGlobalNearest();
 }
 
 //---------------------------------------------------------
@@ -637,15 +677,15 @@ void PickPos::pickSpeedVals()
 
   // Part 2: Handle making random speeds from a range of speeds
   if(m_spd_type == "rand") {
-    
     double range = m_spd_val2 - m_spd_val1;
     for(unsigned int i=0; i<m_pick_amt; i++) {
-      if(range == 0)
-	m_pick_headings.push_back(m_spd_val1);
+      if(range == 0) {
+	m_pick_speeds.push_back(m_spd_val1);
+      }
       else {
-	int choices = (int)((100 * range));
+	int choices = (int)((10000 * range));
 	int rval = rand() % choices;
-	double spd = m_spd_val1 + (double)(rval) / 100;
+	double spd = m_spd_val1 + (double)(rval) / 10000;
 	m_pick_speeds.push_back(spd);
       }
     }
@@ -658,14 +698,14 @@ void PickPos::pickSpeedVals()
 void PickPos::pickGroupNames()
 {
   // Part 1: Handle simple case where user does not want groups
-  if(m_groups.size() == 0)
+  int choices = (int)(m_groups.size());
+  if(choices == 0)
     return;
   
   srand(time(NULL));
 
   // Part 2: Select random group names from configured set
   if(m_grp_type == "random") {
-    int choices = (int)(m_groups.size());
     for(unsigned int i=0; i<m_pick_amt; i++) {
       int rval = rand() % choices;
       string chosen_group = m_groups[rval];
@@ -674,7 +714,6 @@ void PickPos::pickGroupNames()
   }
   // Part 3: Select alternating group names from configured set
   if(m_grp_type == "alternating") {
-    int choices = (int)(m_groups.size());
     for(unsigned int i=0; i<m_pick_amt; i++) {
       int alt_val = i % choices;
       string chosen_group = m_groups[alt_val];
@@ -684,46 +723,111 @@ void PickPos::pickGroupNames()
 }
 
 //---------------------------------------------------------
+// Procedure: setVNameCache()
+
+void PickPos::setVNameCache()
+{
+  m_vname_cache.clear();
+
+  m_vname_cache.push_back("abe");     m_vname_cache.push_back("ben");
+  m_vname_cache.push_back("cal");     m_vname_cache.push_back("deb");
+  m_vname_cache.push_back("eve");     m_vname_cache.push_back("fin");
+  m_vname_cache.push_back("gil");     m_vname_cache.push_back("hix");
+  m_vname_cache.push_back("ike");     m_vname_cache.push_back("jim");
+  m_vname_cache.push_back("kim");     m_vname_cache.push_back("lou");
+  m_vname_cache.push_back("mal");     m_vname_cache.push_back("ned");
+  m_vname_cache.push_back("opi");     m_vname_cache.push_back("pal");
+  m_vname_cache.push_back("que");     m_vname_cache.push_back("ray");
+  m_vname_cache.push_back("sam");     m_vname_cache.push_back("tim");
+  m_vname_cache.push_back("ula");     m_vname_cache.push_back("val");
+  m_vname_cache.push_back("wes");     m_vname_cache.push_back("xiu");
+  m_vname_cache.push_back("yen");     m_vname_cache.push_back("zan");
+  m_vname_cache.push_back("apia");    m_vname_cache.push_back("baka");
+  m_vname_cache.push_back("cary");    m_vname_cache.push_back("doha");
+  m_vname_cache.push_back("evie");    m_vname_cache.push_back("fahy");
+  m_vname_cache.push_back("galt");    m_vname_cache.push_back("hays");
+  m_vname_cache.push_back("iola");    m_vname_cache.push_back("jing");
+  m_vname_cache.push_back("kiev");    m_vname_cache.push_back("lima");
+  m_vname_cache.push_back("mesa");    m_vname_cache.push_back("nuuk");
+  m_vname_cache.push_back("oslo");    m_vname_cache.push_back("pace");
+  m_vname_cache.push_back("quay");    m_vname_cache.push_back("rome");
+  m_vname_cache.push_back("sako");    m_vname_cache.push_back("troy");
+  m_vname_cache.push_back("ubly");    m_vname_cache.push_back("vimy");
+  m_vname_cache.push_back("waco");    m_vname_cache.push_back("xane");
+  m_vname_cache.push_back("york");    m_vname_cache.push_back("zahl");
+}
+
+//---------------------------------------------------------
 // Procedure: pickVehicleNames()
 
 void PickPos::pickVehicleNames()
 {
-  // Part 1: Handle simple case where the user does not want headings
-  if(!m_vnames)
+  int choices = (int)(m_vname_cache.size());
+  if(choices == 0)
     return;
-
-  vector<string> vnames;  
-  vnames.push_back("abe");     vnames.push_back("ben");
-  vnames.push_back("cal");     vnames.push_back("deb");
-  vnames.push_back("eve");     vnames.push_back("fin");
-  vnames.push_back("gil");     vnames.push_back("hal");
-  vnames.push_back("ike");     vnames.push_back("jim");
-  vnames.push_back("kim");     vnames.push_back("lou");
-  vnames.push_back("mal");     vnames.push_back("ned");
-  vnames.push_back("opi");     vnames.push_back("pal");
-  vnames.push_back("que");     vnames.push_back("ray");
-  vnames.push_back("sam");     vnames.push_back("tim");
-  vnames.push_back("ula");     vnames.push_back("val");
-  vnames.push_back("wes");     vnames.push_back("xiu");
-  vnames.push_back("yen");     vnames.push_back("zan");
-  vnames.push_back("apia");    vnames.push_back("baku");
-  vnames.push_back("cary");    vnames.push_back("doha");
-  vnames.push_back("elko");    vnames.push_back("fahy");
-  vnames.push_back("galt");    vnames.push_back("hays");
-  vnames.push_back("iola");    vnames.push_back("juba");
-  vnames.push_back("kiev");    vnames.push_back("lima");
-  vnames.push_back("mesa");    vnames.push_back("nuuk");
-  vnames.push_back("oslo");    vnames.push_back("pace");
-  vnames.push_back("quay");    vnames.push_back("rome");
-  vnames.push_back("sako");    vnames.push_back("troy");
-  vnames.push_back("ubly");    vnames.push_back("vimy");
-  vnames.push_back("waco");    vnames.push_back("xian");
-  vnames.push_back("york");    vnames.push_back("zahl");
-
-  int choices = (int)(vnames.size());
+  
   for(unsigned int i=0; i<m_pick_amt; i++) {
     int index = i % choices;
-    m_pick_vnames.push_back(vnames[index]);
+    if(m_reverse_names)
+      index = (choices-1)-i;
+
+    m_pick_vnames.push_back(m_vname_cache[index]);
+  }
+}
+
+//---------------------------------------------------------
+// Procedure: setColorCache()
+
+void PickPos::setColorCache()
+{
+  m_color_cache.clear();
+
+  m_color_cache.push_back("yellow"); 
+  m_color_cache.push_back("red"); 
+  m_color_cache.push_back("dodger_blue"); 
+  m_color_cache.push_back("green"); 
+  m_color_cache.push_back("purple"); 
+  m_color_cache.push_back("orange"); 
+  m_color_cache.push_back("white"); 
+  m_color_cache.push_back("dark_green"); 
+  m_color_cache.push_back("dark_red"); 
+  m_color_cache.push_back("cyan"); 
+
+  m_color_cache.push_back("coral"); 
+  m_color_cache.push_back("brown"); 
+  m_color_cache.push_back("bisque"); 
+  m_color_cache.push_back("white"); 
+  m_color_cache.push_back("pink");
+  m_color_cache.push_back("darkslateblue"); 
+  m_color_cache.push_back("brown"); 
+  m_color_cache.push_back("burlywood"); 
+  m_color_cache.push_back("goldenrod"); 
+  m_color_cache.push_back("ivory"); 
+
+  m_color_cache.push_back("khaki"); 
+  m_color_cache.push_back("lime"); 
+  m_color_cache.push_back("peru"); 
+  m_color_cache.push_back("powderblue"); 
+  m_color_cache.push_back("plum"); 
+  m_color_cache.push_back("sienna"); 
+  m_color_cache.push_back("sandybrown"); 
+  m_color_cache.push_back("navy"); 
+  m_color_cache.push_back("olive"); 
+  m_color_cache.push_back("magenta"); 
+}
+
+//---------------------------------------------------------
+// Procedure: pickColors()
+
+void PickPos::pickColors()
+{
+  int choices = (int)(m_color_cache.size());
+  if(choices == 0)
+    return;
+  
+  for(unsigned int i=0; i<m_pick_amt; i++) {
+    int index = i % choices;
+    m_pick_colors.push_back(m_color_cache[index]);
   }
 }
 
@@ -746,15 +850,20 @@ void PickPos::printChoices()
 
   for(unsigned int i=0; i<max_index; i++) {
     string line;
-    if(i<m_pick_positions.size())
+    bool position_info = false;
+    if(i<m_pick_positions.size()) {
       line = m_pick_positions[i];
+      position_info = true;
+    }
 
     if((m_hdg_type != "none") && (i<m_pick_headings.size())) {
       double hdg = angle360(m_pick_headings[i]);
       hdg = snapToStep(hdg, m_hdg_snap);
       if(line != "")
 	line += ",";
-      line += "heading=" + doubleToStringX(hdg,2);
+      if(position_info)
+	line += "heading=";
+      line += doubleToStringX(hdg,3);
     }
 
     if((m_spd_type != "none") && (i<m_pick_speeds.size())) {
@@ -762,13 +871,21 @@ void PickPos::printChoices()
       spd = snapToStep(spd, m_spd_snap);
       if(line != "")
 	line += ",";
-      line += doubleToStringX(spd,2);
+      if(position_info)
+	line += "speed=";
+      line += doubleToStringX(spd,5);
     }
       
     if(m_vnames && (i<m_pick_vnames.size())) {
       if(line != "")
 	line += ",";
       line += m_pick_vnames[i];
+    }
+      
+    if(m_colors && (i<m_pick_colors.size())) {
+      if(line != "")
+	line += ",";
+      line += m_pick_colors[i];
     }
       
     if((m_groups.size() > 0) && (i<m_pick_groups.size())) {
@@ -781,13 +898,17 @@ void PickPos::printChoices()
       line = findReplace(line, "x=", "");
       line = findReplace(line, "y=", "");
       line = findReplace(line, "heading=", "");
+      line = findReplace(line, "speed=", "");
     }
     cout << line;
 
-    if(m_verbose)
-      cout << "   nearest=" << doubleToString(m_near_positions[i],2);
-
+    if(m_verbose) {
+      if(i < m_near_positions.size())
+	cout << "   nearest=" << doubleToString(m_near_positions[i],2);
+    }
     cout << endl;
   }
+  if(m_verbose)
+    cout << "Global nearest = " << doubleToStringX(m_global_nearest,2) << endl;
 }
 

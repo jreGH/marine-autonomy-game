@@ -72,6 +72,8 @@ void showHelpAndExit()
   blk("      Display MOOS publications and subscriptions.              ");
   mag("  --version,-v                                                  ");
   blk("      Display release version of pHostInfo.                     ");
+  mag("  --web,-w                                                      ");
+  blk("      Open browser to: https://oceanai.mit.edu/apps/pHelmIvP    ");
   blk("                                                                ");
   blk("Note: If argv[2] does not otherwise match a known option,       ");
   blk("      then it will be interpreted as a run alias. This is       ");
@@ -85,7 +87,6 @@ void showHelpAndExit()
 
 void showExampleConfigAndExit()
 {
-  blk("                                                                ");
   blu("=============================================================== ");
   blu("pHostInfo Example MOOS Configuration                            ");
   blu("=============================================================== ");
@@ -100,6 +101,8 @@ void showExampleConfigAndExit()
   blk("                                                                ");
   blk("  default_hostip_force = 192.168.0.55                           ");
   blk("  prefer_interface     = wlan0                                  ");
+  blk("                                                                ");
+  blk("  app_logging = true  // {true or file} By default disabled     ");
   blk("}                                                               ");
   exit(0);
 }

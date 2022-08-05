@@ -41,6 +41,8 @@
 #include "XYSegList.h"
 #include "XYSeglr.h"
 #include "XYCircle.h"
+#include "XYOval.h"
+#include "XYArrow.h"
 #include "XYHexagon.h"
 #include "XYRangePulse.h"
 #include "XYCommsPulse.h"
@@ -65,7 +67,8 @@ class MarineViewer : public Fl_Gl_Window
   virtual int  handle(int event);
   virtual bool setParam(std::string p, std::string v="");
   virtual bool setParam(std::string p, double v);
-
+  virtual void modColorScheme()=0;
+  
   bool   initGeodesy(double, double);
   bool   initGeodesy(const std::string&);
   bool   setTexture();
@@ -73,8 +76,13 @@ class MarineViewer : public Fl_Gl_Window
   std::string vehisetting(const std::string& s);
   void   clear(std::string vname, std::string shape, std::string stype);
 
+  void   setAutoZoom(double, double);
+  void   autoZoom();
+  
   void   handleNoTiff();
-
+  void   setVerbose(bool bval=true);
+  void   setZoom(double dval) {m_zoom = dval;}
+  
   double getStaleReportThresh() {return(m_vehi_settings.getStaleReportThresh());}
   double getStaleRemoveThresh() {return(m_vehi_settings.getStaleRemoveThresh());}
 
@@ -93,10 +101,10 @@ protected:
   bool   readTiffB(std::string);
 
   void   drawTiff();
-  double img2view(char, double);
-  double view2img(char, double);
-  double meters2img(char, double);
-  double img2meters(char, double);
+  double img2view(char, double) const;
+  double view2img(char, double) const;
+  double meters2img(char, double, bool verbose=false) const;
+  double img2meters(char, double) const;
 
   void   drawHash(double xl=0, double xr=0, double yb=0, double yt=0);
   void   drawFastHash(double xl=0, double xr=0, double yb=0, double yt=0);
@@ -110,15 +118,16 @@ protected:
 			   const ColorPack& body_color,
 			   const ColorPack& vname_color,
 			   bool vname_draw, 
-			   unsigned int line=0);
+			   unsigned int line=0,
+			   double transparency=1);
 
-  void  drawMarkers(const std::map<std::string, XYMarker>&);
-  void  drawMarker(const XYMarker&);
+  void  drawMarkers(const std::map<std::string, XYMarker>&, double tstamp=0);
+  void  drawMarker(const XYMarker&, double tstamp=0);
 
-  void  drawPolygons(const std::vector<XYPolygon>&);
+  void  drawPolygons(const std::vector<XYPolygon>&, double timestamp=0);
   void  drawPolygon(const XYPolygon&);
   
-  void  drawSegLists(const std::vector<XYSegList>&);
+  void  drawSegLists(const std::vector<XYSegList>&, double timestamp=0);
   void  drawSegList(const XYSegList&);
 
   void  drawSeglrs(const std::vector<XYSeglr>&);
@@ -133,11 +142,20 @@ protected:
   void  drawGrids(const std::vector<XYGrid>&);
   void  drawGrid(const XYGrid&);
 
-  void  drawConvexGrids(const std::vector<XYConvexGrid>&);
-  void  drawConvexGrid(const XYConvexGrid&);
+  //void  drawConvexGrids(const std::vector<XYConvexGrid>&);
+  //void  drawConvexGrid(const XYConvexGrid&);
+
+  void  drawConvexGrids(std::vector<XYConvexGrid>);
+  void  drawConvexGrid(XYConvexGrid);
 
   void  drawCircles(const std::map<std::string, XYCircle>&, double timestamp=0);
-  void  drawCircle(const XYCircle&, double timestamp);
+  void  drawCircle(XYCircle, double timestamp=0);
+
+  void  drawOvals(const std::map<std::string, XYOval>&, double timestamp=0);
+  void  drawOval(XYOval, double timestamp=0);
+
+  void  drawArrows(const std::map<std::string, XYArrow>&, double timestamp=0);
+  void  drawArrow(XYArrow, double timestamp=0);
 
   void  drawRangePulses(const std::vector<XYRangePulse>&, double timstamp);
   void  drawRangePulse(const XYRangePulse&, double timestamp);
@@ -145,7 +163,7 @@ protected:
   void  drawCommsPulses(const std::vector<XYCommsPulse>&, double timstamp);
   void  drawCommsPulse(const XYCommsPulse&, double timestamp);
   
-  void  drawPoints(const std::map<std::string, XYPoint>&);
+  void  drawPoints(const std::map<std::string, XYPoint>&, double timestamp=0);
 
   //  void  drawPoints(const std::map<std::string, XYPoint>&);
   void  drawPoint(const XYPoint&);
@@ -164,6 +182,9 @@ protected:
 		   double alpha=100);
 
   void gl_draw_aux(const std::string);
+
+  bool coordInView(double x, double y);
+  bool coordInViewX(double x, double y);
   
 protected:
   BackImg   m_back_img;
@@ -172,6 +193,12 @@ protected:
   bool      m_back_img_b_on;
   bool      m_back_img_mod;
 
+  bool      m_verbose;
+
+  double    m_targ_zoom;
+  double    m_targ_vshift_x;
+  double    m_targ_vshift_y;
+  
   double    m_zoom;
   double    m_vshift_x; 
   double    m_vshift_y; 

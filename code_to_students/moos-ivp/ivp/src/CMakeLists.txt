@@ -37,7 +37,6 @@ message("+++++++++++++++++++++++++++++++++++++++++")
 message("FIND_PACKAGE CONSIDERED:" ${MOOS_CONSIDERED_CONFIGS})
 message("+++++++++++++++++++++++++++++++++++++++++")
 
-
 if(NOT DEFINED MOOS_LIBRARIES)
   message("Defining MOOS_LIBRARIES")
   set(MOOS_LIBRARIES MOOS)
@@ -78,11 +77,13 @@ SET(IVP_BUILD_BOT_CODE_ONLY OFF CACHE BOOL "Build IvP's minimal set of bot apps.
 #-------------------------------------------------------------------------------
 SET(USE_UTM ON CACHE BOOL "Use UTM coordinates vs Local coordinates.")
 
+message("-------------------------------------------------------Use UTM:" ${USE_UTM})
+
+
 #-------------------------------------------------------------------------------
 # Tell CMake (and thus C++) where to find IvP's header files...
 #-------------------------------------------------------------------------------
 IF (${APPLE})
-
 	# If Mac users installed libtiff using 'MacPorts', it will likely appear
 	# under the '/opt/local' directory, which is not in the CMake search path.
 	IF( EXISTS /opt/local/include AND EXISTS /opt/local/lib )
@@ -90,6 +91,12 @@ IF (${APPLE})
 		INCLUDE_DIRECTORIES(/opt/local/include)
 		LINK_DIRECTORIES(/opt/local/lib)
 	ENDIF( EXISTS /opt/local/include AND EXISTS /opt/local/lib )
+
+	IF( EXISTS /opt/homebrew/include AND EXISTS /opt/homebrew/lib )
+		message(STATUS "Detected use of 'HomeBrew' for dependencies")
+		INCLUDE_DIRECTORIES(/opt/homebrew/include)
+		LINK_DIRECTORIES(/opt/homebrew/lib)
+	ENDIF( EXISTS /opt/local/include AND EXISTS /opt/homebrew/lib )
 
 	# If Mac users installed libtiff using 'fink', it will likely appear
 	# under the '/sw' directory, which is not in the CMake search path.
@@ -121,20 +128,22 @@ SET(IVP_NON_GUI_LIBS
    lib_bhvutil
    lib_genutil
    lib_geometry
+   lib_polar
    lib_helmivp
    lib_ivpbuild
    lib_ivpcore
    lib_ivpsolve
    lib_logic
+   lib_evalutil
    lib_encounters
    lib_apputil
+   lib_realm
    lib_contacts
+   lib_obstacles
    lib_ufield
-   lib_ufld_hazards
    lib_logutils
    lib_mbutil
    lib_manifest
-   lib_henrik_anneal
    )
 
 IF (${WIN32})
@@ -211,6 +220,12 @@ ENDFOREACH(L)
 #---------------------------------------------------------------------
 
 SET(ROBOT_APPS
+  pRealm
+  app_alogbin
+  app_alogavg
+  app_alogtm
+  app_alogeval
+  app_alogload
   app_aloggrep
   app_alogscan
   app_alogcd
@@ -224,15 +239,17 @@ SET(ROBOT_APPS
   app_nsplug
   app_pickpos
   app_manifest_test
+  app_tagrep
+  app_gen_moos_app
   pEchoVar
-  pEvalLoiter
+  pMissionEval
   pHelmIvP
   pMarinePID
   pBasicContactMgr
+  pContactMgrV20
   pDeadManPost
   pNodeReporter
   pObstacleMgr
-  pFrontEstimate
   uFldMessageHandler
   uFldNodeBroker
   uHelmScope
@@ -249,18 +266,7 @@ SET(ROBOT_APPS
   iSay
   )
 
-#---------------------------------------------------------------------
-# pSafetyRetreat is excluded in moos-ivp-aro downloads to check if the 
-# source code is present before adding it to the build list.
-
-IF( EXISTS ./pSafetyRetreat )
-  LIST(APPEND ROBOT_APPS pSafetyRetreat
-)  
-ENDIF( EXISTS ./pSafetyRetreat )
-
 message(" ROBOT_APPS: ${ROBOT_APPS}")
-
-
 
 #---------------------------------------------------------------------
 # Part 2 of 3: IVP_NON_GUI_APPS
@@ -272,12 +278,11 @@ SET(IVP_NON_GUI_APPS
   app_alogsort
   app_alogcheck
   app_alogtest
-  app_gen_hazards
   app_gen_obstacles
   app_bhv2graphviz
   pXRelay
   uFldCollisionDetect
-  uFldLoiterAssign
+  uFldCollObDetect
   uFldPathCheck
   uFldShoreBroker
   uFldScope
@@ -285,24 +290,17 @@ SET(IVP_NON_GUI_APPS
   uFldBeaconRangeSensor
   uFldContactRangeSensor
   uFldObstacleSim
-  uFldHazardSensor
-  uFldHazardMgr
-  uFldHazardMetric
   uFldGenericSensor
-  uFldWrapDetect
   pSearchGrid
   uSimMarine
-  pFrontGridRender
-  pGradeFrontEstimate
-  uFldCTDSensor
   )
 
 #---------------------------------------------------------------------
 # uSimCurrent is excluded in moos-ivp-aro downloads to check if the 
 # source code is present before adding it to the build list.
-IF( EXISTS ./uSimCurrent )
-  LIST(APPEND IVP_NON_GUI_APPS uSimCurrent)  
-ENDIF( EXISTS ./uSimCurrent )
+#IF( EXISTS ./uSimCurrent )
+#  LIST(APPEND IVP_NON_GUI_APPS uSimCurrent)  
+#ENDIF( EXISTS ./uSimCurrent )
 
 message(" IVP_NON_GUI_APPS: ${IVP_NON_GUI_APPS}")
 

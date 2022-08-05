@@ -69,6 +69,8 @@ void showHelpAndExit()
   blk("      Display MOOS publications and subscriptions.              ");
   mag("  --version,-v                                                  ");
   blk("      Display the release version of pDeadManPost.              ");
+  mag("  --web,-w                                                      ");
+  blk("      Open browser to: https://oceanai.mit.edu/apps/pDeadManPost");
   blk("                                                                ");
   blk("Note: If argv[2] does not otherwise match a known option,       ");
   blk("      then it will be interpreted as a run alias. This is       ");
@@ -97,6 +99,8 @@ void showExampleConfigAndExit()
   blk("  deadflag        = RETURN=true                                 ");
   blk("  post_policy     = once               // default               ");
   blk("  active_at_start = true               // default               ");
+  blk("                                                                ");
+  blk("  app_logging = true  // {true or file} By default disabled     ");
   blk("}                                                               ");
   blk("                                                                ");
   exit(0);

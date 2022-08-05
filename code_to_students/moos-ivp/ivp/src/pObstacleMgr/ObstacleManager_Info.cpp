@@ -1,5 +1,5 @@
 /*****************************************************************/
-/*    NAME: Michael Benjamin, Henrik Schmidt, and John Leonard   */
+/*    NAME: Michael Benjamin                                     */
 /*    ORGN: Dept of Mechanical Eng / CSAIL, MIT Cambridge MA     */
 /*    FILE: ObstacleManager_Info.cpp                             */
 /*    DATE: Aug 27th 2014                                        */
@@ -22,9 +22,9 @@ void showSynopsis()
   blk("------------------------------------                            ");
   blk("  The pObstacleMgr manages incoming sensor data about obstacles ");
   blk("  and posts alerts suitable for spawning obstacle avoidance     ");
-  blk("  behaviors.                                                    ");
-  blk("                                                                ");
-  blk("                                                                ");
+  blk("  behaviors. It has an interface agnostic to the user, but it   ");
+  blk("  was designed with the IvP Helm's Avoid Obstacle behavior(s)   ");
+  blk("  in mind                                                       ");
 }
 
 //----------------------------------------------------------------
@@ -32,17 +32,16 @@ void showSynopsis()
 
 void showHelpAndExit()
 {
-  blk("                                                                ");
   blu("=============================================================== ");
-  blu("Usage: pObstacleMgr file.moos [OPTIONS]                     ");
+  blu("Usage: pObstacleMgr file.moos [OPTIONS]                         ");
   blu("=============================================================== ");
   blk("                                                                ");
   showSynopsis();
   blk("                                                                ");
   blk("Options:                                                        ");
   mag("  --alias","=<ProcessName>                                      ");
-  blk("      Launch pObstacleMgr with the given process name       ");
-  blk("      rather than pObstacleMgr.                             ");
+  blk("      Launch pObstacleMgr with the given process name           ");
+  blk("      rather than pObstacleMgr.                                 ");
   mag("  --example, -e                                                 ");
   blk("      Display example MOOS configuration block.                 ");
   mag("  --help, -h                                                    ");
@@ -50,7 +49,9 @@ void showHelpAndExit()
   mag("  --interface, -i                                               ");
   blk("      Display MOOS publications and subscriptions.              ");
   mag("  --version,-v                                                  ");
-  blk("      Display the release version of pObstacleMgr.          ");
+  blk("      Display the release version of pObstacleMgr.              ");
+  mag("  --web,-w                                                      ");
+  blk("      Open browser to: https://oceanai.mit.edu/apps/pObstacleMgr");
   blk("                                                                ");
   blk("Note: If argv[2] does not otherwise match a known option,       ");
   blk("      then it will be interpreted as a run alias. This is       ");
@@ -75,6 +76,12 @@ void showExampleConfigAndExit()
   blk("                                                                ");
   blk("  point_var = TRACKED_FEATURE  // default is TRACKED_FEATURE    ");
   blk("                                                                ");
+  blk("  given_obstacle = pts={90.2,-80.4:...:85.4,-80.4},label=ob_23  ");
+  blk("                                                                ");
+  blk("  post_dist_to_polys = true  // true, false or (close)          ");
+  blk("  post_view_polys = true     // (true) or false or              ");
+  blk("  obstacles_color = green    // default is blue                 ");
+  blk("                                                                ");
   blk("  max_pts_per_cluster = 20   // default is 20                   ");
   blk("  max_age_per_point   = 20   // (secs)  default is 20           ");
   blk("                                                                ");
@@ -84,6 +91,19 @@ void showExampleConfigAndExit()
   blk("  lasso = true               // default is false                ");
   blk("  lasso_points = 6           // default is 6                    ");
   blk("  lasso_radius = 5           // (meters) default is 5           ");
+  blk("                                                                ");
+  blk("  obstacles_color = color    // default is blue                 ");
+  blk("                                                                ");
+  blk("  given_max_duration = 30    // default is 60 seconds           ");
+  blk("                                                                ");
+  blk("  general_alert = update_var=GEN_ALERT, alert_range=800         ");
+  blk("                                                                ");
+  blk("  // To squeeze more viewer effic when large # of obstacles:    ");
+  blk("  poly_label_thresh = 25     // Set label color=off if amt>25   ");
+  blk("  poly_shade_thresh = 100    // Set shade color=off if amt>100  ");
+  blk("  poly_vertex_thresh = 150   // Set vertex size=0 if amt>150    ");
+  blk("                                                                ");
+  blk("  app_logging = true  // {true or file} By default disabled     ");
   blk("}                                                               ");
   blk("                                                                ");
   exit(0);
@@ -105,20 +125,24 @@ void showInterfaceAndExit()
   blk("SUBSCRIPTIONS:                                                  ");
   blk("------------------------------------                            ");
   blk("  TRACKED_FEATURE = x=5,y=8,label=a,size=4,color=1              ");
+  blk("  GIVEN_OBSTACLE  = pts={90.2,-80.4:...:85.4,-80.4},label=ob_23 ");
   blk("                                                                ");
   blk("  NAV_X = 103.0                                                 ");
   blk("  NAV_Y = -23.8                                                 ");
-  blk("  OBM_ALERT_REQUEST = alert_range=25,                           ");
+  blk("  OBM_ALERT_REQUEST = name=avd_obstacle, alert_range=25,        ");
   blk("                      update_var=OBSTACLE_ALERT                 ");
   blk("                                                                ");
   blk("PUBLICATIONS:                                                   ");
   blk("------------------------------------                            ");
-  blk("  VEHICLE_CONNECT = true                                        ");
-  blk("  VIEW_POLYGON    = pts={32,-100:38,-98:40,-100:32,-104},       ");
-  blk("                    label=d,edge_color=white,vertex_color=blue  ");
-  blk("  OBSTACLE_ALERT  = name=d#                                     ");
-  blk("                    poly=pts={32,-100:38,-98:40,-100:32,-104},  ");
-  blk("                    label=d                                     ");
+  blk("  VIEW_POLYGON      = pts={32,-100:38,-98:40,-100:32,-104},     ");
+  blk("                      label=d,edge_color=white,vertex_color=blue");
+  blk("  OBM_CONNECT       = true                                      ");
+  blk("  OBM_DIST_TO_OBJ   = ob_key,17.5                               ");
+  blk("  OBM_MIN_DIST_EVER = ob_key,17.5                               ");
+  blk("  OBSTACLE_ALERT    = name=d#                                   ");
+  blk("                      poly=pts={32,-100:38,-98:40,-100:32,-104},");
+  blk("                      label=d                                   ");
+  blk("  OBM_RESOLVED      = ob_23                                     ");
   exit(0);
 }
 

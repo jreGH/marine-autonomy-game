@@ -40,10 +40,12 @@ SplitHandler::SplitHandler(string alog_file)
   // Init config parameters
   m_alog_file = alog_file;
   m_verbose = false;
-
+  m_max_cache = 100;  // Default limit for concurrent fopen fileptrs
+  
   // Init state variables
   m_alog_file_confirmed = false;
   m_split_dir_prior     = false;
+  m_max_cache_exceeded  = false;
 }
 
 //--------------------------------------------------------
@@ -61,6 +63,20 @@ bool SplitHandler::handle()
     ok = true;
 
   return(ok);
+}
+
+//--------------------------------------------------------
+// Procedure: setMaxFilePtrCache
+
+void SplitHandler::setMaxFilePtrCache(unsigned int val)
+{
+  m_max_cache = val;
+
+  if(m_max_cache < 10)
+    m_max_cache = 10;
+
+  if(m_max_cache > 2000)
+    m_max_cache = 2000;
 }
 
 //--------------------------------------------------------
@@ -115,6 +131,7 @@ bool SplitHandler::handleMakeSplitFiles()
   while(!done) {    
     string line_raw = getNextRawLine(file_in);
 
+    //cout << "line: [" << line_raw << "]" << endl;
     // Check if the line has the timestamp
     if((m_logstart.length() == 0) && strContains(line_raw, "LOGSTART")) {
       line_raw = findReplace(line_raw, "LOGSTART", "X");
@@ -149,7 +166,9 @@ bool SplitHandler::handleMakeSplitFiles()
        (varname=="VIEW_SEGLIST") || (varname=="VIEW_CIRCLE")  ||
        (varname=="GRID_INIT")    || (varname=="VIEW_MARKER")  ||
        (varname=="GRID_DELTA")   || (varname=="VIEW_SEGLR")   ||
-       (varname=="VIEW_RANGE_PULSE"))
+       (varname=="VIEW_ARROW")   || 
+       (varname=="VIEW_RANGE_PULSE")  ||
+       (varname=="VIEW_COMMS_PULSE"))
       varname = "VISUALS";
 
     // A measure implemented here to accommodate older alogfile formats where
@@ -180,6 +199,13 @@ bool SplitHandler::handleMakeSplitFiles()
       m_bhv_names.insert(bhv_name);
     }
 
+    // Handle APP_LOG: Break out into sep files for each MOOSApp
+    if(varname == "APP_LOG") {
+      string src = getSourceName(line_raw);       
+      varname = "APP_LOG_" + src; 
+      m_applogging_app_names.insert(src);
+    }
+
     // Part 1: Determine the vehicle name if not already known
     // Typically the MOOSDB automatically names itself MOOSDB_COMMUNITY, 
     // For example, MOOSDB_alpha. DB_TIME is published by the MOOSDB.
@@ -207,18 +233,34 @@ bool SplitHandler::handleMakeSplitFiles()
 
     // Part 2: Check if the file ptr for this variable already exists. 
     // If not, create a new file pointer and add it to the map.
+    bool cached_file_ptr = false;
+
     FILE *file_ptr = 0;
-    if(m_file_ptr.count(varname) == 1) 
+    if(m_file_ptr.count(varname) == 1) { 
       file_ptr = m_file_ptr[varname];
+      cached_file_ptr = true;
+    }
     else {
       string new_file = m_basedir + "/" + varname + ".klog"; 
+      errno = 0;
       FILE *new_ptr = fopen(new_file.c_str(), "a");
       if(new_ptr) {
-	m_file_ptr[varname] = new_ptr;
+	// 100 seems to be a safe bet for all OS types for allowing
+	// simultaneously open file pointers. Everything after 100
+	// will be slower.
+	if(m_file_ptr.size() <= m_max_cache) {
+	  m_file_ptr[varname] = new_ptr;
+	  cached_file_ptr = true;
+	  if(m_verbose)
+	    cout << "Caching: " << varname << " (" << m_file_ptr.size() << ")" << endl;
+	}
+	m_max_cache_exceeded = true;
 	file_ptr = new_ptr;
       }
       else {
-	cout << "Unable to open new file for VarName: " << varname << endl;
+	cout << "Unable to open new file for VarName: [[" << varname << "]]" << endl;
+	cout << " full filename: [[" << new_file << "]]" << endl;
+	cout << "Error: " << errno << endl;
 	break;
       }
     }
@@ -238,6 +280,9 @@ bool SplitHandler::handleMakeSplitFiles()
 
     // Part 5: Write the line to the appropriate file
     fprintf(file_ptr, "%s\n", line_raw.c_str());
+    if(!cached_file_ptr)
+      fclose(file_ptr);
+    
   }
 
   if(m_verbose)
@@ -250,6 +295,13 @@ bool SplitHandler::handleMakeSplitFiles()
     fclose(ptr);
   }
 
+  if(m_max_cache_exceeded) {
+    cout << "WARNING: Maximum concurrent fopen fileptr cache exceeded." << endl;
+    cout << "This is not an error, but the alog file pre-splitting    " << endl;
+    cout << "phase will be slower in these cases.                     " << endl;
+    cout << "Total unique varnames: " << m_var_type.size() << endl;
+  }
+  
   if(file_in)
     fclose(file_in);
 
@@ -282,15 +334,13 @@ bool SplitHandler::handleMakeSplitSummary()
     fprintf(f, "vlength=%s\n", m_vlength.c_str());
 
   if(m_bhv_names.size() != 0) {
-    fprintf(f, "bhvs=");
-    set<string>::iterator p;
-    for(p=m_bhv_names.begin(); p!=m_bhv_names.end(); p++) {
-      string bhv_name = *p;
-      if(p!=m_bhv_names.begin())
-	fprintf(f, ",");
-      fprintf(f, "%s", bhv_name.c_str());
-    }
-    fprintf(f, "\n");
+    string bhvs = stringSetToString(m_bhv_names);
+    fprintf(f, "bhvs=%s\n", bhvs.c_str());
+  }
+
+  if(m_applogging_app_names.size() != 0) {
+    string apps = stringSetToString(m_applogging_app_names);
+    fprintf(f, "applogging_apps=%s\n", apps.c_str());
   }
 
   map<string, string>::iterator p;

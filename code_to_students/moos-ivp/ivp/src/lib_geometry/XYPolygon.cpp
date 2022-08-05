@@ -67,6 +67,41 @@ bool XYPolygon::add_vertex(double x, double y, bool check_convexity)
 }
 
 //---------------------------------------------------------------
+// Procedure: add_vertex_delta
+//    o A call to "determine_convexity()" may be made since this
+//      operation may result in a change in the convexity.
+//    o The check_convexity option allows a bunch of vertices to be
+//      added and then just check for convexity at the end. 
+//    o The delta parameter will check the distance of new vertex
+//      to that of the previously added vertex, and if the dist
+//      is below the delta threshold it will not be added.
+//    o Care must be taken by the caller to not set delta too high.
+//      Otherwise the resulting polygon may just have one vertex.
+
+bool XYPolygon::add_vertex_delta(double x, double y, double delta,
+				 bool check_convexity)
+{
+  unsigned int vsize = size();
+  if(vsize > 1) {
+    double px = m_vx[vsize-1];
+    double py = m_vy[vsize-1];
+    if(((px==x)&&(py==y)) || (hypot(x-px,y-py) <= delta))
+      return(m_convex_state);
+  }
+  
+  XYSegList::add_vertex(x,y);
+  m_side_xy.push_back(-1);
+  
+  // With new vertex, we don't know if the new polygon is valid
+  if(check_convexity) {
+    determine_convexity();
+    return(m_convex_state);
+  }
+  else
+    return(true);
+}
+
+//---------------------------------------------------------------
 // Procedure: add_vertex
 //    o A call to "determine_convexity()" is made since this
 //      operation may result in a change in the convexity.
@@ -160,13 +195,12 @@ bool XYPolygon::delete_vertex(double x, double y)
   if(vsize == 0)
     return(false);
 
-  unsigned int i, ix = closest_vertex(x, y); 
+  unsigned int ix = closest_vertex(x, y); 
 
-  vector<int>  new_xy;
-  
-  for(i=0; i<ix; i++)
+  vector<int>  new_xy; 
+  for(unsigned int i=0; i<ix; i++)
     new_xy.push_back(m_side_xy[i]);
-  for(i=ix+1; i<vsize; i++)
+  for(unsigned int i=ix+1; i<vsize; i++)
     new_xy.push_back(m_side_xy[i]);
   
   m_side_xy  = new_xy;
@@ -175,6 +209,91 @@ bool XYPolygon::delete_vertex(double x, double y)
 
   determine_convexity();
   return(m_convex_state);
+}
+
+//---------------------------------------------------------------
+// Procedure: delete_vertex
+//   Purpose: Delete the vertex by the given index
+//      Note: A call to "determine_convexity()" is made since this
+//            operation may result in a change in the convexity.
+
+bool XYPolygon::delete_vertex(unsigned int ix)
+{
+  unsigned int vsize = m_vx.size();
+  if(ix >= vsize)
+    return(false);
+
+  vector<int>  new_xy; 
+  for(unsigned int i=0; i<ix; i++)
+    new_xy.push_back(m_side_xy[i]);
+  for(unsigned int i=ix+1; i<vsize; i++)
+    new_xy.push_back(m_side_xy[i]);
+  
+  m_side_xy  = new_xy;
+
+  XYSegList::delete_vertex(ix);
+
+  determine_convexity();
+  return(m_convex_state);
+}
+//---------------------------------------------------------------
+// Procedure: min_xproduct
+//   Purpose: Find the vertex with the minimum cross product formed
+//            by (1) the preceding vertex, (2) itself and (3) the
+//            following vertex.
+
+unsigned int XYPolygon::min_xproduct(bool& ok) const
+{
+  unsigned int vsize = m_vx.size();
+  if(vsize < 3) {
+    ok = false;
+    return(0);
+  }
+
+  double min_xprod = 0;
+  double min_index = 0;
+  
+  for(unsigned int i=0; i<vsize; i++) {
+
+    double x1 = 0;
+    double y1 = 0;
+    double x2 = m_vx[i];
+    double y2 = m_vy[i];
+    double x3 = 0;
+    double y3 = 0;
+    
+    if(i==0) {
+      x1 = m_vx[vsize-1];
+      y1 = m_vy[vsize-1];
+      x3 = m_vx[i+1];
+      y3 = m_vy[i+1];
+    }
+    else if(i==(vsize-1)) {
+      x1 = m_vx[i-1];
+      y1 = m_vy[i-1];
+      x3 = m_vx[0];
+      y3 = m_vy[0];
+    }
+    else {
+      x1 = m_vx[i-1];
+      y1 = m_vy[i-1];
+      x3 = m_vx[i+1];
+      y3 = m_vy[i+1];
+    }
+
+    double xprod = threePointXProduct(x1,y1, x2,y2, x3,y3);
+
+    // We don't care about turn direction, just magnitude
+    if(xprod < 0)
+      xprod = -xprod;
+
+    if((i == 0) || (xprod < min_xprod)) {
+      min_xprod = xprod;
+      min_index = i;
+    }
+  }
+  ok = true;
+  return(min_index);
 }
 
 //---------------------------------------------------------------
@@ -220,48 +339,6 @@ void XYPolygon::clear()
 
 
 //---------------------------------------------------------------
-// Procedure: is_clockwise()
-//      Note: Determine if the ordering of points in the internal
-//            vector of stored points constitutes a clockwise walk
-//            around the polygon. Algorithm base on progression of
-//            relative angle from the center. Result is somewhat
-//            undefined if the polygon is not convex. If it is 
-//            "nearly" convex, it should still be accurate.
-
-bool XYPolygon::is_clockwise() const
-{
-  unsigned int i, vsize = m_vx.size();
-  if(vsize < 3)
-    return(false);
-
-  int inc_count = 0;
-  int dec_count = 0;
-
-  double cx = get_center_x();
-  double cy = get_center_y();
-
-  for(i=0; i<vsize; i++) {
-    unsigned int j = i+1; 
-    if(j == vsize)
-      j = 0;
-    double relative_angle_1 = relAng(cx, cy, m_vx[i], m_vy[i]);
-    double relative_angle_2 = relAng(cx, cy, m_vx[j], m_vy[j]);
-    if(relative_angle_2 > relative_angle_1)
-      inc_count++;
-    else
-      dec_count++;
-  }
-
-  bool clockwise;
-  if(inc_count > dec_count)
-    clockwise = true;
-  else
-    clockwise = false;
-
-  return(clockwise);
-}
-
-//---------------------------------------------------------------
 // Procedure: apply_snap
 //      Note: A call to "determine_convexity()" is made since this
 //            operation may result in a change in the convexity.
@@ -301,7 +378,7 @@ void XYPolygon::reverse()
 }
 
 //---------------------------------------------------------------
-// Procedure: rotate
+// Procedure: rotate()
 //      Note: A call to "determine_convexity()" is made since this
 //            operation needs to have m_side_xy[i] reset for each i.
 
@@ -314,7 +391,7 @@ void XYPolygon::rotate(double val)
 
 
 //---------------------------------------------------------------
-// Procedure: rotate
+// Procedure: rotate()
 //      Note: A call to "determine_convexity()" is made since this
 //            operation needs to have m_side_xy[i] reset for each i.
 
@@ -327,7 +404,15 @@ void XYPolygon::rotate(double val, double cx, double cy)
 
 
 //---------------------------------------------------------------
-// Procedure: contains
+// Procedure: contains()
+
+bool XYPolygon::contains(const XYPoint& pt) const
+{
+  return(contains(pt.x(), pt.y()));
+}
+
+//---------------------------------------------------------------
+// Procedure: contains()
 
 bool XYPolygon::contains(double x, double y) const
 {
@@ -343,6 +428,9 @@ bool XYPolygon::contains(double x, double y) const
 
     x1 = m_vx[ix];
     y1 = m_vy[ix];
+    
+    if((x==x1)&&(y==y1))
+      return(true);
     
     int ixx = ix+1;
     if(ix == vsize-1)
@@ -422,9 +510,54 @@ bool XYPolygon::intersects(const XYPolygon &poly) const
       x2 = this->get_vx(i+1);
       y2 = this->get_vy(i+1);
     }
-    if(poly.seg_intercepts(x1,y1,x2,y2))
+    if(poly.seg_intercepts(x1,y1,x2,y2)) {
+      return(true);
+    }
+  }
+
+  return(false);
+}
+
+
+//---------------------------------------------------------------
+// Procedure: intersects
+
+bool XYPolygon::intersects(const XYSquare &square) const
+{
+  if(size() == 0)
+    return(false);
+
+  // First check that no vertices from "this" polygon are
+  // contained in the given polygon
+  for(unsigned int i=0; i<m_vx.size(); i++) {
+    double x = m_vx[i];
+    double y = m_vy[i];
+    if(square.containsPoint(x, y))
       return(true);
   }
+  // Then check that no vertices from the given square are
+  // contained in "this" polygon
+  double x1 = square.get_min_x();
+  double y1 = square.get_min_y();
+  double x2 = square.get_max_x();
+  double y2 = square.get_min_y();
+  double x3 = square.get_max_x();
+  double y3 = square.get_max_y();
+  double x4 = square.get_min_x();
+  double y4 = square.get_max_y();
+
+  if(contains(x1,y1) || contains(x2,y2) || 
+     contains(x3,y3) || contains(x4,y4)) 
+    return(true);
+  
+  if(seg_intercepts(x1,y1,x2,y2))
+    return(true);
+  if(seg_intercepts(x2,y2,x3,y3))
+    return(true);
+  if(seg_intercepts(x3,y3,x4,y4))
+    return(true);
+  if(seg_intercepts(x4,y4,x1,y1))
+    return(true);
 
   return(false);
 }
@@ -636,6 +769,106 @@ bool XYPolygon::seg_intercepts(double x1, double y1,
 
     bool result = segmentsCross(x1,y1,x2,y2,x3,y3,x4,y4);
     if(result == true)
+      return(true);
+
+  }
+  return(false);
+}
+
+//---------------------------------------------------------------
+// Procedure: line_intersects
+//   Purpose: Return true if the given segment intercepts the 
+//            polygon. Checks are made whether the line crosses
+//            any of the polygon edges. Under normal circumstances,
+//            a line will either (a) not intersect, or (b) intersect
+//            at exactly two points. If the line is parallel and
+//            overlapping one of the edges, then it will intersect
+//            infinitely many points. In this case the two points
+//            returned are the vertices of the segment that
+//            intersects.
+
+bool XYPolygon::line_intersects(double x1, double y1, 
+				double x2, double y2,
+				double& ix1, double& iy1,
+				double& ix2, double& iy2) const
+{
+  ix1 = 0;
+  iy1 = 0;
+  ix2 = 0;
+  iy2 = 0;
+
+  unsigned int cross_count = 0;
+  
+  unsigned int ix, vsize = m_vx.size();
+  if(vsize == 0)
+    return(false);
+
+  double x3,y3,x4,y4;
+
+  double rx1, ry1, rx2, ry2;
+  
+  if(vsize == 1) {
+    x3 = x4 = m_vx[0];
+    y3 = y4 = m_vy[0];
+    
+    bool cross = lineSegCross(x1,y1,x2,y2, x3,y3,x4,y4, rx1,ry1,rx2,ry2);
+    if(!cross)
+      return(false);
+    ix1 = ix2 = x3;
+    iy1 = iy2 = y3;
+    return(true);
+}
+
+  // Special case 2 vertices, otherwise the single edge will be checked
+  // twice if handled by the general case.
+  if(vsize == 2) {
+    x3 = m_vx[0];
+    y3 = m_vy[0];
+    x4 = m_vx[1];
+    y4 = m_vy[1];
+    bool cross = lineSegCross(x1,y1,x2,y2, x3,y3,x4,y4, rx1,ry1,rx2,ry2);
+    if(!cross)
+      return(false);
+    ix1 = rx1;
+    iy1 = ry2;
+    ix2 = rx2;
+    iy2 = ry2;
+  }
+
+  // Now handle the general case of more than two vertices
+
+  // Next check if the segment intersects any of the polgyon edges.
+  for(ix=0; ix<vsize; ix++) {
+    unsigned int ixx = ix+1;
+    if(ix == vsize-1)
+      ixx = 0;
+    x3 = m_vx[ix];
+    y3 = m_vy[ix];
+    x4 = m_vx[ixx];
+    y4 = m_vy[ixx];
+
+    bool cross = lineSegCross(x3,y3,x4,y4, x1,y1,x2,y2, rx1,ry1,rx2,ry2);
+    if(cross) {
+      if(cross_count == 0) {
+	ix1 = rx1;
+	iy1 = ry1;
+      }
+      else {
+	ix2 = rx1;
+	iy2 = ry1;
+      }
+      cross_count++;
+
+      if(cross_count == 1) {
+	if((rx1 != rx2) || (ry1 != ry2)) {
+	  ix2 = rx2;
+	  iy2 = ry2;
+	  cross_count++;
+	}
+      }
+    }
+    
+    if(cross_count >= 2)
       return(true);
   }
   return(false);
@@ -857,6 +1090,129 @@ void XYPolygon::determine_convexity()
 
 
 //---------------------------------------------------------------
+// Procedure: area()
+
+double XYPolygon::area() const
+{
+  unsigned int vsize = m_vx.size();
+  if(vsize < 3)
+    return(0);
+  
+  double total = 0;
+  for(unsigned int i=0; i<vsize-1; i++) 
+    total += (m_vx[i] * m_vy[i+1]) - (m_vx[i+1] * m_vy[i]);
+
+  total += (m_vx[vsize-1] * m_vy[0]) - (m_vx[0] * m_vy[vsize-1]);
+
+  total = total / 2;
+  
+  if(total < 0)
+    total = -total;
+
+  return(total);
+}
+
+//---------------------------------------------------------------
+// Procedure: perim()
+
+double XYPolygon::perim() const
+{
+  unsigned int vsize = m_vx.size();
+  if(vsize < 2)
+    return(0);
+  
+  double total = hypot(m_vx[vsize-1]-m_vx[0], m_vy[vsize-1]-m_vy[0]);
+  for(unsigned int i=0; i<vsize-1; i++) 
+    total += hypot(m_vx[i]-m_vx[i+1], m_vy[i]-m_vy[i+1]);
+
+  return(total);
+}
+
+//---------------------------------------------------------------
+// Procedure: simplify()
+//   Purpose: Search for the two closest vertices and if within the
+//            the given range, combine the two vertices into one.
+//   Returns: true if a simplification was performed, false otherwise.
+
+bool XYPolygon::simplify(double range_thresh)
+{
+  unsigned int vsize = size();
+  if(vsize < 4)
+    return(false);
+
+  // ===============================================================
+  // Part 1: Determine which pair of vertices has the smallest range
+  // ===============================================================
+  double min_dist = 0;
+  unsigned int mi = 0;
+  unsigned int mj = 0;
+  
+  for(unsigned int i=0; i<vsize; i++) {
+    unsigned int j = i+1;
+    if(j >= vsize)
+      j = 0;
+
+    double x1 = m_vx[i];
+    double y1 = m_vy[i];
+    double x2 = m_vx[j];
+    double y2 = m_vy[j];
+    double dist = hypot(x1-x2, y1-y2);
+
+    if((i==0) || (dist < min_dist)) {
+      min_dist = dist;
+      mi = i;
+      mj = j;
+    }
+  }
+  // If no pairs of vertices are close enough, we're done.
+  if(min_dist > range_thresh)
+    return(false);
+
+  // ===============================================================
+  // Part 2: Calculate the new combined vertex
+  // ===============================================================
+  double newx = (m_vx[mi] + m_vx[mj]) / 2; 
+  double newy = (m_vy[mi] + m_vy[mj]) / 2; 
+  double newz = (m_vz[mi] + m_vz[mj]) / 2; 
+
+  // ===============================================================
+  // Part 3: Build a copy of the this polygon's internal data while
+  //         replacing the pair of vertices with the combined one
+  // ===============================================================
+  vector<double> new_vx;
+  vector<double> new_vy;
+  vector<double> new_vz;
+  vector<int>    new_side_xy;
+
+  for(unsigned int i=0; i<vsize; i++) {
+    if((i!=mi) && (i!=mj)) {
+      new_vx.push_back(m_vx[i]);
+      new_vy.push_back(m_vy[i]);
+      new_vz.push_back(m_vz[i]);
+      new_side_xy.push_back(m_side_xy[i]);
+    }
+    else if(i == mi) {
+      new_vx.push_back(newx);
+      new_vy.push_back(newy);
+      new_vz.push_back(newz);
+      new_side_xy.push_back(m_side_xy[i]);
+    }
+  }
+
+  // ===============================================================
+  // Part 4: Install the new data and recalculate convexity info.
+  // ===============================================================
+  m_vx = new_vx;
+  m_vy = new_vy;
+  m_vz = new_vz;
+  m_side_xy = new_side_xy;
+
+  determine_convexity();
+  return(true);  
+}
+
+
+//---------------------------------------------------------------
 // Procedure: max_radius
 //   Purpose: Determine the maximum distance between the center of the
 //            polygon and any of its vertices.
@@ -878,7 +1234,24 @@ double XYPolygon::max_radius() const
 }
 
 //---------------------------------------------------------------
-// Procedure: closest_point_on_poly
+// Procedure: closest_point_on_poly()
+//   Purpose: Determine the point on the polygon (on an edge or 
+//            vertex) closest to the given point.
+//   Returns: given point if polygon is not convex
+
+XYPoint XYPolygon::closest_point_on_poly(XYPoint spt) const
+{
+  double rx, ry;
+  bool ok = closest_point_on_poly(spt.x(), spt.y(), rx, ry);
+  if(!ok)
+    return(spt);
+
+  XYPoint rpt(rx, ry);
+  return(rpt);
+}
+
+//---------------------------------------------------------------
+// Procedure: closest_point_on_poly()
 //   Purpose: Determine the point on the polygon (on an edge or 
 //            vertex) closest to the given point.
 //   Returns: true if the polygon is convex, false otherwise
@@ -944,7 +1317,7 @@ bool XYPolygon::closest_point_on_poly(double sx, double sy,
 
 
 //---------------------------------------------------------------
-// Procedure: exportSegList
+// Procedure: exportSegList()
 //   Purpose: Build an XYSegList from the polygon. Make the first 
 //            point in the XYSegList the point in the polygon
 //            that is closest to the x,y point.
@@ -980,10 +1353,63 @@ XYSegList XYPolygon::exportSegList(double x, double y)
 }
 
 
+//---------------------------------------------------------
+// Procedure: crossProductSettle()
+//   Purpose: If this polygon is nonconvex, try to make it convex
+//            by repeatedly removing middle points of the three-point
+//            group that is most colinear in the polygon.
+//      Note: If the poly is aready convex, or if the poly is has
+//            two points or less, just returns a copy of itself.
+ 
+XYPolygon XYPolygon::crossProductSettle() const
+{
+  XYPolygon poly = *this;
+  if(poly.is_convex())
+    return(poly);
+  if(poly.size() < 3)
+    return(poly);
 
+  bool done = false;
+  while(!done) {
+    bool ok = true;
+    unsigned int ix = poly.min_xproduct(ok);
+    if(ok) {
+      poly.delete_vertex(ix);
+      if(poly.is_convex() || (poly.size() < 3))
+	done = true;
+    }
+    else
+      done = true;
+  }
 
+  return(poly);
+}
 
+//---------------------------------------------------------
+// Procedure: setRadial()
+//   Purpose: Create the vertices for a radial polygon, overwriting
+//            any previously set vertices.
+ 
+bool XYPolygon::setRadial(double xpos, double ypos, double radius,
+			  unsigned int pts, double snap)
+{
+  if(radius <= 0)
+    return(false);
+  if(pts < 3)
+    return(false);
 
+  clear();
 
-
+  double delta = 360 / (double)(pts);
+  for(double deg=(delta/2); deg<360; deg+=delta) {
+    double new_x, new_y;
+    projectPoint(deg, radius, xpos, ypos, new_x, new_y);
+    add_vertex(new_x, new_y, false);
+  }
+  determine_convexity();
+  if(snap >= 0)
+    apply_snap(snap);
+  
+  return(true);
+}
 

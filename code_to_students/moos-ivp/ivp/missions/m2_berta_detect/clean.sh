@@ -1,30 +1,51 @@
 #!/bin/bash 
-
+#--------------------------------------------------------------
+#   Script: clean.sh                                    
+#   Author: Michael Benjamin  
+#     Date: June 2020     
+#----------------------------------------------------------
+#  Part 1: Declare global var defaults
+#----------------------------------------------------------
 VERBOSE=""
+POST_MISSION_FILES="no"
 
 #-------------------------------------------------------
-#  Part 1: Check for and handle command-line arguments
+#  Part 2: Check for and handle command-line arguments
 #-------------------------------------------------------
 for ARGI; do
     if [ "${ARGI}" = "--help" -o "${ARGI}" = "-h" ] ; then
-	printf "%s [SWITCHES]                       \n" $0
-	printf "  --verbose                         \n" 
-	printf "  --help, -h                        \n" 
+	echo "clean.sh [SWITCHES]           "
+	echo "  --help, -h                  " 
+	echo "  --verbose       Verbose output during rm  " 
+	echo "  --pmf           Clean post-misison files  " 
 	exit 0;	
     elif [ "${ARGI}" = "--verbose" -o "${ARGI}" = "-v" ] ; then
 	VERBOSE="-v"
+    elif [ "${ARGI}" = "--pmf" ] ; then
+	POST_MISSION_FILES="yes"
     else 
-	printf "Bad Argument: %s \n" $ARGI
-	exit 0
+	echo "clean.sh: Bad Arg:" $ARGI
+	exit 1
     fi
 done
 
 #-------------------------------------------------------
 #  Part 2: Do the cleaning!
 #-------------------------------------------------------
+if [ "${VERBOSE}" = "-v" ]; then
+    echo "Cleaning: $PWD"
+fi
 
-rm -rf  $VERBOSE   MOOSLog_*  LOG_* LLOG_* XLOG_* *.ps
-rm -f   $VERBOSE   *~  targ_* *.moos++ .tmp*
+rm -rf  $VERBOSE   MOOSLog_*  XLOG_* LOG_* 
+rm -f   $VERBOSE   *~  *.moos++ targ_*
 rm -f   $VERBOSE   .LastOpenedMOOSLogDirectory
-rm -rf  *alvtmp
-rm -rf  *pared.alog
+
+if [ "${POST_MISSION_FILES}" = "yes" ]; then
+    rm -rf $VERBOSE *alvtmp 
+    rm -rf $VERBOSE *pared.alog
+    rm -rf $VERBOSE*.png *.pdf 
+    rm -rf *.log
+    rm -rf *_alog_files
+fi
+
+

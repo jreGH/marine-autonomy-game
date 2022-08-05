@@ -218,13 +218,17 @@ bool BehaviorSet::buildBehaviorsFromSpecs()
   // with all the new IvPBehaviors, and add LifeEvents.
   unsigned int k, ksize = spec_builds.size();
   cout << "total specs::" << ksize << endl;
+
   for(k=0; k<ksize; k++) {
     IvPBehavior *bhv = spec_builds[k].getIvPBehavior();
     addBehavior(bhv);
 
+    string bhv_name = spec_builds[k].getBehaviorName();
+    string bhv_kind = spec_builds[k].getBehaviorKind();
+
     LifeEvent life_event;
-    life_event.setBehaviorName(spec_builds[k].getBehaviorName());
-    life_event.setBehaviorType(spec_builds[k].getBehaviorKind());
+    life_event.setBehaviorName(bhv_name);
+    life_event.setBehaviorType(bhv_kind);
     life_event.setSpawnString("helm_startup");
     life_event.setEventType("spawn");
     m_life_events.push_back(life_event);
@@ -266,7 +270,9 @@ SpecBuild BehaviorSet::buildBehaviorFromSpec(BehaviorSpec spec,
   
   bhv->setBehaviorType(bhv_kind);
   bhv->IvPBehavior::setParam("us", m_ownship);
-
+  if(spec.templating())
+    bhv->setDynamicallySpawnable(true);
+  
 
   // First apply all the behavior specs from the original specification
   // given in the .bhv file. All bad specs are noted, not just the first.
@@ -294,10 +300,31 @@ SpecBuild BehaviorSet::buildBehaviorFromSpec(BehaviorSpec spec,
       msg += "Line " + uintToString(bad_line) + ": " + orig;
       addWarning(msg);
     }
-
     specs_valid = specs_valid && valid;
   }
 
+  // June 30th, 2021: Additional check to see if collectively the
+  // params are valid, if there are otherwise no problems with individual
+  // params. 
+  if(specs_valid) {
+    cout << "Checking Param Collective: " << bhv->getDescriptor() << endl;
+    string msg = bhv->checkParamCollective();
+    cout << "Checking Param Collective Done: Msg:[" << msg << "]" << endl;
+    if(msg != "") {
+      specs_valid = false;
+      addWarning(msg);
+    }    
+  }
+
+  
+  string deprecated_msg = bhv->isDeprecated();
+  if(deprecated_msg != "") {
+    vector<string> svector = parseString(deprecated_msg, '#');
+    for(unsigned int i=0; i<svector.size(); i++)
+      addWarning(stripBlankEnds(svector[i]));
+  }
+
+  
   // Then apply all the behavior specs from an UPDATES string which may
   // possibly be empty.
   // NOTE: If the update_str is non-empty we can assume this is a spawning
@@ -364,27 +391,30 @@ bool BehaviorSet::handlePossibleSpawnings()
     unsigned int jsize = update_strs.size();
     for(unsigned int j=0; j<jsize; j++) {
       string update_str = update_strs[j];
-      
+
       // Check for unique behavior name
       // e.g. if name is "henry", make sure "henry" and "prefix_henry"
       // don't already exist.
       
-      string bname = tokStringParse(update_str, "name", '#', '=');
-      string fullname = m_behavior_specs[i].getNamePrefix() + bname;
+      string base_name = m_behavior_specs[i].getNamePrefix();
+      string update_name = tokStringParse(update_str, "name", '#', '=');
+      string fullname = base_name + update_name;
 
       // For example: If the behavior name prefix is avd_obstacle_,
       // and a behavior has already been spawned with the name
       // avd_obstacle_blue, then an update with name=avd_obstacle_blue or
       // name=blue would be applied to the previously spawned behavior.
 
-      if((m_bhv_names.count(fullname)==0) && (m_bhv_names.count(bname) == 0)) {
+      if((m_bhv_names.count(fullname)==0) && (m_bhv_names.count(update_name)==0)) {
 	SpecBuild sbuild = buildBehaviorFromSpec(m_behavior_specs[i], update_str);
 	m_behavior_specs[i].spawnTried();
 	//sbuild.print();
-	
+
 	LifeEvent life_event;
-	life_event.setBehaviorName(sbuild.getBehaviorName());
-	life_event.setBehaviorType(sbuild.getBehaviorKind());
+	string bhv_name = sbuild.getBehaviorName();
+	string bhv_kind = sbuild.getBehaviorKind();
+	life_event.setBehaviorName(bhv_name);
+	life_event.setBehaviorType(bhv_kind);
 	life_event.setSpawnString(update_str);
 	
 	if(sbuild.valid()) {
@@ -394,6 +424,8 @@ bool BehaviorSet::handlePossibleSpawnings()
 	  bhv->onSetParamComplete(); 
 	  bhv->onSpawn();
 	  bhv->postFlags("spawnflags", true);
+	  bhv->setDynamicallySpawned(true);
+	  bhv->setSpawnBaseName(base_name);
 	  addBehavior(bhv); 
 	  life_event.setEventType("spawn");
 	  m_behavior_specs[i].spawnMade();
@@ -402,17 +434,15 @@ bool BehaviorSet::handlePossibleSpawnings()
 	  life_event.setEventType("abort");
 	m_life_events.push_back(life_event);
       }
-      // If base+name already exists AND base does not exist, post warning
-      else {
-	if(m_bhv_names.count(bname)!=0) 
-	  addWarning("Unhandled update: Existing bhv named [" + bname + "] not found. ");
 
-	// The below check is disabled for now because the contact manager is
-	// erroneously posting two idential alerts. Once the contact manager is
-	// fixed, the below check should be re-enabled.
-
-	//if(m_bhv_names.count(fullname) != 0)
-	//  addWarning("Unhandled update: Spawned bhv named [" + fullname + "] is taken.");
+      
+      // If the behavior name still doesn't exist, then the spawning failed
+      // so post a warning.
+      if((m_bhv_names.count(fullname)==0) && (m_bhv_names.count(update_name)==0)) {
+	string warning_str;
+	warning_str += "Behavior named [" + update_name + "] or [";
+	warning_str += fullname + "] not found or spawned.";
+	addWarning(warning_str);
       }
     }
   }
@@ -499,9 +529,11 @@ IvPFunction* BehaviorSet::produceOF(unsigned int ix,
 
   // Look for possible dynamic updates to the behavior parameters
   bool update_made = bhv->checkUpdates();
-  if(update_made) 
+  if(update_made) {
+    bhv->setConfigPosted(false);
     bhv->onSetParamComplete();
-
+  }
+    
   vector<string> update_results = bhv->getUpdateResults();
   for(unsigned int i=0; i<update_results.size(); i++)
     m_update_results.push_back(update_results[i]);
@@ -514,6 +546,9 @@ IvPFunction* BehaviorSet::produceOF(unsigned int ix,
   // Possible vals: "completed", "idle", "running"
   new_activity_state = bhv->isRunnable();
   
+  // Invoke the onEveryState() function applicable in all situations
+  bhv->onEveryState(new_activity_state);
+  
   // ===================================================================
   // Part 2: With new_activity_state set, act appropriately for
   //         each behavior.
@@ -523,6 +558,11 @@ IvPFunction* BehaviorSet::produceOF(unsigned int ix,
   // are handled below, after executing onIdleState, onRunState() etc.
   if(new_activity_state == "completed")
     bhv->onCompleteState();
+
+  if(bhv->getConfigPosted() == false) {
+    bhv->postFlags("configflags");
+    bhv->setConfigPosted(true);
+  }
   
   // Part 2B: Handle idle behaviors
   if(new_activity_state == "idle") {
@@ -540,6 +580,12 @@ IvPFunction* BehaviorSet::produceOF(unsigned int ix,
   if(new_activity_state == "running") {
     double pwt = 0;
     int    pcs = 0;
+
+    // Added Jan 29th, 2022 run flags that are posted on each
+    // iteration of the helm in the run state, not just when
+    // transitioning to run state.
+    bhv->postFlags("runxflags", true); // true means    
+    
     if((old_activity_state == "idle") || (old_activity_state == ""))
       bhv->postFlags("runflags", true); // true means repeatable
     bhv->postDurationStatus();
@@ -787,6 +833,19 @@ IvPBehavior* BehaviorSet::getBehavior(unsigned int ix)
 }
 
 //------------------------------------------------------------
+// Procedure: isBehaviorAGoalBehavior
+
+bool BehaviorSet::isBehaviorAGoalBehavior(unsigned int ix)
+{
+  IvPBehavior* bhv = getBehavior(ix);
+  if(!bhv)
+    return(false);
+  if(bhv->isConstraint())
+    return(false);
+  return(true);
+}
+
+//------------------------------------------------------------
 // Procedure: getDescriptor
 
 string BehaviorSet::getDescriptor(unsigned int ix)
@@ -853,7 +912,7 @@ bool BehaviorSet::filterBehaviorsPresent()
 }
 
 //------------------------------------------------------------
-// Procedure: getMessages
+// Procedure: getMessages()
 
 vector<VarDataPair> BehaviorSet::getMessages(unsigned int ix, 
 					     bool clear)

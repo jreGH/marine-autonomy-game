@@ -137,6 +137,22 @@ ManifestSet ManifestSet::getManifestSetByGroup(string group) const
 }
 
 //-----------------------------------------------------------
+// Procedure: getManifestSetByDistro()
+
+ManifestSet ManifestSet::getManifestSetByDistro(string distro) const
+{
+  ManifestSet mset;
+
+  distro = tolower(distro);
+  for(unsigned int i=0; i<m_manifests.size(); i++) {
+    if(tolower(m_manifests[i].getDistro()) == distro)
+      mset.addManifest(m_manifests[i]);
+  }
+  
+  return(mset);
+}
+
+//-----------------------------------------------------------
 // Procedure: getManifestSetByDependency()
 
 ManifestSet ManifestSet::getManifestSetByDependency(string dep) const
@@ -253,6 +269,25 @@ vector<string> ManifestSet::getAllGroups() const
 }
 
 //-----------------------------------------------------------
+// Procedure: getAllDistros()
+
+vector<string> ManifestSet::getAllDistros() const
+{
+  set<string> distro_set;
+  for(unsigned int i=0; i<m_manifests.size(); i++) {
+    string distro = m_manifests[i].getDistro();
+    distro_set.insert(distro);
+  }
+
+  vector<string> rvector; 
+  set<string>::iterator p;
+  for(p=distro_set.begin(); p!=distro_set.end(); p++)
+    rvector.push_back(*p);
+
+  return(rvector);
+}
+
+//-----------------------------------------------------------
 // Procedure: getAllDependencies()
 
 vector<string> ManifestSet::getAllDependencies() const
@@ -293,7 +328,7 @@ vector<string> ManifestSet::getAllTypes() const
 }
 
 //-----------------------------------------------------------
-// Procedure: getGroupDocURL
+// Procedure: getGroupDocURL()
 
 string ManifestSet::getGroupDocURL(string grp_name) const
 {
@@ -303,6 +338,38 @@ string ManifestSet::getGroupDocURL(string grp_name) const
     if(tolower(m_manifests[i].getType()) == "group")
       if(m_manifests[i].hasGroup(grp_name))
 	result = m_manifests[i].getDocURL();
+  }
+
+  return(result);
+}
+
+//-----------------------------------------------------------
+// Procedure: getGroupDistro()
+
+string ManifestSet::getGroupDistro(string grp_name) const
+{
+  string result;
+  
+  for(unsigned int i=0; i<m_manifests.size(); i++) {
+    if(tolower(m_manifests[i].getType()) == "group")
+      if(m_manifests[i].hasGroup(grp_name))
+	result = m_manifests[i].getDistro();
+  }
+
+  return(result);
+}
+
+//-----------------------------------------------------------
+// Procedure: getGroupDownload()
+
+string ManifestSet::getGroupDownload(string grp_name) const
+{
+  string result;
+  
+  for(unsigned int i=0; i<m_manifests.size(); i++) {
+    if(tolower(m_manifests[i].getType()) == "group")
+      if(m_manifests[i].hasGroup(grp_name))
+	result = m_manifests[i].getDownload();
   }
 
   return(result);
@@ -452,6 +519,19 @@ bool ManifestSet::containsLibrary(string library) const
   }
 
   return(false);
+}
+
+//-----------------------------------------------------------
+// Procedure: size()
+
+unsigned int ManifestSet::size() const
+{
+  unsigned int count = 0;
+  for(unsigned int i=0; i<m_manifests.size(); i++) {
+    if(tolower(m_manifests[i].getType()) != "group")
+      count++;
+  }
+  return(count);
 }
 
 //-----------------------------------------------------------

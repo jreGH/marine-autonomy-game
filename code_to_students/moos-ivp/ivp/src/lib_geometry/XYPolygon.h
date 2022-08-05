@@ -29,6 +29,7 @@
 #include <vector>
 #include <string>
 #include "XYSegList.h"
+#include "XYSquare.h"
 
 class XYPolygon : public XYSegList {
 public:
@@ -37,14 +38,15 @@ public:
 
   // Polygon create and edit functions
   bool   add_vertex(double, double, bool=true);
+  bool   add_vertex_delta(double x, double y, double delta=0, bool=true);
   bool   add_vertex(double, double, double, bool=true);
   bool   add_vertex(double, double, double, std::string, bool=true);
   bool   alter_vertex(double, double, double=0);
   bool   delete_vertex(double, double);
+  bool   delete_vertex(unsigned int);
   void   grow_by_pct(double pct);
   void   grow_by_amt(double amt);
   bool   insert_vertex(double, double, double=0);
-  bool   is_clockwise() const;
 
   void   clear();
   bool   apply_snap(double snapval);
@@ -54,22 +56,39 @@ public:
 
 public:
   bool   contains(double, double) const;
+  bool   contains(const XYPoint&) const;
   bool   contains(const XYPolygon&) const;
   bool   intersects(const XYPolygon&) const;
+  bool   intersects(const XYSquare&) const;
   double dist_to_poly(const XYPolygon&) const;
   double dist_to_poly(double px, double py) const;
   double dist_to_poly(double x1, double y1, double x2, double y2) const;
   double dist_to_poly(double px, double py, double angle) const;
   bool   seg_intercepts(double, double, double, double) const;
+  bool   line_intersects(double x1, double y1, double x2, double y2,
+			 double& ix1, double& iy1,
+			 double& ix2, double& iy2) const;
+  
   bool   vertex_is_viewable(unsigned int, double, double) const;
   bool   is_convex() const  {return(m_convex_state);}
   void   determine_convexity();
 
-  double max_radius() const;
-  bool   closest_point_on_poly(double sx, double sy, double& rx, double& ry) const;
+  double area() const;
+  double perim() const;
+  bool   simplify(double range_thresh);
+  
+  double  max_radius() const;
+  bool    closest_point_on_poly(double sx, double sy, double& rx, double& ry) const;
+  XYPoint closest_point_on_poly(XYPoint spt) const;
 
-
+  bool   setRadial(double x, double y, double rad, unsigned int pts,
+		   double snap=-1);
+  
   XYSegList exportSegList(double x=0, double y=0);
+
+  XYPolygon crossProductSettle() const;
+  
+  unsigned int min_xproduct(bool&) const;
 
 protected:
   int    side(double x1, double y1, double x2, 
@@ -83,12 +102,3 @@ private:
 };
 
 #endif
-
-
-
-
-
-
-
-
-

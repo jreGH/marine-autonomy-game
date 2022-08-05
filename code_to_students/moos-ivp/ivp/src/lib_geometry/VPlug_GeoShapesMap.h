@@ -43,6 +43,8 @@ public:
 		     const std::string& value, 
 		     const std::string& community, 
 		     double time=0);
+
+  void   manageMemory(double curr_time);
   
   double getXMin() const {return(m_xmin);}
   double getXMax() const {return(m_xmax);}
@@ -55,6 +57,8 @@ public:
   unsigned int sizeSegLists() const    {return(size("seglists"));}
   unsigned int sizeSeglrs() const      {return(size("seglrs"));}
   unsigned int sizeCircles() const     {return(size("circles"));}
+  unsigned int sizeOvals() const       {return(size("ovals"));}
+  unsigned int sizeArrows() const      {return(size("arrows"));}
   unsigned int sizeHexagons() const    {return(size("hexagons"));}
   unsigned int sizePoints() const      {return(size("points"));}
   unsigned int sizeVectors() const     {return(size("vectors"));}
@@ -72,8 +76,10 @@ public:
   std::vector<XYHexagon> getHexagons(const std::string&);
 
   const std::map<std::string, XYCircle>& getCircles(const std::string&);
+  const std::map<std::string, XYOval>&   getOvals(const std::string&);
+  const std::map<std::string, XYArrow>&  getArrows(const std::string&);
   const std::map<std::string, XYMarker>& getMarkers(const std::string&);
-  const std::map<std::string, XYPoint>&   getPoints(const std::string&);
+  const std::map<std::string, XYPoint>&  getPoints(const std::string&);
 
   std::vector<XYVector>     getVectors(const std::string&);
   std::vector<XYGrid>       getGrids(const std::string&);

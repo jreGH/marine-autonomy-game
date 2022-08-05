@@ -37,19 +37,17 @@ void showSynopsis()
   blk("SYNOPSIS:                                                       ");
   blk("------------------------------------                            ");
   blk("  uQueryDB is a command-line tool for querying a MOOSDB with a  ");
-  blk("  logic condition provided on the command line.                 ");
+  blk("  one or more logic condition provided either on the command    ");
+  blk("  line or in a mission (.moos) file.                            ");
   blk("  It finds the MOOSDB via mission file provided on the command  ");
   blk("  line, or the IP address and port number given on the command  ");
   blk("  line. It will connect to the DB, register for the variables   ");
-  blk("  involved in the logic condition and determine if the condition"); 
-  blk("  holds. It will then exit with 0 if it holds or 1 otherwise.   ");
+  blk("  involved in the logic condition(s) and determine if the       "); 
+  blk("  condition holds. It will then exit with 0 if it holds or 1    ");
+  blk("  otherwise.                                                    ");
   blk("                                                                ");
-  blk("  It will return its value as soon as the app has received mail ");
-  blk("  for all variables involved in the logic condition. Otherwise  ");
-  blk("  it will wait for 10 seconds. This can be changed with the     ");
-  blk("  --wait=N parameter. If a variable in the logic condition is   ");
-  blk("  unknown to the MOOSDB, then the whole condition will fail     ");
-  blk("  after the wait period.                                        ");
+  blk("  If a variable in the logic condition is unknown to the MOOSDB ");
+  blk("  then the whole condition will fail.                           ");
 }
 
 //----------------------------------------------------------------
@@ -73,6 +71,8 @@ void showHelpAndExit()
   blk("      Display MOOS publications and subscriptions.              ");
   mag("  --version,-v                                                  ");
   blk("      Display the release version of uQueryDB.                  ");
+  mag("  --wait=N                                                      ");
+  blk("      Wait for N secs before exiting with failure (ret val=1)   ");
   mag("  --host=val                                                    ");
   blk("      Provide MOOSDB IP address on the command line rather than ");
   blk("      from a .moos file.                                        ");
@@ -80,12 +80,32 @@ void showHelpAndExit()
   blk("      Provide MOOSDB port number on the command line rather than");
   blk("      from a .moos file.                                        ");
   mag("  --condition=val                                               ");
-  blk("      Provide a logic condition.                                ");
-  mag("  --wait=val                                                    ");
-  blk("      Specifiy the wait period (default is 10 seconds).         ");
+  blk("      Provide a logic pass condition.                           ");
+  mag("  --pass_condition=val                                          ");
+  blk("      Same as --condition param. Provide a logic pass condition.");
+  mag("  --fail_condition=val                                          ");
+  blk("      Provide a logic fail condition.                           ");
+  mag("  --check_var=MY_RESULT                                         ");
+  blk("      Value of named variable to be written to .checkvars       ");
+  mag("  --csv                                                         ");
+  blk("      Format of .checkvars is comma-separated-value             ");
+  mag("  --esv                                                         ");
+  blk("      Format of .checkvars is equal-separated-value             ");
+  mag("  --wsv                                                         ");
+  blk("      Format of .checkvars is whitespace-separated-value        ");
+  mag("  --vo,-vo                                                      ");
+  blk("      Format of .checkvars is value-only                        ");
+  mag("  --web,-w                                                      ");
+  blk("      Open browser to: https://oceanai.mit.edu/ivpman/apps/uQueryDB ");
+  blk("                                                                ");
+  blk("Returns:                                                        ");
+  blk("   0 if all pass conditions met and no fail condition met       ");
+  blk("   1 otherwise                                                  ");
   blk("                                                                ");
   blk("Examples:                                                       ");
-  blk("   $ uQueryDB alpha.moos --condition=\"DB_UPTIME > 20\" --wait=5");
+  blk("   $ uQueryDB alpha.moos                                        ");
+  blk("   $ uQueryDB alpha.moos --condition=\"DB_UPTIME > 20\"         ");
+  blk("   $ uQueryDB alpha.moos --condition=\"DEPLOY=true\" --wait=10  ");
   blk("   $ uQueryDB --condition=\"DEPLOY=false\" --host=localhost --port=9000");
   blk("   $ uQueryDB alpha.moos --condition=\"((MISSION=complete) or (MISSION=halt))\"");
   exit(0);
@@ -96,16 +116,24 @@ void showHelpAndExit()
 
 void showExampleConfigAndExit()
 {
-  blk("                                                                ");
   blu("=============================================================== ");
   blu("uQueryDB Example MOOS Configuration                             ");
   blu("=============================================================== ");
   blk("                                                                ");
-  mag("Not Applicable"," - uQueryDB is run from the command line. If a ");
-  blk("MOOS file is provided on the command line, it is used solely to ");
-  blk("read the ServerHost and ServerPort information. uQueryDB does   ");
-  blk("not read a configuration block in the provided MOOS file.       ");
+  blk("ProcessConfig = uQueryDB                                        ");
+  blk("{                                                               ");
+  blk("  AppTick   = 4                                                 ");
+  blk("  CommsTick = 4                                                 ");
   blk("                                                                ");
+  blk("  pass_condition = MISSION_RESULT = pass                        ");
+  blk("  fail_condition = COLLISION = true                             ");
+  blk("                                                                ");
+  blk("  wait = 5                      // Default is zero seconds      ");
+  blk("                                                                ");
+  blk("  check_var = MISSION_RESULT                                    ");
+  blk("  check_var = DB_UPTIME                                         ");
+  blk("                                                                ");
+  blk("  check_var_format = csv                                        ");
   exit(0);
 }
 
@@ -115,7 +143,6 @@ void showExampleConfigAndExit()
 
 void showInterfaceAndExit()
 {
-  blk("                                                                ");
   blu("=============================================================== ");
   blu("uQueryDB INTERFACE                                              ");
   blu("=============================================================== ");
@@ -124,11 +151,13 @@ void showInterfaceAndExit()
   blk("                                                                ");
   blk("SUBSCRIPTIONS:                                                  ");
   blk("------------------------------------                            ");
-  blk("  Any variables involved in the specified logic condition.      ");
+  blk("  APPCAST_REQ                                                   ");
+  blk("  Any variables from pass or fail logic conditions              ");
   blk("                                                                ");
   blk("PUBLICATIONS:                                                   ");
   blk("------------------------------------                            ");
-  blk("  uQueryDB does not publish anything to the MOOSDB.             ");
+  blk("  APPCAST                                                       ");
+  blk("  No other variables                                             ");
   blk("                                                                ");
   exit(0);
 }

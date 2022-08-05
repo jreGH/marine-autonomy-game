@@ -46,6 +46,7 @@ class PickPos
   bool   setBufferDist(std::string);
   bool   setMaxTries(std::string);
   bool   setOutputType(std::string);
+  bool   setReverseNames() {m_reverse_names=true; return(true);}
 
   bool   setHeadingSnap(std::string);
   bool   setSpeedSnap(std::string);
@@ -53,12 +54,22 @@ class PickPos
   bool   setHdgConfig(std::string);
   bool   setSpdConfig(std::string);
   bool   setGroups(std::string);
+  bool   setVNames(std::string);
   bool   setVNames() {m_vnames=true; return(true);}
+  bool   setColors(std::string);
+  bool   setColors() {m_colors=true; return(true);}
 
   void   setVerbose(bool v)      {m_verbose=v;}
+  void   enableHeaders()         {m_headers_enabled=true;}
+  void   setDebug()              {m_fld_generator.setVerbose(true);}
+
+  void   setArgSummary(std::string str)  {m_arg_summary=str;}
+
   bool   pick();
 
  protected:
+  void setVNameCache();
+  void setColorCache();
   void pickPosByFile();
   void pickPosByPoly();
   bool pickPosByCircle(double minsep=-1);
@@ -66,6 +77,7 @@ class PickPos
   void pickSpeedVals();
   void pickGroupNames();
   void pickVehicleNames();
+  void pickColors();
   void printChoices();
   
  protected: // Config variables
@@ -88,7 +100,10 @@ class PickPos
   double       m_spd_val2;
 
   bool         m_vnames;
+  bool         m_colors;
 
+  bool         m_reverse_names;
+  
   double       m_circ_x;
   double       m_circ_y;
   double       m_circ_rad;
@@ -96,13 +111,23 @@ class PickPos
   
   std::string  m_grp_type;
   std::vector<std::string>  m_groups;
+
+  std::string  m_arg_summary;
+  
+  bool         m_headers_enabled;
   
 protected: // State variables
   XYFieldGenerator          m_fld_generator;
   double                    m_pt_snap;
   double                    m_hdg_snap;
   double                    m_spd_snap;
-  
+
+  // The possible vehicle names, a cache to pick from.
+  std::vector<std::string>  m_vname_cache;
+
+  // The possible colors, a cache to pick from.
+  std::vector<std::string>  m_color_cache;
+
   // The possible positions specified by file input
   std::vector<std::string>  m_file_positions;
 
@@ -112,9 +137,11 @@ protected: // State variables
   std::vector<double>       m_pick_speeds;
   std::vector<std::string>  m_pick_vnames;
   std::vector<std::string>  m_pick_groups;
+  std::vector<std::string>  m_pick_colors;
 
   // Nearest neighbor for each chosen position
   std::vector<double>       m_near_positions;
+  double                    m_global_nearest;
 };
 
 #endif 

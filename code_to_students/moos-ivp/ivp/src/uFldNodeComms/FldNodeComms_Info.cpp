@@ -38,7 +38,7 @@ void showSynopsis()
   blk("------------------------------------                            ");
   blk("  A shoreside tool for managing communications between vehicles.");
   blk("  It has knowledge of all vehicle positions based on incoming   ");
-  blk("  node reports. Communications may be  limited based on vehicle ");
+  blk("  node reports. Communications may be limited based on vehicle  ");
   blk("  range, frequency of messages, or size of message. Messages may");
   blk("  also be blocked based on a team affiliation.                  ");
 }
@@ -67,6 +67,8 @@ void showHelpAndExit()
   blk("      Display MOOS publications and subscriptions.              ");
   mag("  --version,-v                                                  ");
   blk("      Display the release version of uFldNodeComms.             ");
+  mag("  --web,-w                                                      ");
+  blk("      Open browser to: https://oceanai.mit.edu/ivpman/apps/uFldNodeComms ");
   blk("                                                                ");
   blk("Note: If argv[2] does not otherwise match a known option,       ");
   blk("      then it will be interpreted as a run alias. This is       ");
@@ -79,7 +81,6 @@ void showHelpAndExit()
 
 void showExampleConfigAndExit()
 {
-  blk("                                                                ");
   blu("=============================================================== ");
   blu("uFldNodeComms Example MOOS Configuration                        ");
   blu("=============================================================== ");
@@ -93,17 +94,28 @@ void showExampleConfigAndExit()
   blk("  critical_range = 30       // default (in meters)              ");
   blk("  stale_time     = 5        // default (in seconds)             ");
   blk("                                                                ");
-  blk("  min_msg_interval = 30     // default (in seconds)             ");
   blk("  max_msg_length   = 1000   // default (# of characters)        ");
+  blk("  min_msg_interval = 30     // default (in seconds)             ");
+  blk("  min_rpt_interval = -1     // default (in seconds)             ");
   blk("                                                                ");
-  blk("  view_node_rpt_pulses = true // default                        ");
-  blk("                                                                ");
-  blk("  verbose  = true           // default                          ");
+  blk("  verbose    = true         // default                          ");
+  blk("  groups     = false        // default                          ");
+  blk("  msg_groups = false        // default                          ");
   blk("                                                                ");
   blk("  stealth  = vname=alpha, stealth=0.8                           ");
   blk("  earange  = vname=alpha, earange=4.5                           ");
   blk("                                                                ");
-  blk("  groups   = true                                               ");
+  blk("  shared_node_reports = false  // default                       "); 
+  blk("                                                                ");
+  blk("  pulse_duration = 10          // default (in seconds)          ");
+  blk("  view_node_rpt_pulses = true  // default                       ");
+  blk("                                                                ");
+  blk("  drop_percentage = 10         // Drop 10% msgs. Default is 0.  ");
+  blk("                                                                ");
+  blk("  msg_color        = white         // default                   ");
+  blk("  msg_repeat_color = light_green   // default                   ");
+  blk("                                                                ");
+  blk("  app_logging = true  // {true or file} By default disabled     ");
   blk("}                                                               ");
   exit(0);
 }
@@ -113,7 +125,6 @@ void showExampleConfigAndExit()
 
 void showInterfaceAndExit()
 {
-  blk("                                                                ");
   blu("=============================================================== ");
   blu("uFldNodeComms INTERFACE                                         ");
   blu("=============================================================== ");
@@ -131,9 +142,13 @@ void showInterfaceAndExit()
   blk("                      YAW=118.8,DEPTH=4.6,LENGTH=3.8,           ");
   blk("                      MODE=MODE@ACTIVE:LOITERING                ");
   blk("                                                                ");
+  blk("  UNC_SHARED_NODE_REPORTS  = true                               ");
   blk("  UNC_VIEW_NODE_RPT_PULSES = false                              ");
-  blk("  UNC_STEALTH = vname=alpha,stealth=0.4                         ");
-  blk("  UNC_EARANGE = vname=alpha,earange=0.5                         ");
+  blk("  UNC_FULL_REPORT_REQ      = henry                              ");
+  blk("                                                                ");
+  blk("  UNC_STEALTH     = vname=alpha,stealth=0.4                     ");
+  blk("  UNC_COMMS_RANGE = 250                                         ");
+  blk("  UNC_EARANGE     = vname=alpha,earange=0.5                     ");
   blk("                                                                ");
   blk("PUBLICATIONS:                                                   ");
   blk("------------------------------------                            ");
@@ -147,7 +162,6 @@ void showInterfaceAndExit()
   blk("  VIEW_COMMS_PULSE     = label=one,sx=4,sy=2,tx=44,ty=55,       ");
   blk("                         beam_width=10,duration=5,fill=0.3,     ");
   blk("                         fill_color=yellow,edge_color=green     ");
-  blk("                                                                ");
   exit(0);
 }
 

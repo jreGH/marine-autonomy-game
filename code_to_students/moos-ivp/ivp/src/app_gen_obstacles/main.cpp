@@ -53,6 +53,8 @@ int main(int argc, char *argv[])
       handled = generator.setObstacleMinSize(argi.substr(11));
     else if(strBegins(argi, "--max_size="))
       handled = generator.setObstacleMinSize(argi.substr(11));
+    else if(strBegins(argi, "--meter"))
+      handled = generator.setPrecision(1);
     else if(strBegins(argi, "--poly="))
       handled = generator.setPolygon(argi.substr(7));
     
@@ -62,17 +64,8 @@ int main(int argc, char *argv[])
     }
   }
   
-  cout << "// " << arg_summary << endl;
+  cout << "# " << arg_summary << endl;
 
   generator.generate();
   return(0);
 }
-
-
-
-
-
-
-
-
-

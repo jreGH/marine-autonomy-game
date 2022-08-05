@@ -25,6 +25,7 @@
 #pragma warning(disable : 4786)
 #pragma warning(disable : 4503)
 #endif
+
 #include <unistd.h>
 #include <iterator>
 #include <iostream>
@@ -61,10 +62,12 @@ HelmIvP::HelmIvP()
   m_bhv_count_ever = 0;
   m_ok_skew        = 60; 
   m_skews_matter   = true;
+  m_goals_mandatory = false; 
   m_helm_start_time = 0;
   m_curr_time      = 0;
   m_start_time     = 0;
   m_no_decisions   = 0;
+  m_no_goal_decisions = 0;
 
   // The m_has_control correlates to helm status
   m_has_control     = false;
@@ -104,6 +107,8 @@ HelmIvP::HelmIvP()
   m_refresh_pending  = false;
   m_refresh_time     = 0;
 
+  m_seed_random = true;
+  
   m_node_report_vars.push_back("AIS_REPORT");
   m_node_report_vars.push_back("NODE_REPORT");
   m_node_report_vars.push_back("AIS_REPORT_LOCAL");
@@ -204,7 +209,9 @@ bool HelmIvP::OnNewMail(MOOSMSG_LIST &NewMail)
     if(reg_skew_time < skew_time)
       skew_time = reg_skew_time;
 
-    if(moosvar=="MOOS_MANUAL_OVERIDE") {
+    // OVERRIDE is correct spelling, OVERIDE is legacy supported
+    if((moosvar=="MOOS_MANUAL_OVERIDE") ||
+       (moosvar=="MOOS_MANUAL_OVERRIDE")) {
       string skew_info = "var=" + moosvar + ":";
       skew_info += "matter="+boolToString(m_skews_matter);
       skew_info += ", skew=" + doubleToString(skew_time,2);
@@ -229,6 +236,7 @@ bool HelmIvP::OnNewMail(MOOSMSG_LIST &NewMail)
       }
     }
 
+    // OVERRIDE is correct spelling, OVERIDE is legacy supported
     if((moosvar =="MOOS_MANUAL_OVERIDE") || 
        (moosvar =="MOOS_MANUAL_OVERRIDE") ||
        ((moosvar == m_additional_override) && (moosvar != ""))) {
@@ -332,17 +340,18 @@ bool HelmIvP::Iterate()
   if(m_init_vars_ready && !m_init_vars_done)
     handleInitialVarsPhase2();
 
-  // If the info_buffer curr_time is not synched in the OnNewMail function
-  //  (possibly because there was no new mail), synch the current time now.
+  // If the info_buffer curr_time is not synched in the OnNewMail
+  // function (possibly because there was no new mail), synch the
+  // current time now.
   if(!m_ibuffer_curr_time_updated) 
     m_info_buffer->setCurrTime(m_curr_time);
   if(m_start_time == 0)
     m_start_time = m_curr_time;
 
-  // Now we're done addressing whether the info_buffer curr_time is synched 
-  // on this iteration. It was done either in this function or in onNewMail().
-  // Now set m_ibuffer_curr_time_updated=false to reflect the ingoing state for
-  // the next iteration.
+  // Now we're done addressing whether the info_buffer curr_time is
+  // synched on this iteration. It was done either in this function or
+  // in onNewMail().  Now set m_ibuffer_curr_time_updated=false to
+  // reflect the ingoing state for the next iteration.
   m_ibuffer_curr_time_updated = false;
 
   if(!m_has_control) {
@@ -433,12 +442,15 @@ bool HelmIvP::Iterate()
 
   m_prev_helm_report = m_helm_report;
 
-   string allstop_msg = "clear";
+  string allstop_msg = "clear";
 
   if(m_helm_report.getHalted())
     allstop_msg = "BehaviorError";
   else if(m_helm_report.getOFNUM() == 0)
     allstop_msg = "NothingToDo";
+  else if(m_goals_mandatory && m_helm_report.getActiveGoal() == false)
+    allstop_msg = "NoGoalBehavior";
+
   
   // First make sure the HelmEngine has made a decision for all 
   // non-optional variables - otherwise declare an incomplete decision.
@@ -463,6 +475,7 @@ bool HelmIvP::Iterate()
     }
   }
 
+  
   if(allstop_msg != "clear")
     postAllStop(allstop_msg);
   else {  // Post all the Decision Variable Results
@@ -475,7 +488,7 @@ bool HelmIvP::Iterate()
 	post_alias = "DESIRED_HEADING";
       if(m_helm_report.hasDecision(domain_var)) {
 	double domain_val = m_helm_report.getDecision(domain_var);
-	Notify(post_alias, domain_val);
+	Notify(m_helm_prefix + post_alias, domain_val);
       }
     }
   }
@@ -589,6 +602,9 @@ void HelmIvP::postBehaviorMessages()
 	    m_outgoing_iter[var] = m_helm_iteration;
 	    m_outgoing_sval[var] = sdata;
 	    m_outgoing_bhv[var]  = bhv_descriptor;
+
+	    if(var == "BHV_EVENT")
+	      reportEvent(sdata);
 	  }
 	}
 	else {
@@ -707,6 +723,7 @@ void HelmIvP::postLifeEvents()
     str += ", btype=" + events[i].getBehaviorType();
     str += ", event=" + events[i].getEventType();
     str += ", seed="  + events[i].getSpawnString();
+    str += ", posting_index=" + uintToString(i);
     Notify("IVPHELM_LIFE_EVENT", str);
   }
   if(vsize > 0)
@@ -1150,12 +1167,14 @@ void HelmIvP::checkForTakeOver()
 bool HelmIvP::OnStartUp()
 {
   AppCastingMOOSApp::OnStartUp();
+  cout << "In Helm OnStartUp()" << endl;
 
   Notify("PHELMIVP_PID", getpid());
     
   m_helm_start_time = m_curr_time;
   if(!m_info_buffer) {
     m_info_buffer = new InfoBuffer;
+    m_info_buffer->setCurrTime(m_curr_time);
     m_info_buffer->setStartTime(m_helm_start_time);
   }
     
@@ -1185,6 +1204,10 @@ bool HelmIvP::OnStartUp()
       handled = setVerbosity(value);
     else if(param == "ACTIVE_START")
       handled = setBooleanOnString(m_has_control, value);
+    else if(param == "SEED_RANDOM")
+      handled = setBooleanOnString(m_seed_random, value);
+    else if(param == "GOALS_MANDATORY")
+      handled = setBooleanOnString(m_goals_mandatory, value);
     else if(param == "START_ENGAGED")
       handled = setBooleanOnString(m_has_control, value);
     else if((param == "START_INDRIVE") || (param == "START_IN_DRIVE"))
@@ -1199,6 +1222,8 @@ bool HelmIvP::OnStartUp()
       handled = setBooleanOnString(m_park_on_allstop, value);
     else if(param == "NODE_SKEW") 
       handled = handleConfigNodeSkew(value);
+    else if(param == "HELM_PREFIX") 
+      handled = setNonWhiteVarOnString(m_helm_prefix, value);
     else if((param == "HOLD_ON_APP") || (param == "HOLD_ON_APPS"))
       handled = handleConfigHoldOnApp(value);
     else if(param == "DOMAIN")
@@ -1215,6 +1240,9 @@ bool HelmIvP::OnStartUp()
     if(!handled)
       reportUnhandledConfigWarning(orig);
   }
+
+  if(m_seed_random)
+    seedRandom();
   
   // Check for Config Warnings first here after reading pHelmIvP block.
   if(getWarningCount("config") > 0) {
@@ -1557,8 +1585,6 @@ bool HelmIvP::detectChangeOnKey(const string& key, double value)
 
 void HelmIvP::postAllStop(string msg)
 {
-  Notify("IVPHELM_ALLSTOP_DEBUG", msg);
-
   // Don't post all-stop info if the helm is on standby or disabled.
   if(!helmStatusEnabled())
     return;
@@ -1575,16 +1601,30 @@ void HelmIvP::postAllStop(string msg)
   else
     m_no_decisions = 0;
 
+  if(msg == "NoGoalBehavior")
+    m_no_goal_decisions++;
+  else
+    m_no_goal_decisions = 0;
+
+
+  
   MOOSDebugWrite("pHelmIvP AllStop: " + m_allstop_msg);
   Notify("IVPHELM_ALLSTOP", m_allstop_msg);
 
   if(tolower(m_allstop_msg) == "clear")
     return;
 
-  // Willing to hold off one iteration if simply no decision. To give helm
-  // chance to transition between modes.
+  // Willing to hold off one iteration if simply no decision. To give
+  // helm chance to transition between modes.
   if(m_no_decisions == 1) {
     m_allstop_msg = "IncompleteOrEmptyDecision";
+    return;
+  }
+
+  // Willing to hold off one iteration with no goal behavior in play
+  // To give the helm chance to transition between modes.
+  if(m_no_goal_decisions == 1) {
+    m_allstop_msg = "NoActiveGoalBehavior";
     return;
   }
 
@@ -1676,3 +1716,18 @@ bool HelmIvP::helmStatusEnabled() const
   return(false);
 }
 
+
+//--------------------------------------------------------------------
+// Procedure: seedRandom()
+//   Purpose: Create a seed for the random number generated created in
+//            part by the current time and process ID of the helm.
+
+void HelmIvP::seedRandom()
+{
+  unsigned long tseed = time(NULL)+1;
+  unsigned long pid = (long)getpid()+1;
+  unsigned long seed = (tseed%999999);
+  seed = ((rand())*seed)%999999;
+  seed = (seed*pid)%999999;
+  srand(seed);
+}

@@ -50,6 +50,7 @@ class BasicContactMgr : public AppCastingMOOSApp
  protected:
   void registerVariables();
   bool handleConfigAlert(std::string);
+  bool handleConfigIgnoreGroup(std::string);
 
   void handleMailNodeReport(std::string);
   void handleMailReportRequest(std::string);
@@ -89,9 +90,6 @@ class BasicContactMgr : public AppCastingMOOSApp
   std::vector<VarDataPair> getAlertOnFlags(std::string id) const;
   std::vector<VarDataPair> getAlertOffFlags(std::string id) const;
 
-
-
-
   std::vector<std::string> getAlertMatchTypes(std::string id) const;
   std::vector<std::string> getAlertIgnoreTypes(std::string id) const;
 
@@ -110,6 +108,9 @@ class BasicContactMgr : public AppCastingMOOSApp
   std::string  m_default_alert_rng_cpa_color;
 
   double       m_reject_range;
+
+  std::vector<std::string> m_ignore_groups;
+  std::vector<std::string> m_ignore_types;
   
   // Other configuration parameters
   std::string  m_ownship;

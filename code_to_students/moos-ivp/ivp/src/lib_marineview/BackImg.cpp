@@ -37,7 +37,7 @@
 	#include <windows.h>
 	#include <GL/gl.h>
 	#include "glext.h" // http://www.opengl.org/registry/api/glext.h
-	typedef UINT32 uint32;
+	typedef UINT32 uint32_t;
 #elif OPSYS_IS_LINUX
    #include <GL/gl.h>
 #elif OPSYS_IS_OS_X
@@ -93,6 +93,8 @@ BackImg::BackImg()
   m_datum_lon = 0;
   m_datum_lat_set = false;
   m_datum_lon_set = false;
+
+  m_verbose = false;
 }
 
 // ----------------------------------------------------------
@@ -108,12 +110,12 @@ BackImg::~BackImg()
 // Procedure: pixToPctX,Y()
 //     Notes: pix is an absolute amount of the image
 
-double BackImg::pixToPctX(double pix)
+double BackImg::pixToPctX(double pix) const
 {
   return((double)(pix) / (double)(m_img_pix_width));
 }
 
-double BackImg::pixToPctY(double pix)
+double BackImg::pixToPctY(double pix) const
 {
   return((double)(pix) / (double)(m_img_pix_height));
 }
@@ -150,47 +152,68 @@ bool BackImg::readTiffData(string filename)
   m_img_pix_height = 0;
   m_img_pix_width  = 0;
 
-  string file = filename;
-
-  cout << "trying to open:[" << filename << "]" << endl;
-  
-  FILE *f = fopen(file.c_str(), "r");
-  cout << "Result:" << f << endl;
-
-  if(f) {
-    fclose(f);
+  // See if the tiff file exists
+  cout << "Checking for: [" << filename << "]" << endl;
+  bool ok_file = okFileToRead(filename);
+  if(!ok_file) {
+    filename = "/" + filename;
+    filename = DATA_DIR + filename;
+    cout << "Checking for: [" << filename << "]" << endl;
+    ok_file = okFileToRead(filename);
   }
-  else {
-    file = DATA_DIR;
-    file += "/";
-    file += filename;
-  } 
 
+  if(!ok_file) {
+    filename = findReplace(filename, "data", "data-local");
+    cout << "Checking for: [" << filename << "]" << endl;
+    ok_file = okFileToRead(filename);
+  }
+  if(!ok_file) {
+    filename = findReplace(filename, "data-local", "datax");
+    cout << "Checking for: [" << filename << "]" << endl;
+    ok_file = okFileToRead(filename);
+  }
+
+  if(ok_file)
+    cout << "Found file: " << filename << endl;
+  else {
+    cout << "File not found.";
+    return(false);
+  }
+  
   // We turn off Warnings (maybe a bad idea) since many photoshop 
   // images have newfangled tags that confuse libtiff
   TIFFErrorHandler warn = TIFFSetWarningHandler(0);
   
-  cout << "Trying to open: " << file << endl;
-  TIFF* tiff = TIFFOpen(file.c_str(), "r");
+  cout << "Trying to TiffOpen: " << filename << endl;
+  TIFF* tiff = TIFFOpen(filename.c_str(), "r");
   if(!tiff) {
-    file = findReplace(file, "data", "data-local");
-    cout << "Failed: Trying now to open: " << file << endl;
-    tiff = TIFFOpen(file.c_str(), "r");
+    filename = findReplace(filename, "data", "data-local");
+    cout << "Failed: Trying now to TiffOpen: " << filename << endl;
+    tiff = TIFFOpen(filename.c_str(), "r");
+  }
+  if(!tiff) {
+    filename = findReplace(filename, "data-local", "datax");
+    cout << "Failed: Trying now to TiffOpen: " << filename << endl;
+    tiff = TIFFOpen(filename.c_str(), "r");
   }
 
   if(tiff) {
-    cout << "Success: " << file << endl;
-    m_tiff_file = file;
+    cout << "Success: " << filename << endl;
+    m_tiff_file = filename;
   }
-
+  else {
+    cout << "Failed." << endl;
+    return(false);
+  }
+  
   // turn warnings back on, just in case
   TIFFSetWarningHandler(warn);
 
   if(tiff) {
     bool rval = true;			// what to return
-    uint32 w, h;
+    uint32_t w, h;
     size_t npixels;
-    uint32* raster;
+    uint32_t* raster;
     
     TIFFGetField(tiff, TIFFTAG_IMAGEWIDTH, &w);
     TIFFGetField(tiff, TIFFTAG_IMAGELENGTH, &h);
@@ -200,7 +223,7 @@ bool BackImg::readTiffData(string filename)
     m_img_pix_height = h;
     
     npixels = w * h;
-    raster = (uint32*) _TIFFmalloc(npixels * sizeof (uint32));
+    raster = (uint32_t*) _TIFFmalloc(npixels * sizeof (uint32_t));
     if (raster != NULL) {
       if (TIFFReadRGBAImage(tiff, w, h, raster, 0)) {
 	m_img_data = (unsigned char*) raster;
@@ -222,7 +245,6 @@ bool BackImg::readTiffData(string filename)
 
 // ----------------------------------------------------------
 // Procedure: readTiffInfo
-//   Purpose: 
 
 bool BackImg::readTiffInfo(string filename)
 {
@@ -237,13 +259,26 @@ bool BackImg::readTiffInfo(string filename)
     file += filename;
   } 
 
-  //cout << "Attempting to open: " << file << endl;
+  if(m_verbose)
+    cout << "Attempting to open: " << file << endl;
 
   vector<string> buffer = fileBuffer(file);
+  if(buffer.size() == 0) {
+    file = findReplace(file, "data", "datax");
+    buffer = fileBuffer(file);
+  }
+  if(buffer.size() == 0) {
+    file = findReplace(file, "datax", "data-local");
+    buffer = fileBuffer(file);
+  }
+
   unsigned int i, vsize = buffer.size();
 
+  cout << "Successfully found info file:" << file << endl;
+  
   if(vsize == 0) {
-    //cout << file << " contains zero lines" << endl;
+    if(m_verbose)
+      cout << file << " contains zero lines" << endl;
     return(false);
   }
 
@@ -372,7 +407,6 @@ bool BackImg::readTiffInfoEmpty(double lat_north, double lat_south,
 
 // ----------------------------------------------------------
 // Procedure: processConfiguration
-//   Purpose: 
 
 bool BackImg::processConfiguration()
 {
@@ -381,18 +415,28 @@ bool BackImg::processConfiguration()
     // in the "ballbark". So just use the center of the image. The
     // Geodesy is just used to get the extents of the image in terms
     // of meters.
-    
+
     double pseudo_datum_lat = (m_lat_north + m_lat_south) / 2.0;
     double pseudo_datum_lon = (m_lon_west + m_lon_east)   / 2.0;
+
+    if(m_verbose) {
+      cout << "boundary set:" << endl;
+      cout << "psuedo_datum_lat:" << pseudo_datum_lat << endl;
+      cout << "psuedo_datum_lon:" << pseudo_datum_lon << endl;
+    }
     
     CMOOSGeodesy geodesy;
     geodesy.Initialise(pseudo_datum_lat, pseudo_datum_lon);
     double x1,x2,y1,y2;
 
 #ifdef USE_UTM
+    if(m_verbose)
+      cout << "************************ Using UTM" << endl;
     bool ok1 = geodesy.LatLong2LocalUTM(m_lat_north, m_lon_west, y1, x1);
     bool ok2 = geodesy.LatLong2LocalUTM(m_lat_south, m_lon_east, y2, x2);
 #else
+    if(m_verbose)
+      cout << "************************ NOT Using UTM" << endl;
     bool ok1 = geodesy.LatLong2LocalGrid(m_lat_north, m_lon_west, y1, x1);
     bool ok2 = geodesy.LatLong2LocalGrid(m_lat_south, m_lon_east, y2, x2);
 #endif
@@ -404,6 +448,11 @@ bool BackImg::processConfiguration()
     double img_mtr_height = abs(y1-y2);
     double img_mtr_width  = abs(x1-x2);
 
+    if(m_verbose) {
+      cout << "img_mtr_height:" << doubleToStringX(img_mtr_height) << endl;
+      cout << "img_mtr_width:"  << doubleToStringX(img_mtr_width) << endl;
+    }
+    
     if(!m_datum_lat_set)
       m_datum_lat = pseudo_datum_lat;
     if(!m_datum_lon_set)
@@ -431,6 +480,22 @@ bool BackImg::processConfiguration()
   m_img_mtr_width   = abs(m_x_at_img_right - m_x_at_img_left);
   m_img_mtr_height  = abs(m_y_at_img_top - m_y_at_img_bottom);
 
+  
+  if(m_verbose) {
+    cout << "Geodesy: m_img_centx: " << m_img_centx << endl;
+    cout << "Geodesy: m_img_centy: " << m_img_centy << endl;
+    cout << "Geodesy: m_img_meters_x: " << doubleToStringX(m_img_meters_x) << endl;
+    cout << "Geodesy: m_img_meters_y: " << doubleToStringX(m_img_meters_y) << endl;
+    cout << "Geodesy:   m_x_at_img_ctr: " << m_x_at_img_ctr << endl;
+    cout << "Geodesy:   m_y_at_img_ctr: " << m_y_at_img_ctr << endl;
+    cout << "Geodesy:     m_x_at_img_left: " << m_x_at_img_left << endl;
+    cout << "Geodesy:     m_x_at_img_right: " << m_x_at_img_right << endl;
+    cout << "Geodesy:     m_y_at_img_top: " << m_y_at_img_top << endl;
+    cout << "Geodesy:     m_y_at_img_bottom: " << m_y_at_img_bottom << endl;
+    cout << "Geodesy:       m_img_mtr_width: "  << doubleToStringX(m_img_mtr_width,2) << endl;
+    cout << "Geodesy:       m_img_mtr_height: " << doubleToStringX(m_img_mtr_height,2) << endl;
+  }
+  
   return(true);
 }
 

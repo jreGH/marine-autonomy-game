@@ -1,5 +1,5 @@
 /*****************************************************************/
-/*    NAME: Michael Benjamin, Henrik Schmidt, and John Leonard   */
+/*    NAME: Michael Benjamin                                     */
 /*    ORGN: Dept of Mechanical Eng / CSAIL, MIT Cambridge MA     */
 /*    FILE: BHV_Convoy.cpp                                       */
 /*    DATE: Jul 28th 2018                                        */
@@ -71,6 +71,8 @@ BHV_Convoy::BHV_Convoy(IvPDomain gdomain) :
   m_rng_estop   = 15;
   m_rng_tgating = 30;
   m_rng_lagging = 70;
+
+  m_rng_safety_enabled = true;
   
   addInfoVars("NAV_X, NAV_Y, NAV_SPEED, NAV_HEADING");
 }
@@ -113,12 +115,14 @@ bool BHV_Convoy::setParam(string param, string param_val)
       handled = false;
   }
   
-  else if(param == "rng_estop") 
+  else if((param == "rng_estop") || (param == "range_estop"))
     handled = setPosDoubleOnString(m_rng_estop, param_val);
-  else if(param == "rng_tgating") 
+  else if((param == "rng_tgating") || (param == "range_tailgating"))
     handled = setPosDoubleOnString(m_rng_tgating, param_val);
-  else if(param == "rng_lagging") 
+  else if((param == "rng_lagging") || (param == "range_lagging"))
     handled = setPosDoubleOnString(m_rng_lagging, param_val);
+  else if(param == "rng_safety")
+    handled = setBooleanOnString(m_rng_safety_enabled,param_val);
 
   return(handled);
 }
@@ -134,40 +138,42 @@ void BHV_Convoy::onSetParamComplete()
     m_marks_up_bound = (unsigned int)(bound + 1);
   }
 
-  //=========================================================
-  // Part 1: Examine and adjust range settings
-  //=========================================================
-  
-  bool range_adjustment_made = false;
-  // Make sure rng_estop is at least 5 meters
-  if(m_rng_estop < 5) {
-    m_rng_estop = 5;
-    range_adjustment_made = true;
-  }
-  
-  // Make sure rng_lagging >rng_tgating > rng_estop.
-  // But don't make rng_tgating smaller.
-  // Do our best to fix, but if fixing is done, post a run warning
-
-  if(m_rng_tgating < (m_rng_estop + 10)) {
-    m_rng_tgating = m_rng_estop + 10;
-    range_adjustment_made = true;
-  }
-  if(m_rng_lagging < (m_rng_tgating + 10)) {
-    m_rng_lagging = m_rng_tgating + 10;  
-    range_adjustment_made = true;
-  }
-
-  if(range_adjustment_made)
-    postWMessage("Safety ranges were auto-adusted bigger.");
-
-  //=========================================================
-  // Part 2: Examine and adjust speed settings
-  //=========================================================
-
-  if(m_cruise_speed > m_spd_max) {
-    m_cruise_speed = m_spd_max;
-    postWMessage("Cruise speed auto-capped at max speed.");
+  if(m_rng_safety_enabled) {
+    //=========================================================
+    // Part 1: Examine and adjust range settings
+    //=========================================================
+    
+    bool range_adjustment_made = false;
+    // Make sure rng_estop is at least 5 meters
+    if(m_rng_estop < 5) {
+      m_rng_estop = 5;
+      range_adjustment_made = true;
+    }
+    
+    // Make sure rng_lagging >rng_tgating > rng_estop.
+    // But don't make rng_tgating smaller.
+    // Do our best to fix, but if fixing is done, post a run warning
+    
+    if(m_rng_tgating < (m_rng_estop + 10)) {
+      m_rng_tgating = m_rng_estop + 10;
+      range_adjustment_made = true;
+    }
+    if(m_rng_lagging < (m_rng_tgating + 10)) {
+      m_rng_lagging = m_rng_tgating + 10;
+      range_adjustment_made = true;
+    }
+    
+    if(range_adjustment_made)
+      postWMessage("Safety ranges were auto-adusted bigger.");
+    
+    //=========================================================
+    // Part 2: Examine and adjust speed settings
+    //=========================================================
+    
+    if(m_cruise_speed > m_spd_max) {
+      m_cruise_speed = m_spd_max;
+      postWMessage("Cruise speed auto-capped at max speed.");
+    }
   }
 }
 
@@ -191,8 +197,6 @@ IvPFunction *BHV_Convoy::onRunState()
   postMessage("QLEN", getQueueLen());
 
   postMessage("MXRNG", m_max_mark_range);
-
-
   
   handleNewContactSpd(m_cnv);
   postMessage("AVG2", m_cnv_avg_2sec);
@@ -362,7 +366,7 @@ IvPFunction *BHV_Convoy::buildOF()
   
   double rel_ang_to_wpt = relAng(m_osx, m_osy, m_wptx, m_wpty);
 
-  postMessage("RANG", rel_ang_to_wpt);
+  //postMessage("RANG", rel_ang_to_wpt);
   
   ZAIC_PEAK crs_zaic(m_domain, "course");
   crs_zaic.setValueWrap(true);

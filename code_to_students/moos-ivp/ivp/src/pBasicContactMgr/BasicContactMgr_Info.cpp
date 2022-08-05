@@ -122,6 +122,8 @@ void showExampleConfigAndExit()
   blk("  eval_range_far          = 20        // default in meters      ");
   blk("  eval_range_near         = 10        // default in meters      ");
   blk("  post_closest_range      = false     // default is false       ");
+  blk("                                                                ");
+  blk("  app_logging = true  // {true or file} By default disabled     ");
   blk("}                                                               ");
   blk("                                                                ");
   exit(0);
@@ -172,10 +174,11 @@ void showInterfaceAndExit()
   blk("                  range_actual=40.8,range_extrap=40.8,          ");
   blk("                  range_cpa=13                                  ");
   blk("                                                                ");
-  blk("  CONTACT_CLOSEST      = charlie                                ");
-  blk("  CONTACT_CLOSEST_TIME = 17514261063.3                          ");
-  blk("  CONTACT_CLOSEST_EVAL = 1                                      ");
-  blk("  CONTACT_MGR_WARNING  = Bad Node Report Received               ");
+  blk("  CONTACT_CLOSEST       = charlie                               ");
+  blk("  CONTACT_CLOSEST_TIME  = 17514261063.3                         ");
+  blk("  CONTACT_CLOSEST_RANGE = 73                      (if enabled)  ");
+  blk("  CONTACT_CLOSEST_EVAL  = 1                                     ");
+  blk("  CONTACT_MGR_WARNING   = Bad Node Report Received              ");
   blk("                                                                ");
   blk("  CONTACTS_ALERTED     = (delta,avd)(charlie,avd)               ");
   blk("  CONTACTS_COUNT       = 2  (number of alerted contacts)        ");

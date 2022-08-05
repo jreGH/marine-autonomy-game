@@ -29,6 +29,7 @@
 #include "MOOS/libMOOSGeodesy/MOOSGeodesy.h"
 #include "MOOS/libMOOS/Thirdparty/AppCasting/AppCastingMOOSApp.h"
 #include "NodeRecord.h"
+#include "NodeRiderSet.h"
 
 class NodeReporter : public AppCastingMOOSApp
 {
@@ -57,6 +58,10 @@ public:
   void crossFillGlobalToLocal(NodeRecord&);
   void handleHelmSwitch();
 
+  void updateNavWarning(bool ok_nav) const;
+
+  bool handleMailRiderVars(std::string, std::string, double);
+  
  protected: // Configuration Variables (Node Reports)
   std::string  m_vessel_name;
   std::string  m_crossfill_policy;
@@ -64,7 +69,8 @@ public:
   double       m_nohelm_thresh;
   std::string  m_group_name;
   bool         m_terse_reports;
-
+  std::string  m_allow_color_change;
+  
  protected: // State Variables (Node Reports)
   CMOOSGeodesy m_geodesy;
   std::string  m_helm_mode;
@@ -72,10 +78,15 @@ public:
   std::string  m_helm_allstop_mode;
   std::string  m_alt_nav_prefix;
   std::string  m_alt_nav_name;
+  std::string  m_alt_nav_group;
   std::string  m_helm_status_primary;
   std::string  m_helm_status_standby;
   double       m_helm_lastmsg;
 
+  // Oct 18, 2021
+  double m_nav_grace_period;
+  bool m_nav_warning_posted;
+  
   NodeRecord   m_record;
   NodeRecord   m_record_gt;
   double       m_record_gt_updated;
@@ -107,14 +118,9 @@ public:
   std::vector<double>      m_plat_post_gap;
   std::vector<double>      m_plat_post_tstamp;
   std::vector<double>      m_plat_recv_tstamp;
+
+ protected: // NodeRider support
+  NodeRiderSet m_riderset;
 };
 
 #endif
-
-
-
-
-
-
-
-

@@ -434,8 +434,22 @@ bool segmentsCross(double x1, double y1, double x2, double y2,
     double intercept1 = y2 - (slope1 * x2);
     double slope2 = (y4-y3)/(x4-x3);
     double intercept2 = y4 - (slope2 * x4);
-    if(slope1 == slope2)
-      return(intercept1 == intercept2);
+    if(slope1 == slope2) {           // bug fix mikerb Nov0120
+      if(intercept1 != intercept2)
+	return(false);
+      double xmin12 = x1;
+      double xmax12 = x2;
+      if(x1>x2) {
+	xmin12 = x2;
+	xmax12 = x1;
+      }
+      if((x3 < xmin12) && (x4 < xmin12))
+	return(false);
+      if((x3 > xmax12) && (x4 > xmax12))
+	return(false);
+      return(true);
+    }
+    
     double intx = (intercept2 - intercept1) / (slope1 - slope2);
 
     if((intx < x1) && (intx < x2))
@@ -637,6 +651,183 @@ bool lineRayCross(double x1, double y1, double ray_angle,
 
 
 //---------------------------------------------------------------
+// Procedure: lineSegCross
+//     Cases: Seg Vert - Line Vert (1)
+//            Seg Horz - Line Horz (2)
+//            Seg Horz - Line Vert (3)
+//            Seg Vert - Line Horz (4)
+//
+//            Seg Vert - Line Norm (5)
+//            Seg Horz - Line Norm (6)
+//            Seg Norm - Line Vert (7)
+//            Seg Norm - Line Horz (8)
+//
+//            Ray Norm - Line Norm (9)
+
+bool lineSegCross(double sx1, double sy1, double sx2, double sy2, 
+		  double lx3, double ly3, double lx4, double ly4, 
+		  double& ix1, double& iy1, double& ix2, double& iy2) 
+{
+  ix1 = 0; 
+  iy1 = 0;
+  bool seg_vert  = (sx1==sx2);
+  bool seg_horz  = (sy1==sy2);
+  bool line_vert = (lx3==lx4);
+  bool line_horz = (ly3==ly4);
+
+  // Case 1 - both seg and line vertical (intersection pt not unique)
+  //          choose an intersection point on the line segment. 
+  if(seg_vert && line_vert) {
+    if(sx1==lx3) {
+      ix1 = sx1;
+      iy1 = sy1;
+      ix2 = sx2;
+      iy2 = sy2;
+      return(true);
+    }
+    else
+      return(false);
+  }
+  // Case 2 - both seg and line horizontal (intersection pt not unique)
+  //          choose an intersection point on the line segment.
+  if(seg_horz && line_horz) {
+    if(sy1==ly3) {
+      ix1 = sx1;
+      iy1 = sy1;
+      ix2 = sx2;
+      iy2 = sy2;
+      return(true);
+    }
+    else
+      return(false);
+  }
+
+  // Case 3 - seg horizontal line vertical
+  if(seg_horz && line_vert) {
+    if((lx3 < sx1) && (lx3 < sx2))
+      return(false);
+    if((lx3 > sx1) && (lx3 > sx2))
+      return(false);
+    ix1 = ix2 = lx3;
+    iy1 = iy2 = sy1;
+    return(true);
+  }
+
+  // Case 4 - seg vertical line horizontal
+  if(seg_vert && line_horz) {
+    if((ly3 < sy1) && (ly3 < sy2))
+      return(false);
+    if((ly3 > sy1) && (ly3 > sy2))
+      return(false);
+    ix1 = ix2 = sx1;
+    iy1 = iy2 = ly3;    
+    return(true);
+  }
+
+  // Case 5 - seg vertical line normal
+  if(seg_vert && !line_horz & !line_vert) {
+    double maybe_ix = sx1;
+    double slope_b = (ly4-ly3) / (lx4-lx3);
+    double inter_b = ly3 - (slope_b * lx3);
+    double maybe_iy = (slope_b * maybe_ix) + inter_b;
+    if((maybe_iy > sy1) && (maybe_iy > sy2))
+      return(false);
+    if((maybe_iy < sy1) && (maybe_iy < sy2))
+      return(false);
+    ix1 = ix2 = maybe_ix;
+    iy1 = iy2 = maybe_iy;
+    return(true);
+  }
+
+  // Case 6 - seg horizontal line normal
+  if(seg_horz && !line_horz & !line_vert) {
+    double maybe_iy = sy1;
+    double slope_b = (ly4-ly3) / (lx4-lx3);
+    double inter_b = ly3 - (slope_b * lx3);
+    double maybe_ix = (maybe_iy - inter_b) / slope_b;
+    if((maybe_ix < sx1) && (maybe_ix < sx2))
+      return(false);
+    if((maybe_ix > sx1) && (maybe_ix > sx2))
+      return(false);
+    ix1 = maybe_ix;
+    ix2 = maybe_ix;
+    iy1 = maybe_iy;
+    iy2 = maybe_iy;
+    return(true);
+  }
+
+  // Case 7 - seg normal line vertical
+  if(!seg_vert && !seg_horz & line_vert) {
+    double maybe_ix = lx3;
+    double slope_a = (sy2-sy1) / (sx2-sx1);
+    double inter_a = sy1 - (slope_a * sx1);
+    double maybe_iy = (slope_a * maybe_ix) + inter_a;
+    if((maybe_iy > sy1) && (maybe_iy > sy2))
+      return(false);
+    if((maybe_iy < sy1) && (maybe_iy < sy2))
+      return(false);
+    ix1 = ix2 = maybe_ix;
+    iy1 = iy2 = maybe_iy;
+    return(true);
+  }
+
+  // Case 8 - seg normal line horizontal
+  if(!seg_horz && !seg_vert & line_horz) {
+    double maybe_iy = ly3;
+    double slope_a = (sy2-sy1) / (sx2-sx1);
+    double inter_a = sy1 - (slope_a * sx1);
+    double maybe_ix = (maybe_iy - inter_a) / slope_a;
+    if((maybe_ix < sx1) && (maybe_ix < sx2))
+      return(false);
+    if((maybe_ix > sx1) && (maybe_ix > sx2))
+      return(false);
+    ix1 = ix2 = maybe_ix;
+    iy1 = iy2 = maybe_iy;
+    return(true);
+
+  }
+
+  // Case 9 - the general case
+  // First find slope and intercept of the two lines. (y = mx + b)
+  // if "normal" ray create an artificial second vertex on the ray
+  double slope_a = (sy2-sy1) / (sx2-sx1);
+  double slope_b = (ly4-ly3) / (lx4-lx3);
+  double inter_a = sy1 - (slope_a * sx1);
+  double inter_b = ly3 - (slope_b * lx3);
+  
+  if(slope_a == slope_b) {    // Special case: parallel lines
+    if(inter_a == inter_b) {  // If identical/overlapping, pick the 
+      ix1 = sx1;      // the two vertices of the seg
+      iy1 = sy1;   
+      ix2 = sx2;
+      iy2 = sy2;   
+      return(true);
+    }
+    else
+      return(false);
+  }
+
+  // Then solve for x. m1(x) + b1 = m2(x) + b2.
+  double maybe_ix = (inter_a - inter_b) / (slope_b - slope_a);
+
+  // Then plug ix into one of the line equations.
+  double maybe_iy = (slope_a * maybe_ix) + inter_a;
+
+  if((maybe_ix < sx1) && (maybe_ix < sx2))
+    return(false);
+  if((maybe_ix > sx1) && (maybe_ix > sx2))
+    return(false);
+  if((maybe_iy < sy1) && (maybe_iy < sy2))
+    return(false);
+  if((maybe_iy > sy1) && (maybe_iy > sy2))
+    return(false);
+  ix1 = ix2 = maybe_ix;
+  iy1 = iy2 = maybe_iy;
+  return(true);
+}
+
+
+//---------------------------------------------------------------
 // Procedure: segmentAngle
 //   Purpose: Return the angle between the two segments given by
 //            the segment x1,y1 and x2,y2 and the segment x2,y2 
@@ -784,15 +975,21 @@ void perpSegIntPt(double x1, double y1, double x2, double y2,
 void perpLineIntPt(double x1, double y1, double x2, double y2, 
 		   double qx, double qy, double& rx, double& ry)
 {
-  // handle the special case where the segment is vertical
-  if(x1 == x2) {
+  double xdelta = x1-x2;
+  if(xdelta < 0)
+    xdelta = -xdelta;
+  // handle special case where line is vertical or essentially vertical
+  if(xdelta < 0.0001) {
     rx = x1;
     ry = qy;
     return;
   }
 
-  // handle the special case where the segment is horizontal
-  if(y1 == y2) {
+  // handle special case where segment is horizontal or essentially so
+  double ydelta = y1-y2;
+  if(ydelta < 0)
+    ydelta = -ydelta;
+  if(ydelta < 0.0001) {
     rx = qx;
     ry = y1;
     return;
@@ -867,10 +1064,33 @@ XYPoint projectPoint(double degval, double dist, double cx, double cy)
   return(return_point);
 }
 
+//---------------------------------------------------------------
+// Procedure: projectPoint
+//   Purpose: Same as the other projectPoint function except this 
+//            function returns an XYPoint object.
+
+XYPoint projectPoint(double degval, double dist, XYPoint pt)
+{
+  return(projectPoint(degval, dist, pt.x(), pt.y()));
+}
 
 //---------------------------------------------------------------
-// Procedure: addVectors
-//   Purpose: 
+// Procedure: midPoint()
+
+XYPoint midPoint(const XYPoint& pt1, const XYPoint& pt2)
+{
+  double x1 = pt1.x();
+  double y1 = pt1.y();
+  double x2 = pt2.x();
+  double y2 = pt2.y();
+  double mx = (x1+x2)/2;
+  double my = (y1+y2)/2;
+  XYPoint mid_point(mx, my);
+  return(mid_point);
+}
+
+//---------------------------------------------------------------
+// Procedure: addVectors()
 
 void addVectors(double deg1, double mag1, double deg2, 
 		double mag2, double &rdeg, double &rmag)
@@ -891,20 +1111,48 @@ void addVectors(double deg1, double mag1, double deg2,
 
 //---------------------------------------------------------------
 // Procedure: bearingMinMaxToPoly
-//   Purpose: From a point outside a convex polygons, determine the two 
-//            bearing angles to the polygon forming a pseudo tangent.
+//   Purpose: From a point outside a convex polygons, determine
+//            the two bearing angles to the polygon forming a
+//            pseudo tangent.
 //   Returns: true if x,y is NOT in the polygon, false otherwise.
 
 bool bearingMinMaxToPoly(double osx, double osy, const XYPolygon& poly,
 			 double& bmin, double& bmax)
 {
-  // Step 1: Sanity checks
+  // Create some placeholder variables that the general function
+  // requires but are not needed for this simpler version.
+  double bmin_dist = 0;
+  double bmax_dist = 0;
+  return(bearingMinMaxToPolyX(osx, osy, poly, bmin, bmax,
+			      bmin_dist, bmax_dist));
+}
+
+
+//---------------------------------------------------------------
+// Procedure: bearingMinMaxToPolyZ
+//   Purpose: From a point outside a convex polygons, determine
+//            the two bearing angles to the polygon forming a
+//            pseudo tangent.
+//            This version also calculates the distance to the
+//            min/max points.
+//   Returns: true if x,y is NOT in the polygon, false otherwise.
+
+bool bearingMinMaxToPolyX(double osx, double osy,
+			  const XYPolygon& poly,
+			  double& bmin, double& bmax,
+			  double& bmin_dist, double& bmax_dist)
+{
+  //===========================================================
+  // Step 1: Sanity checks 
+  //===========================================================
   if(poly.size() == 0)
     return(false);
   if(poly.is_convex() && poly.contains(osx, osy))
     return(false);
   
+  //===========================================================
   // Step 2: Determine all the angles, noting their quadrants.
+  //===========================================================
   bool quad_1 = false;    // [0-90)
   bool quad_2 = false;    // [90-180)
   bool quad_3 = false;    // [180-270)
@@ -926,34 +1174,36 @@ bool bearingMinMaxToPoly(double osx, double osy, const XYPolygon& poly,
   }
 
   bool wrap_around = false;
+  //============================================================
   // Step 3: Determine if we have an angle wrap-around situation
-  if(quad_1  &&  !quad_2  && !quad_3  &&  !quad_4)          // Case 1:  1
+  //============================================================
+  if(quad_1  &&  !quad_2  && !quad_3  &&  !quad_4)    // Case 1:  1
     wrap_around = false;
-  else if(!quad_1 &&   quad_2  && !quad_3  &&  !quad_4)     // Case 2:  2
+  else if(!quad_1 &&   quad_2 && !quad_3  && !quad_4) // Case 2:  2
     wrap_around = false;
-  else if(!quad_1 &&  !quad_2  &&  quad_3  &&  !quad_4)     // Case 3:  3
+  else if(!quad_1 &&  !quad_2 &&  quad_3  && !quad_4) // Case 3:  3
     wrap_around = false;
-  else if(!quad_1 &&  !quad_2  && !quad_3  &&   quad_4)     // Case 4:  4
+  else if(!quad_1 &&  !quad_2 && !quad_3  &&  quad_4) // Case 4:  4
     wrap_around = false;
 
-  else if(quad_1  &&   quad_2  && !quad_3  &&  !quad_4)     // Case 5:  1,2
+  else if(quad_1  &&   quad_2 && !quad_3  && !quad_4) // Case 5:  1,2
     wrap_around = false;
-  else if(!quad_1 &&   quad_2  &&  quad_3  &&  !quad_4)     // Case 6:  2,3
+  else if(!quad_1 &&   quad_2 &&  quad_3  && !quad_4) // Case 6:  2,3
     wrap_around = false;
-  else if(!quad_1 &&  !quad_2  &&  quad_3  &&   quad_4)     // Case 7:  3,4
+  else if(!quad_1 &&  !quad_2 &&  quad_3  &&  quad_4) // Case 7:  3,4
     wrap_around = false;
-  else if(quad_1  &&  !quad_2  && !quad_3  &&   quad_4)     // Case 8:  4,1   YYYY
+  else if(quad_1  &&  !quad_2 && !quad_3  &&  quad_4) // Case 8:  4,1  
     wrap_around = true;
-  else if(quad_1  &&   quad_2  &&  quad_3  &&  !quad_4)     // Case 9:  1,2,3 
+  else if(quad_1  &&   quad_2 &&  quad_3  && !quad_4) // Case 9:  1,2,3 
     wrap_around = false;
-  else if(!quad_1 &&   quad_2  &&  quad_3  &&   quad_4)     // Case 10: 2,3,4 
+  else if(!quad_1 &&   quad_2 &&  quad_3  &&  quad_4) // Case 10: 2,3,4 
     wrap_around = false;
-  else if(quad_1  &&  !quad_2  &&  quad_3  &&   quad_4)     // Case 11: 3,4,1 YYYY
+  else if(quad_1  &&  !quad_2 &&  quad_3  &&  quad_4) // Case 11: 3,4,1
     wrap_around = true;
-  else if(quad_1  &&   quad_2  && !quad_3  &&   quad_4)     // Case 12: 4,1,2 YYYY
+  else if(quad_1  &&   quad_2 && !quad_3  &&  quad_4) // Case 12: 4,1,2
     wrap_around = true;
 
-  else if(quad_1  &&  !quad_2  &&  quad_3  &&  !quad_4) {   // Case 13: 1,3
+  else if(quad_1  &&  !quad_2 &&  quad_3  && !quad_4) { // Case 13: 1,3
     double px, py;
     poly.closest_point_on_poly(osx, osy, px, py);
     double os_angle = relAng(osx, osy, px, py);
@@ -962,7 +1212,7 @@ bool bearingMinMaxToPoly(double osx, double osy, const XYPolygon& poly,
     else
       wrap_around = true;
   }
-  else if(!quad_1 &&   quad_2  && !quad_3  &&   quad_4) {   // Case 14: 2,4
+  else if(!quad_1 && quad_2 && !quad_3 && quad_4) { // Case 14: 2,4
     double px, py;
     poly.closest_point_on_poly(osx, osy, px, py);
     double os_angle = relAng(osx, osy, px, py);
@@ -972,28 +1222,50 @@ bool bearingMinMaxToPoly(double osx, double osy, const XYPolygon& poly,
       wrap_around = true;
   }
 
+  //===========================================================
   // Step 4: Now determine the "min" and "max" bearing angles
+  //===========================================================
+  unsigned int bmin_ix = 0;
+  unsigned int bmax_ix = 0;
   if(!wrap_around) {
     bmin = 360;
     bmax = 0;
     for(i=0; i<psize; i++) {
-      if(angles[i] < bmin)
+      if(angles[i] < bmin) {
 	bmin = angles[i];
-      else if(angles[i] > bmax)
+	bmin_ix = i;
+      }
+      if(angles[i] > bmax) {
 	bmax = angles[i];
+	bmax_ix = i;
+      }
     }
   }
   else {
     bmin = 360;
     bmax = 0;
     for(i=0; i<psize; i++) {
-      if((angles[i] > 180) && (angles[i] < bmin))
+      if((angles[i] > 180) && (angles[i] < bmin)) {
 	bmin = angles[i];
-      else if((angles[i] <= 180) && (angles[i] > bmax))
+	bmin_ix = i;
+      }
+      else if((angles[i] <= 180) && (angles[i] > bmax)) {
 	bmax = angles[i];
+	bmax_ix = i;
+      }
     }
   }
-  
+
+  //===========================================================
+  // Step 5: Calculate distances to the bmin,bmax vertices
+  //===========================================================
+  double px1 = poly.get_vx(bmin_ix);
+  double py1 = poly.get_vy(bmin_ix);
+  double px2 = poly.get_vx(bmax_ix);
+  double py2 = poly.get_vy(bmax_ix);
+  bmin_dist = hypot(osx-px1, osy-py1);
+  bmax_dist = hypot(osx-px2, osy-py2);
+
   return(true);
 }
 
@@ -1189,25 +1461,33 @@ double distPointToRay(double px, double py,
 //            It assumes a prior check has determined that the ray does
 //            not cross the segment, and this is being used simply to
 //            determine how close the ray gets to the segment at its
-//            closest vertex.
+//            closest point.
 //            By not doing a check for crossing, it is much faster.
 
-double segRayCPA(double x1, double y1, double ray_angle,
-		 double x2, double y2, double x3, double y3,
+double segRayCPA(double rx, double ry, double ray_angle,
+		 double x1, double y1, double x2, double y2,
 		 double& ix, double& iy)
 {
-  double rx1, ry1, rx2, ry2;
-  double dist1 = distPointToRay(x2,y2, x1,y1,ray_angle, rx1, ry1);
-  double dist2 = distPointToRay(x3,y3, x1,y1,ray_angle, rx2, ry2);
+  double ix1, iy1, ix2, iy2, ix3, iy3;
+  double dist1 = distPointToRay(x1,y1, rx,ry,ray_angle, ix1, iy1);
+  double dist2 = distPointToRay(x2,y2, rx,ry,ray_angle, ix2, iy2);
 
-  if(dist1 < dist2) {
-    ix = rx1;
-    iy = ry1;
+  double dist3 = distPointToSeg(x1,y1, x2,y2, rx,ry, ix3,iy3);
+  
+  if((dist1 < dist2) && (dist1 < dist3)) {
+    ix = ix1;
+    iy = iy1;
     return(dist1);
   }
-  ix = rx2;
-  iy = ry2;
-  return(dist2);    
+  if(dist2 < dist3) {
+    ix = ix2;
+    iy = iy2;
+    return(dist2);    
+  }
+
+  ix = ix3;
+  iy = iy3;
+  return(dist3);    
 }
 
 
@@ -1586,4 +1866,249 @@ double distPointToSegl(double px, double py, const XYSegList& segl)
   }
   return(min_dist);
 }
+  
+
+
+
+//---------------------------------------------------------------
+// Procedure: polyRayCPA
+//   Purpose: Determine the closest point of approach of a point
+//            originating at rx,ry and moving along the ray in
+//            the direction of ray_angle, to the given polygon
+
+double polyRayCPA(double rx, double ry, double ray_angle,
+		  const XYPolygon& poly, double& rix, double& riy)
+{
+  // Part 1: Sanity check: This function requires a convex polygon
+  // therefore >=3 vertices
+  if(!poly.is_convex())
+    return(-1);
+
+  // Part 2: If the ray crosses any of the polygon segments, we're
+  // done, cpa=0
+  for(unsigned int i=0; i<poly.size(); i++) {
+    // Segment first vertex
+    double x1 = poly.get_vx(i);
+    double y1 = poly.get_vy(i);
+    // Segment second vertex
+    double x2 = poly.get_vx(0);
+    double y2 = poly.get_vy(0);
+    if((i+1) < poly.size()) {
+      x2 = poly.get_vx(i+1);
+      y2 = poly.get_vy(i+1);
+    }
+    double ix = 0;
+    double iy = 0;
+    if(crossRaySeg(rx, ry, ray_angle, x1, y1, x2, y2, ix, iy)) {
+      rix = ix;
+      riy = iy;
+      return(0);
+    }
+  }    
+  // Part 3: Ray does notcross any of the polygon segments, so now
+  // we calculate the ray CPA for all segments and take the min
+  double min_cpa = -1;
+  for(unsigned int i=0; i<poly.size(); i++) {
+    // Segment first vertex
+    double x1 = poly.get_vx(i);
+    double y1 = poly.get_vy(i);
+    // Segment second vertex
+    double x2 = poly.get_vx(0);
+    double y2 = poly.get_vy(0);
+    if((i+1) < poly.size()) {
+      x2 = poly.get_vx(i+1);
+      y2 = poly.get_vy(i+1);
+    }
+    double ix = 0;
+    double iy = 0;
+    
+    double cpa = segRayCPA(rx, ry, ray_angle, x1, y1, x2, y2, ix, iy);
+    if((min_cpa < 0) || (cpa < min_cpa)) {
+      min_cpa = cpa;
+      rix = ix;
+      riy = iy;
+    }    
+  }
+  return(min_cpa);  
+}
+
+
+//---------------------------------------------------------------
+// Procedure: randPointOnPoly()
+//   Purpose: Find a random point on the boundary of the poly that
+//            is in line-of-site from the given viewing vertex.
+//            Try a random points inside the polygon's bounding box.
+//   Returns: true if random point found. 
+//            false otherwise, e.g., if viewpont is within poly
+
+bool randPointOnPoly(double vx, double vy,
+		     const XYPolygon& poly,
+		     double& rx, double& ry)
+{
+  if(!poly.is_convex())
+    return(false);
+  if(poly.contains(vx, vy))
+    return(false);
+
+  double bmin = 0;
+  double bmax = 0;
+  bool ok = bearingMinMaxToPoly(vx,vy, poly, bmin,bmax);
+  if(!ok)
+    return(false);
+
+  double bng_range = angleDiff(bmin, bmax);
+  int  bng_choices = (int)(bng_range + 1);
+ 
+  int rand_bng = rand() % bng_choices;
+
+  double bng = angle360(bmin + (double)(rand_bng));
+
+  double dist_to_poly = poly.dist_to_poly(vx, vy, bng);
+  if(dist_to_poly < 0)
+    return(false);
+  
+  double ix,iy;
+  projectPoint(bng, dist_to_poly, vx, vy, ix, iy);
+  rx = ix;
+  ry = iy;
+  return(true);
+}
+
+
+//---------------------------------------------------------------
+// Procedure: polyWidth()
+
+double polyWidth(XYPolygon poly, double angle)
+{
+  poly.rotate(angle);
+
+  double xmin = 0;
+  double xmax = 0;
+  
+  unsigned int vsize = poly.size();
+  for(unsigned int i=0; i<vsize; i++) {
+    double px = poly.get_vx(i);
+    if(i == 0) {
+      xmin = px;
+      xmax = px;
+    }
+    else if(px < xmin)
+      xmin = px;
+    else if(px > xmax)
+      xmax = px;
+  }
+
+  return(xmax - xmin);
+}
+
+//---------------------------------------------------------------
+// Procedure: polyHeight()
+
+double polyHeight(XYPolygon poly, double angle)
+{
+  poly.rotate(angle);
+
+  double ymin = 0;
+  double ymax = 0;
+  
+  unsigned int vsize = poly.size();
+  for(unsigned int i=0; i<vsize; i++) {
+    double py = poly.get_vy(i);
+    if(i == 0) {
+      ymin = py;
+      ymax = py;
+    }
+    else if(py < ymin)
+      ymin = py;
+    else if(py > ymax)
+      ymax = py;
+  }
+
+  return(ymax - ymin);
+}
+
+
+//---------------------------------------------------------------
+// Procedure: polyAspectRatio()
+
+double polyAspectRatio(XYPolygon poly)
+{
+  // Sanity checks
+  if(!poly.is_convex()) {
+    poly.determine_convexity();
+    if(!poly.is_convex())
+      return(0);
+  }
+
+  double cx = poly.get_centroid_x();
+  double cy = poly.get_centroid_y();
+  
+  // Part 1: get farthest point on the polygon perimeter, which
+  // will be a vertex
+  double max_dist = 0;
+  for(unsigned int i=0; i<poly.size(); i++) {
+    double vx = poly.get_vx(i);
+    double vy = poly.get_vy(i);
+    double dist = hypot(cx-vx, cy-vy);
+    if((i==0) || (dist > max_dist))
+      max_dist = dist;
+  }
+
+  // Part 2: get the closest point on the polygon perimeter, which
+  // will be on an edge
+  double min_dist = 0;
+  for(unsigned int i=0; i<poly.size(); i++) {
+    double x1 = poly.get_vx(i);
+    double y1 = poly.get_vy(i);
+    double x2 = 0;
+    double y2 = 0;
+    if((i+1) >= poly.size()) {
+      x2 = poly.get_vx(0);
+      y2 = poly.get_vy(0);
+    }
+    else {
+      x2 = poly.get_vx(i+1);
+      y2 = poly.get_vy(i+1);
+    }
+    double dist = distPointToSeg(x1,y1, x2,y2, cx,cy);
+    if((i==0) || (dist > min_dist))
+      min_dist = dist;
+  }
+
+  // Sanity check
+  if(min_dist <= 0)
+    return(0);
+  
+  double aspect_ratio = max_dist / min_dist;
+  
+  return(aspect_ratio);
+}
+
+
+//---------------------------------------------------------------
+// Procedure: shiftVertices()
+//   Purpose: Shift each vertex index to be lower by one, and moving
+//            the first vertex to the end.
+//            A convenience function for certain other geometric
+//            calculations. 
+
+void shiftVertices(vector<double>& vx, vector<double>& vy)
+{
+  if((vx.size() != vy.size()) || (vx.size() < 2))
+    return;
+  
+  vector<double> new_vx;
+  vector<double> new_vy;
+  for(unsigned int i=1; i<vx.size(); i++) {
+    new_vx.push_back(vx[i]);
+    new_vy.push_back(vy[i]);
+  }
+  new_vx.push_back(vx[0]);
+  new_vy.push_back(vy[0]);
+
+  vx = new_vx;
+  vy = new_vy;
+}
+
+
   

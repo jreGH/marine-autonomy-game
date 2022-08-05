@@ -23,6 +23,7 @@
 /* <http://www.gnu.org/licenses/>.                               */
 /*****************************************************************/
 
+#include <iostream>
 #include <cstdlib>
 #include <cmath>
 #include "AngleUtils.h"
@@ -87,26 +88,55 @@ double angleFromThreePoints(double x1, double y1,
 
 //-------------------------------------------------------------
 // Procedure: threePointTurnLeft
-//
+//                                                      
+//        x2,y2  o-<<----------o (x1,y1)                                    
+//                            /                                       
+//                          /                                         
+//                        /                                           
+//                      /                                            
+//                    /                                               
+//          (x0,y0) o                                                
+//                                                      
 //      Note: From Cormen, Leiserson, Rivest and Stein:
 
 bool threePointTurnLeft(double x0, double y0, 
 			double x1, double y1,
 			double x2, double y2)
 { 
-  
+  double cross_product = threePointXProduct(x0,y0, x1,y1, x2,y2);
+
+  if(cross_product < -0.01)
+    return(true);
+
+  return(false);
+}
+
+//-------------------------------------------------------------
+// Procedure: threePointXProduct
+//                                                      
+//        x2,y2  o-<<----------o (x1,y1)                                    
+//                            /                                       
+//                          /                                         
+//                        /                                           
+//                      /                                            
+//                    /                                               
+//          (x0,y0) o                                                
+//                                                      
+//      Note: From Cormen, Leiserson, Rivest and Stein:
+
+double threePointXProduct(double x0, double y0, 
+			  double x1, double y1,
+			  double x2, double y2)
+{ 
   double ax = x2-x0;
   double ay = y2-y0;
   double bx = x1-x0; 
   double by = y1-y0; 
+
   // Now compute the cross product of a x b
-  
   double cross_product = (ax*by) - (bx*ay);
 
-  if(cross_product < 0)
-    return(true);
-
-  return(false);
+  return(cross_product);
 }
 
 //-------------------------------------------------------------
@@ -591,6 +621,16 @@ double aspectDiff(double ang1, double ang2)
 // Procedure: containsAngle
 //   Purpose: Given a range of angle, in the domain [0, 360),
 //            determine if the query angle lies within.
+//      Note: The test angle range, in terms of wrap-around, will
+//            be the range that forms an ACUTE angle. Thus if the
+//            first two args are (350,10) or (10,350), these are
+//            treated the same.
+//  Examples: 10, 20, 15    --> true
+//            20, 10, 15    --> true
+//            20, 350, 15   --> true
+//            100, 280, 99  --> true (180 range accepts all)
+//            100, 280, 101 --> true (180 range accepts all)
+
 
 bool containsAngle(double aval, double bval, double qval)
 {
@@ -601,6 +641,7 @@ bool containsAngle(double aval, double bval, double qval)
   if(aval == bval)
     return(qval == bval);
 
+  // If the given angle is 180, then all query angles will pass
   if(fabs(bval-aval) == 180)
     return(true);
 

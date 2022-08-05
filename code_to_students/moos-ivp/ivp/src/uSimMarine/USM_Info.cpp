@@ -67,6 +67,8 @@ void showHelpAndExit()
   blk("      Display MOOS publications and subscriptions.              ");
   mag("  --version,-v                                                  ");
   blk("      Display the release version of uSimMarine.                ");
+  mag("  --web,-w                                                      ");
+  blk("      Open browser to: https://oceanai.mit.edu/ivpman/apps/uSimMarine");
   blk("                                                                ");
   blk("Note: If argv[2] does not otherwise match a known option,       ");
   blk("      then it will be interpreted as a run alias. This is       ");
@@ -116,6 +118,8 @@ void showExampleConfigAndExit()
   blk("  thrust_map           = 0:0, 20:1, 40:2, 60:3, 80:5, 100:5     ");
   blk("                                                                ");
   blk("  prefix               = NAV_  ","// default is USM_            ");
+  blk("                                                                ");
+  blk("  app_logging = true  // {true or file} By default disabled     ");
   blk("}                                                               ");
   blk("                                                                ");
   exit(0);
@@ -160,6 +164,8 @@ void showInterfaceAndExit()
   blk("                                                                ");
   blk("  USM_RESET            (value not read)                         ");
   blk("  USM_SIM_PAUSED     = [true/false]                             ");
+  blk("  USM_ENABLED        = [true/false]                             ");
+  blk("  USM_TURN_RATE      = [0,100]                                  ");
   blk("                                                                ");
   blk("PUBLICATIONS:                                                   ");
   blk("------------------------------------                            ");

@@ -88,7 +88,8 @@ public:
   std::string helmStatus() const {return(m_helm_status);}
   void        helmStatusUpdate(const std::string& val="");
   bool        helmStatusEnabled() const;
-
+  void        seedRandom();
+  
 protected:
   InfoBuffer*   m_info_buffer;
   std::string   m_helm_status;   // STANDBY,PARK,DRIVE,DISABLED,MALCONFIG
@@ -115,6 +116,7 @@ protected:
   bool          m_init_vars_done;
 
   unsigned int  m_no_decisions;
+  unsigned int  m_no_goal_decisions;
 
   // The refresh vars handle the occasional clearing of the m_outgoing
   // maps. These maps will be cleared when MOOS mail is received for the
@@ -133,7 +135,8 @@ protected:
   unsigned int  m_bhv_count_ever;
   double        m_ok_skew;
   bool          m_skews_matter;
-
+  bool          m_goals_mandatory;
+  
   unsigned int  m_prev_total_completed;
   std::string   m_prev_compl_pending;
   
@@ -191,6 +194,10 @@ protected:
   std::vector<bool>        m_hold_on_app_seen;
   bool                     m_hold_apps_all_seen;
   bool                     m_helm_start_posted;
+
+  bool         m_seed_random;
+  
+  std::string  m_helm_prefix;
 };
 #endif 
 

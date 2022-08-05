@@ -24,6 +24,9 @@ NEEDED APPLICATIONS
    You need to install the XCode development package for OS-X available 
    at http://developer.apple.com/technology/xcode.html. It is a free download.
 
+   You also likely need the XCode command line tools:
+   $ sudo xcode-select --install
+
 2) X11
    Apple no longer includes X11, but explains why and offers help
       http://support.apple.com/en-us/HT201341
@@ -49,7 +52,7 @@ MACPORT PACKAGES
 ==============================================================================
 
 sudo port install cmake
-sudo port install fltk
+sudo port install fltk-devl
 sudo port install tiff
 sudo port install subversion
 sudo port install autoconf - GNU tool for producing config scripts (needed by PROJ4)

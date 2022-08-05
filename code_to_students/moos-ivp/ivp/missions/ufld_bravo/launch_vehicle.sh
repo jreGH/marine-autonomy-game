@@ -29,11 +29,11 @@ for ARGI; do
         START_POS="${ARGI#--startpos=*}"
     elif [ "${ARGI:0:8}" = "--shore=" ] ; then
         SHORE="${ARGI#--shore=*}"
-    elif [ "${ARGI}" = "--just_build" -o "${ARGI}" = "-j" ] ; then
+    elif [ "${ARGI}" = "--just_make" -o "${ARGI}" = "-j" ] ; then
 	JUST_MAKE="yes"
     else 
-	printf "Bad Argument: %s \n" $ARGI
-	exit 0
+        echo "launch.sh Bad arg:" $ARGI " Exiting with code: 1"
+        exit 1
     fi
 done
 

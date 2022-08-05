@@ -1,9 +1,8 @@
-
 //*******************************************************
 // ShoreSide Configuration File
 
 ServerHost = localhost
-ServerPort = $(SHORE_MOOSDB)
+ServerPort = $(MOOS_PORT)
 Community  = shoreside
 
 #include plug_origin_warp.moos
@@ -25,6 +24,7 @@ Processconfig = ANTLER
   Run = uFldCTDSensor       @ NewConsole = false
   Run = pFrontGridRender    @ NewConsole = false
   Run = pGradeFrontEstimate @ NewConsole=false
+  Run = pRealm              @ NewConsole = false
 }
 
 #include plug_uFldCTDSensor.moos
@@ -63,7 +63,7 @@ ProcessConfig = pShare
   AppTick    = 2
   CommsTick  = 2
 
-  input = route = localhost:9300 & multicast_12
+  input = route = $(IP_ADDR):$(PSHARE_PORT)
 }
 
 
@@ -100,8 +100,8 @@ ProcessConfig = uFldNodeComms
 
 	comms_range      = 100
 	critical_range   = 25
-	min_msg_interval = 15
-	max_msg_length   = 2048
+	min_msg_interval = 0
+	max_msg_length   = 48000
 	groups           = true
 	view_node_rpt_pulses = true
 }
@@ -115,7 +115,7 @@ ProcessConfig = pMarineViewer
   TIFF_FILE            = AerialMIT.tif
   set_pan_x            = -30
   set_pan_y            = 60
-  zoom                 = 2.3
+  zoom                 = 3.5
   vehicles_shape_scale = 1.5
   vehicles_name_mode   = names+shortmode
   marker_viewable_labels = false
@@ -124,9 +124,16 @@ ProcessConfig = pMarineViewer
 
   appcast_viewable     = true
   appcast_color_scheme = indigo
+	appcast_font_size    = large
+	procs_font_size      = large
+	nodes_font_size      = xlarge
 
   SCOPE = UCTD_PARAMETER_ESTIMATE
   //ACTION = STATION_ALL = true
+
+	action = FGR_SHOW = truth
+  action = FGR_SHOW = guess
+  action = FGR_SHOW = both
 
   button_one   = DEPLOY_ALL  # DEPLOY_ALL=true 
   button_one   = MOOS_MANUAL_OVERRIDE_ALL=false # STATION_KEEP_ALL=false 

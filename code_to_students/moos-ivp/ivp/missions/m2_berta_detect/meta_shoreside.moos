@@ -13,6 +13,7 @@ Processconfig = ANTLER
   MSBetweenLaunches = 100
 
   Run = MOOSDB          @ NewConsole = false
+  Run = pRealm          @ NewConsole = false
   Run = uTimerScript    @ NewConsole = false
 
 #ifdef LAUNCH_GUI yes
@@ -42,6 +43,18 @@ ProcessConfig = uFldWrapDetect
   CommsTick = 4                                                               
 }       
 
+//--------------------------------------------------
+// uFldQueryDB
+
+ProcessConfig = uQueryDB
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  max_time  = $(MAX_TIME)
+  condition = ENCOUNTER_TOTAL > $(MAX_ENCOUNTERS)
+}       
+
 
 //--------------------------------------------------
 // uFldCollisionDetect
@@ -55,13 +68,19 @@ ProcessConfig = uFldCollisionDetect
   collision_range = 8
   near_miss_range = 12
 
+	post_closest_range = true
+	post_closest_range_ever = true
+	
   // condition = COLLISION_DETECT=true
   condition = DEPLOY_ALL=true
+
+	report_all_encounters = true
 
   // collision_flag = COLLISION_$UP_V1_$UP_V2 = $CPA
   collision_flag = COLLISION = $CPA
   near_miss_flag = NEAR_MISS = $CPA
   encounter_flag = ENCOUNTER = $CPA
+  //encounter_flag = DENSITY = $[cal@60]
 
   near_miss_flag = NEAR_MISS_$UP_V1 = $CPA
   near_miss_flag = NEAR_MISS_$UP_V2 = $CPA
@@ -194,7 +213,7 @@ ProcessConfig = pLogger
   WildCardOmitPattern = DB_VARSUMMARY
   WildCardOmitPattern = DB_RWSUMMARY
   WildCardOmitPattern = NODE* 
-  WildCardOmitPattern = APPCAST* 
+  //WildCardOmitPattern = APPCAST* 
   WildCardOmitPattern = PSHARE* 
   WildCardOmitPattern = *_ITER_GAP
   WildCardOmitPattern = *_ITER_LEN
@@ -249,6 +268,8 @@ ProcessConfig = pMarineViewer
   button_two   = RETURN  # STATION_KEEP_ALL=false
   button_three = PERMUTE   # UTS_FORWARD=0
   button_four  = STATION   # STATION_KEEP_ALL=true
+
+	button_five  = UCD_RESET # UCD_RESET=true
 }
 
 //--------------------------------------------------------
@@ -264,16 +285,21 @@ ProcessConfig = uTimerScript
   reset_time = end
 
   randvar = varname=X1, min=-25,  max=25,  key=at_reset
-  randvar = varname=Y1, min=-100, max=-50, key=at_reset
+  randvar = varname=Y1, min=-100, max=0, key=at_reset
 
   randvar = varname=X2, min=100,  max=150, key=at_reset
-  randvar = varname=Y2, min=-75,  max=-25, key=at_reset
+  randvar = varname=Y2, min=-100, max=0, key=at_reset
+
+#ifdef MISSION_TAG
+  event = var=MISSION_TAG, val="$(MISSION_TAG)", time=0
+#endif
 
   event = var=UP_LOITER_%(VNAME2), val="center_assign=$[X1],$[Y1]", time=180 
   event = var=UP_LOITER_%(VNAME1), val="center_assign=$[X2],$[Y2]", time=180
 
   event = var=UP_LOITER_%(VNAME1), val="center_assign=$[X1],$[Y1]", time=360
   event = var=UP_LOITER_%(VNAME2), val="center_assign=$[X2],$[Y2]", time=360
+
 }
 
 
@@ -290,6 +316,7 @@ ProcessConfig = uProcessWatch
   watch_all = true      // default is true
 
   nowatch = uXMS*
+  nowatch = uMAC*
   nowatch = uPokeDB*
   nowatch = uQueryDB*
 

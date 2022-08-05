@@ -41,9 +41,11 @@ XYObject::XYObject()
   m_vertex_size  = -1;
   m_edge_size    = -1;
   m_transparency = 0;
+  m_duration     = -1;
 
   m_time_set         = false;
   m_transparency_set = false;
+  m_duration_set     = false;
 }
 
 //---------------------------------------------------------------
@@ -56,11 +58,15 @@ void XYObject::clear()
   m_vertex_size  = -1;
   m_edge_size    = -1;
   m_transparency = 0;
+  m_duration     = -1;
 
   m_time_set     = false; 
   m_transparency_set = false;
+  m_duration_set     = false;
+
   m_label        = ""; 
   m_msg          = ""; 
+  m_id           = ""; 
 
   m_color_map.clear();
 }
@@ -139,6 +145,21 @@ void XYObject::set_transparency(double transparency)
 }
 
 //---------------------------------------------------------------
+// Procedure: set_duration()
+//   Purpose: Set a drawing hint for object duration. -1 is the 
+//            default and indicates that the object should persist 
+//            indefinitely.
+
+void XYObject::set_duration(double duration)
+{
+  if(duration < 0)
+    duration = -1;
+  
+  m_duration = duration;
+  m_duration_set = true;
+}
+
+//---------------------------------------------------------------
 // Procedure: get_spec()
 
 std::string XYObject::get_spec(string param) const
@@ -163,6 +184,8 @@ std::string XYObject::get_spec(string param) const
     aug_spec(spec, "label=" + m_label); 
   if(m_msg != "")
     aug_spec(spec, "msg=" + m_msg); 
+  if(m_id != "")
+    aug_spec(spec, "id=" + m_id); 
   if(color_set("label"))
     aug_spec(spec, "label_color=" + get_color("label").str(':'));
   if(color_set("edge"))
@@ -175,6 +198,10 @@ std::string XYObject::get_spec(string param) const
   if(m_time_set) {
     string time_str = doubleToStringX(m_time,2);
     aug_spec(spec, "time=" + time_str);
+  } 
+  if(m_duration_set) {
+    string duration_str = doubleToStringX(m_duration,2);
+    aug_spec(spec, "duration=" + duration_str);
   } 
   if(vertex_size_set()) {
     string size_str = doubleToStringX(m_vertex_size,1);
@@ -190,7 +217,6 @@ std::string XYObject::get_spec(string param) const
   }
   
   return(spec);
-
 }
 
 //---------------------------------------------------------------
@@ -208,8 +234,12 @@ bool XYObject::set_param(const string& param, const string& value)
     set_type(value);
   else if(param == "msg")
     set_msg(value);
+  else if(param == "id")
+    set_id(value);
   else if(param == "time")
     set_time(atof(value.c_str()));
+  else if(param == "duration")
+    set_duration(atof(value.c_str()));
   else if(param == "edge_size")
     set_edge_size(atof(value.c_str()));
 
@@ -246,6 +276,23 @@ void XYObject::aug_spec(string& orig, string new_part) const
   if(orig != "")
     orig += ",";
   orig += new_part;
+}
+
+//---------------------------------------------------------------
+// Procedure: expired()
+
+bool XYObject::expired(double curr_time) const
+{
+  if(!m_duration_set || !m_time_set)
+    return(false);
+  if((m_duration < 0) || (m_time <= 0))
+    return(false);
+
+  double elapsed = curr_time - m_time;
+  if(elapsed <= m_duration)
+    return(false);
+
+  return(true);
 }
 
 

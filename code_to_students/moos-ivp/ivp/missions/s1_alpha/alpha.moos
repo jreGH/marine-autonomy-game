@@ -1,4 +1,4 @@
-/-------------------------------------------------
+//-------------------------------------------------
 // NAME: M. Benjamin, MIT CSAIL
 // FILE: alpha.moos
 //-------------------------------------------------
@@ -22,29 +22,16 @@ ProcessConfig = ANTLER
 {
   MSBetweenLaunches = 200
 
-  Run = MOOSDB          @ NewConsole = false
-  Run = pLogger         @ NewConsole = false
-  Run = uSimMarine	@ NewConsole = false
-  Run = pMarinePID      @ NewConsole = false
-  Run = pHelmIvP        @ NewConsole = false
+  Run = MOOSDB        @ NewConsole = false
+  Run = pLogger       @ NewConsole = false
+  Run = uSimMarine    @ NewConsole = false
+  Run = pMarinePID    @ NewConsole = false
+  Run = pHelmIvP      @ NewConsole = false
   Run = pMarineViewer	@ NewConsole = false
   Run = uProcessWatch	@ NewConsole = false
   Run = pNodeReporter	@ NewConsole = false
-  Run = uMemWatch       @ NewConsole = false
+  Run = pRealm	      @ NewConsole = false
 }
-
-//------------------------------------------
-// uMemWatch config block
-
-ProcessConfig = uMemWatch                                       
-{                                                               
-  AppTick   = 4                                                 
-  CommsTick = 4                                                 
-                                                                
-  absolute_time_gap = 1   // In Seconds, Default is 4
-
-  watch_only = pHelmIvP,pMarineViewer
-}                                  
 
 //------------------------------------------
 // pLogger config block
@@ -60,6 +47,7 @@ ProcessConfig = pLogger
   // explicitly declare their logging request
   Log = IVPHELM_LIFE_EVENT @ 0 NOSYNC
   Log = REPORT @ 0 NOSYNC
+  Log = BHV_SETTINGS @ 0 NOSYNC
 
   LogAuxSrc = true
   WildCardLogging = true
@@ -80,6 +68,7 @@ ProcessConfig = uProcessWatch
   watch_all = true
 	nowatch   = uPokeDB*
 	nowatch   = uXMS*
+	nowatch   = uMAC*
 }
 
 //------------------------------------------
@@ -90,10 +79,7 @@ ProcessConfig = uSimMarine
   AppTick  	= 4
   CommsTick	= 4
 
-  start_x       = 0
-  start_y       = -20
-  start_heading = 180
-  start_speed   = 0
+  start_pos = x=0, y=-20, heading=180, speed=0
 
   prefix        = NAV
 
@@ -109,8 +95,6 @@ ProcessConfig = pHelmIvP
 {
   AppTick    = 4
   CommsTick  = 4
-
-  bhv_dir_not_found_ok = true
 
   behaviors  = alpha.bhv
   domain     = course:0:359:360
@@ -177,16 +161,14 @@ ProcessConfig = pMarineViewer
   //op_vertex = x=94.6, y=-62.2,   lwidth=1,lcolor=yellow,looped=true,group=moa
   //op_vertex = x=58,   y=20,    lwidth=1,lcolor=yellow,looped=true,group=moa
 
-	// vcolor = alpha=dodgerblue
-
   // Appcast configuration
   appcast_height       = 75
   appcast_width        = 30
   appcast_viewable     = true
   appcast_color_scheme = indigo
-  nodes_font_size      = medium
-  procs_font_size      = medium
-  appcast_font_size    = small
+  nodes_font_size      = xlarge
+  procs_font_size      = xlarge
+  appcast_font_size    = large
   
   // datum_viewable = true
   // datum_size     = 18
@@ -200,10 +182,6 @@ ProcessConfig = pMarineViewer
   right_context[return] = MOOS_MANUAL_OVERRIDE=false
   right_context[return] = RETURN=false
 
-  scope  = HELM_CORE_SIZE_MAX
-  scope  = HELM_CORE_SIZE
-  scope  = HELM_ENGINE_SIZE
-  scope  = HELM_SIZE
   scope  = RETURN
   scope  = WPT_STAT
   scope  = VIEW_SEGLIST
@@ -215,6 +193,8 @@ ProcessConfig = pMarineViewer
   button_one = DEPLOY # DEPLOY=true
   button_one = MOOS_MANUAL_OVERRIDE=false # RETURN=false
   button_two = RETURN # RETURN=true
+  button_three = SLOWER # WPT_UPDATE=speed=1.5
+  button_four = FASTER # WPT_UPDATE=speed=3.5
 
   action  = MENU_KEY=deploy # DEPLOY = true # RETURN = false
   action+ = MENU_KEY=deploy # MOOS_MANUAL_OVERRIDE=false

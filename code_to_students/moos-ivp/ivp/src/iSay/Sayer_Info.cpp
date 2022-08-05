@@ -50,7 +50,7 @@ void showHelpAndExit()
 {
   blk("                                                                ");
   blu("=============================================================== ");
-  blu("Usage: iSay file.moos [OPTIONS]                   ");
+  blu("Usage: iSay file.moos [OPTIONS]                                 ");
   blu("=============================================================== ");
   blk("                                                                ");
   showSynopsis();
@@ -65,7 +65,9 @@ void showHelpAndExit()
   mag("  --interface, -i                                               ");
   blk("      Display MOOS publications and subscriptions.              ");
   mag("  --version,-v                                                  ");
-  blk("      Display the release version of iSay.        ");
+  blk("      Display the release version of iSay.                      ");
+  mag("  --web,-w                                                      ");
+  blk("      Open browser to: https://oceanai.mit.edu/apps/iSay        ");
   blk("                                                                ");
   blk("Note: If argv[2] does not otherwise match a known option,       ");
   blk("      then it will be interpreted as a run alias. This is       ");
@@ -99,6 +101,8 @@ void showExampleConfigAndExit()
   blk("  min_utter_interval = 1                                        ");
   blk("                                                                ");
   blk("  os_mode            = linux      // Default is \"osx\"         ");
+  blk("                                                                ");
+  blk("  app_logging = true  // {true or file} By default disabled     ");
   blk("}                                                               ");
   exit(0);
 }
@@ -118,8 +122,11 @@ void showInterfaceAndExit()
   blk("                                                                ");
   blk("SUBSCRIPTIONS:                                                  ");
   blk("------------------------------------                            ");
-  blk("  SAY_MOOS = say={Would you like to play a game?}, rate=200     ");
-  blk("  SAY_MOOS = file=file.wav                                      ");
+  blk("  SAY_MOOS   = say={Would you like to play a game?}, rate=200   ");
+  blk("  SAY_MOOS   = file=file.wav                                    ");
+  blk("                                                                ");
+  blk("  SAY_VOLUME = soft   // Options: mute,vsoft,soft,normal,loud,  ");
+  blk("                      // vloud,softer,louder, or number [0,2].  ");
   blk("                                                                ");
   blk("PUBLICATIONS:                                                   ");
   blk("------------------------------------                            ");

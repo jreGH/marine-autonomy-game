@@ -165,14 +165,14 @@
 
 		 ;;Generic mission file keywords. These are either common to all
 		 ;;apps or outside of the processConfig blocks.
-		 '("\\<AppTick\\|CommsTick\\|Community\\|ProcessConfig\\|ServerHost\\|ServerPort\\|LatOrigin\\|LongOrigin\\|MOOSTimeWarp\\|MaxAppTick\\|IterateMode\\>"
+		 '("\\<AppTick\\|CommsTick\\|Community\\|ProcessConfig\\|ServerHost\\|ServerPort\\|LatOrigin\\|LongOrigin\\|MOOSTimeWarp\\|MaxAppTick\\|app_logging\\|IterateMode\\>"
 			 . font-lock-keyword-face)
 
 		 ;;Generic behavior keywords. These are defined on the superclass
 		 ;;and valid for all behaviors. If these end up getting highlighted
 		 ;;in other places, make this into an anchored matcher using
 		 ;;Behavior =
-		 '("\\<\\(?:initialize\\|set\\|name\\|pwt\\|duration\\|duration_idle_decay\\|duration_status\\|duration_reset\\|condition\\|updates\\|perpetual\\|endflag\\|runflag\\|idleflag\\|activeflag\\|inactiveflag\\|templating\\)\\>"
+		 '("\\<\\(?:initialize\\|set\\|name\\|pwt\\|duration\\|duration_idle_decay\\|duration_status\\|duration_reset\\|condition\\|updates\\|perpetual\\|configflag\\config_flag\\|spawnflag\\|spawn_flag\\|endflag\\|end_flag\\|runflag\\|run_flag\\|idleflag\\|activeflag\\|active_flag\\|inactiveflag\\|inactive_flag\\|templating\\)\\>"
 			 . font-lock-keyword-face)
 
 		 '("\\<true\\|false\\>"
@@ -182,7 +182,7 @@
 	;;These lists get populated in the call to parse-xx-and-keyword-list
 	;;below. They need to exist so add-to-list can do its thing...
 	(setq moos-app-names '("MOOSDB"))
-	;;(setq moos-bhv-names '("FOO"))  ;; mikerb
+	(setq moos-bhv-names '("FOO"))  ;; mikerb
 
 	;;Iterate through the app and behavior lists to add the font-lock
 	;;entries. These lists were created in the separate files

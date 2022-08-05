@@ -38,6 +38,8 @@ LINK_DIRECTORIES(../../lib)
 
 SET(APPS
   utest
+  testConvexHull
+  testLeftTurn
   testIncIntString
   testLineCircleIntPts
   testSegCircleIntPts
@@ -51,6 +53,8 @@ SET(APPS
   testAngleDiff
   testAngleInArc
   testSegRayCPA
+  testPolyRayCPA
+  testBearingMinMaxToPoly
   testDistPointToRay
   testCpasRaySegl
   testCpasArcSegl

@@ -13,6 +13,7 @@ Processconfig = ANTLER
   MSBetweenLaunches = 100
 
   Run = MOOSDB          @ NewConsole = false
+  Run = pRealm          @ NewConsole = false
   Run = uTimerScript    @ NewConsole = false
   Run = pMarineViewer   @ NewConsole = false
   Run = pLogger         @ NewConsole = false
@@ -23,6 +24,15 @@ Processconfig = ANTLER
   Run = pHostInfo       @ NewConsole = false
   Run = uFldShoreBroker @ NewConsole = false
   Run = uFldNodeComms   @ NewConsole = false
+}
+
+//---------------------------------------------------------
+// pRealm Config Block
+
+ProcessConfig = pRealm
+{
+  AppTick    = 2
+  CommsTick  = 2
 }
 
 //---------------------------------------------------------
@@ -46,6 +56,19 @@ ProcessConfig = uMAC
 }
 
 //--------------------------------------------------
+// uMACView Configuration Block
+
+ProcessConfig = uMACView
+{
+  AppTick       = 1
+  CommsTick     = 1
+
+	watch_cluster = key=mission_top, vars=DEPLOY:RETURN
+	watch_cluster = key=mission_top, vars=STATION_KEEP:LOITER:AVOID
+	watch_cluster = key=mission2, vars=RETURN
+}
+
+//--------------------------------------------------
 // uFldShoreBroker Configuration Block
 
 ProcessConfig = uFldShoreBroker
@@ -57,9 +80,12 @@ ProcessConfig = uFldShoreBroker
   //       [BRIDGE = src=FOO_$V,  alias=FOO] and                
   //       [BRIDGE = src=FOO_ALL, alias=FOO]
 
+	auto_bridge_appcast = true
+	
   qbridge  = DEPLOY, RETURN, STATION_KEEP, NODE_REPORT, NODE_MESSAGE
-  qbridge  = MOOS_MANUAL_OVERRIDE, APPCAST_REQ, AVOID, UP_LOITER
-  qbridge  = RETURN_UPDATES
+  qbridge  = MOOS_MANUAL_OVERRIDE, AVOID, UP_LOITER
+  qbridge  = RETURN_UPDATES, BCM_DISPLAY_RADII
+  qbridge  = CONTACT_INFO, NODE_GROUP_UPDATE
 
   bridge   = src=UP_LOITER_$N, alias=UP_LOITER
   bridge   = src=DRIFT_VECTOR_ADD, alias=DRIFT_VECTOR_ADD
@@ -78,7 +104,7 @@ ProcessConfig = uFldNodeComms
   critical_range   = 25
   min_msg_interval = 15
   max_msg_length   = 1000
-  groups           = true
+//  groups           = true
 
   view_node_rpt_pulses = false
 }
@@ -126,7 +152,7 @@ ProcessConfig = pLogger
 
   WildCardOmitPattern = *_STATUS
   WildCardOmitPattern = DB_VARSUMMARY
-  WildCardOmitPattern = DB_RWSUMMARY
+  //WildCardOmitPattern = DB_RWSUMMARY
 }
 
 
@@ -143,21 +169,26 @@ ProcessConfig = pMarineViewer
   vehicles_shape_scale = 1.5
   vehicles_name_mode   = names
 
+	watch_cluster = key=mission_top, vars=DEPLOY:RETURN
+	watch_cluster = key=mission_top, vars=STATION_KEEP:LOITER:AVOID
+	
   circle_viewable_all = false
-  
-  appcast_viewable = true
+
+	content_mode      = appcast       // or realmcast
+	realmcast_channel = mission_top
+	
   appcast_color_scheme = indigo
+	appcast_font_size    = large
+  procs_font_size      = large
+  nodes_font_size      = large
 
   stale_report_thresh = 10
   stale_remove_thresh = 18
 
-  scope = PSHARE_INPUT_SUMMARY
-  scope = NODE_BROKER_PING
-  scope = DEPLOY_ALL
-
-  action = STATION_KEEP_ALL = false
-  action = STATION_KEEP_ALL = true
-
+	scope = REALMCAST_REQ
+	scope = REALMCAST_REQ_GILDA
+	scope = REALMCAST_REQ_HENRY
+	
   left_context[return_point] = RETURN_$[UP_VNAME_CLOSEST] = true
   left_context[return_point] = RETURN_UPDATES_$[UP_VNAME_CLOSEST] = points=$[XPOS],$[YPOS]
   left_context[station]      = STATION_KEEP_$[UP_VNAME_CLOSEST] = true
@@ -192,7 +223,13 @@ ProcessConfig = pMarineViewer
   button_two   = RETURN  # RETURN_ALL=true
   button_two   = RETURN  # STATION_KEEP_ALL=false
   button_three = PERMUTE   # UTS_FORWARD=0
-  button_four  = STATION   # STATION_KEEP_ALL=true
+  button_five  = STATION:true # STATION_KEEP_ALL=true
+  button_six   = STATION:false # STATION_KEEP_ALL=false
+
+	button_seven = REFINE:N # CONTACT_INFO_ALL = name=avdcol # use_refinery=false
+	button_eight = REFINE:Y # CONTACT_INFO_ALL = name=avdcol # use_refinery=true
+
+	button_nine = GRP_BRAVO # NODE_GROUP_UPDATE_HENRY = bravo
 
 }
 
@@ -239,6 +276,7 @@ ProcessConfig = uProcessWatch
   watch_all = true      // default is true
 
   nowatch = uXMS*
+  nowatch = uMACView*
   nowatch = uPokeDB*
 
   summary_wait = 12

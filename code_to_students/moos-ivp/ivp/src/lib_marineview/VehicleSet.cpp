@@ -166,6 +166,11 @@ bool VehicleSet::getDoubleInfo(const string& g_vname,
 
   NodeRecord record;
   map<string, NodeRecord>::const_iterator p = m_rec_map.find(vname);
+  if(p == m_rec_map.end())
+    p = m_rec_map.find(tolower(vname));
+  if(p == m_rec_map.end())
+    p = m_rec_map.find(toupper(vname));
+
   if(p != m_rec_map.end())
     record = p->second;
   else
@@ -462,9 +467,9 @@ bool VehicleSet::handleNodeReport(string node_report_str, string& whynot)
 //-------------------------------------------------------------
 // Procedure: handleNodeReport
 
-  bool VehicleSet::handleNodeReport(double local_time, 
-				    string node_report_str, 
-				    string& whynot)
+bool VehicleSet::handleNodeReport(double local_time, 
+				  string node_report_str, 
+				  string& whynot)
 {
   NodeRecord new_record = string2NodeRecord(node_report_str);
 
@@ -479,11 +484,14 @@ bool VehicleSet::handleNodeReport(string node_report_str, string& whynot)
   string vtype = tolower(new_record.getType());
   if(vtype == "uuv")
     vtype = "auv";
-  if((vtype == "slocum") || (vtype == "seaglider") || (vtype == "ant"))
+  else if((vtype == "slocum") || (vtype == "seaglider") || (vtype == "ant"))
     vtype = "glider";
-  if((vtype != "auv") && (vtype != "ship") && (vtype != "glider") &&
-     (vtype != "wamv") && (vtype != "kayak") && (vtype != "mokai") &&
-     (vtype != "heron"))
+  else if((vtype.find("uuv") == string::npos) && (vtype != "glider") && (vtype != "wamv") &&
+	  (vtype != "kayak") && (vtype != "mokai") && (vtype != "heron") &&
+	  (vtype != "longship") && (vtype != "swimmer") && (vtype != "tuna") &&
+	  (vtype != "shark") && (vtype != "goldfish") && (vtype != "dory") &&
+	  (vtype != "nemo") && (vtype != "octopus") && (vtype != "whale") && 
+	  (vtype != "fish") && (vtype != "whale") && (vtype != "treasure"))
     vtype = "ship";
   
   if(((vtype == "auv") || (vtype == "glider")) && !new_record.valid("depth")) {
@@ -499,14 +507,29 @@ bool VehicleSet::handleNodeReport(string node_report_str, string& whynot)
   
   double vlen = new_record.getLength();
   if(!new_record.valid("length") || (vlen == 0)) {
-    if((vtype=="auv") || (vtype=="kayak") || (vtype=="heron"))
+    if((vtype.find("uuv")==0) || (vtype=="auv") || (vtype=="kayak") || (vtype=="heron"))
       vlen = 3.0; // meters
-    if(vtype=="glider")
+    else if(vtype=="glider")
       vlen = 2.0; // meters
-    if(vtype=="ship")
+    else if(vtype=="ship")
       vlen = 10; // meters
+	else if(vtype=="shark")
+		vlen = 6.0;
+	else if(vtype=="tuna")
+		vlen = 6.0;
+	else if (vtype=="goldfish")
+		vlen = 0.5;
+    else if((vtype=="longship")||(vtype=="whale"))
+      vlen = 10; // meters
+	else if(vtype=="dory")
+		vlen = 2;
+	else if(vtype=="nemo")
+		vlen = 2;
+	else if((vtype=="octopus")||(vtype=="treasure")||(vtype=="fish"))
+		vlen = 5;
   }
-  
+  //for challenge sim
+  vlen = 150;
   new_record.setType(vtype);
   new_record.setLength(vlen);
   m_rec_map[vname] = new_record;

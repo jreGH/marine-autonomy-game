@@ -1,5 +1,5 @@
 /*****************************************************************/
-/*    NAME: Michael Benjamin, Henrik Schmidt, and John Leonard   */
+/*    NAME: Michael Benjamin                                     */
 /*    ORGN: Dept of Mechanical Eng / CSAIL, MIT Cambridge MA     */
 /*    FILE: BHV_Waypoint.cpp                                     */
 /*    DATE: Nov 2004                                             */
@@ -27,6 +27,7 @@
 #include "BHV_Waypoint.h"
 #include "OF_Reflector.h"
 #include "MBUtils.h"
+#include "MacroUtils.h"
 #include "AngleUtils.h"
 #include "AOF_Waypoint.h"
 #include "GeomUtils.h"
@@ -61,6 +62,7 @@ BHV_Waypoint::BHV_Waypoint(IvPDomain gdomain) :
   m_lead_distance    = -1; // meters - default of -1 means unused
   m_lead_damper      = -1; // meters - default of -1 means unused
   m_lead_allowed     = true;
+  m_wpt_flag_on_start = false;
   m_efficiency_measure = "off"; // or "off" or "all"
   m_ipf_type        = "zaic";
 
@@ -71,6 +73,7 @@ BHV_Waypoint::BHV_Waypoint(IvPDomain gdomain) :
   m_use_alt_speed   = false;
 
   // Visual Hint Defaults
+  m_hint_active        = true;
   m_hint_vertex_size   = 3;
   m_hint_edge_size     = 1;
   m_hint_vertex_color  = "dodger_blue";
@@ -90,15 +93,16 @@ BHV_Waypoint::BHV_Waypoint(IvPDomain gdomain) :
   m_course_pct = 50;
   m_speed_pct  = 50;
 
-  m_osx   = 0;
-  m_osy   = 0;
-  m_osv   = 0;
-  m_osh   = 0;
-
   m_odo_set_flag = false;
   m_odo_setx = 0;
   m_odo_sety = 0;
   m_odo_virgin = true;
+
+  m_wpt_flag_published = false;
+  
+  // false is existing behavior of later PI updates, and true ties
+  // PX,PI,PI together
+  m_eager_prev_index_flag = false; 
 
   m_dist_leg_odo = 0;
   m_dist_total_odo    = 0;
@@ -109,6 +113,8 @@ BHV_Waypoint::BHV_Waypoint(IvPDomain gdomain) :
   m_osx_prev = 0;
   m_osy_prev = 0;
 
+  m_waypt_hit = false;
+  
   m_greedy_tour_pending = false;
 
   m_prev_cycle_index = 0;
@@ -143,7 +149,9 @@ void BHV_Waypoint::onSetParamComplete()
 
   svector = removeDuplicates(svector);
   for(unsigned int i=0; i<svector.size(); i++)
-    addInfoVars(svector[i], "nowarning");  
+    addInfoVars(svector[i], "nowarning");
+
+  postConfigStatus();
 }
 
 //-----------------------------------------------------------
@@ -158,7 +166,7 @@ bool BHV_Waypoint::setParam(string param, string param_val)
   double dval = atof(param_val.c_str());
   string param_val_lower = tolower(param_val);
 
-  if((param == "polygon") || (param == "points")) {
+  if((param == "polygon") || (param == "points") || (param == "xpoints")) {
     XYSegList new_seglist = string2SegList(param_val);
     if(new_seglist.size() == 0) {
       XYPolygon new_poly = string2Poly(param_val);
@@ -166,8 +174,33 @@ bool BHV_Waypoint::setParam(string param, string param_val)
     }
     if(new_seglist.size() == 0)
       return(false);
+
+    // With the xpoints option, the waypoints are updated but also the
+    // current index is held the same. If the number of waypoints is
+    // different, the update is rejected.
+    int current_waypt = m_waypoint_engine.getCurrIndex();
+    int prev_waypt_ix = m_prev_waypt_index;
+    int prev_cycle_ix = m_prev_cycle_index;
+
+    if(param == "xpoints") {
+      if(new_seglist.size() != m_waypoint_engine.size())
+	return(false);
+    }
+    
     m_waypoint_engine.setSegList(new_seglist);
     m_markpt.set_active(false);
+    m_prev_cycle_index = 0;
+    m_prev_waypt_index = -1;
+
+    // After the waypoint engine is updated with new points, if the 
+    // xpoints option is used, we also restore the current index,
+    // prev_waypt_ix and cycle_ix.
+    if(param == "xpoints") {
+      m_waypoint_engine.setCurrIndex((unsigned int)(current_waypt));
+      m_prev_waypt_index = prev_waypt_ix;
+      m_prev_cycle_index = prev_cycle_ix;
+    }
+    
     return(true);
   }
   else if(param == "point") {
@@ -285,13 +318,17 @@ bool BHV_Waypoint::setParam(string param, string param_val)
       m_ipf_type = param_val;
     return(true);
   }
-  else if(param == "lead"){
+  else if((param == "lead") && isNumber(param_val)) {
     if(dval <= 0) // indicating it is off
       m_lead_distance = -1;
     else
       m_lead_distance = dval;
     return(true);
   }
+  else if(param == "wptflag_on_start")
+    return(setBooleanOnString(m_wpt_flag_on_start, param_val));
+  else if(param == "eager_prev_index_flag")
+    return(setBooleanOnString(m_eager_prev_index_flag, param_val));
   else if(param == "lead_to_start")
     return(setBooleanOnString(m_lead_to_start, param_val));
   else if((param == "lead_damper") && (dval > 0)) {
@@ -459,6 +496,7 @@ IvPFunction *BHV_Waypoint::onRunState()
   // Note the waypoint prior to possibly incrementing the waypoint
   double this_x = m_waypoint_engine.getPointX();
   double this_y = m_waypoint_engine.getPointY();
+  int    this_i = m_waypoint_engine.getCurrIndex();
   if(!m_prevpt.valid())
     m_prevpt.set_vertex(m_osx, m_osy);
 
@@ -469,11 +507,23 @@ IvPFunction *BHV_Waypoint::onRunState()
   // Update things if the waypoint was indeed incremented
   double next_x = m_waypoint_engine.getPointX();
   double next_y = m_waypoint_engine.getPointY();
-  if((next_x != this_x) || (next_y != this_y)) {
-    m_prevpt.set_vertex(this_x, this_y);
-    postWptFlags(this_x, this_y);
-  }
+  bool post_wpt_flags = false;
+  if((next_x != this_x) || (next_y != this_y))
+    post_wpt_flags = true;
+  if(m_wpt_flag_on_start && !m_wpt_flag_published)
+    post_wpt_flags = true;
+  if(m_completed)
+    post_wpt_flags = true;
+  if(m_waypt_hit)
+    post_wpt_flags = true;
 
+  if(post_wpt_flags) {
+    m_prevpt.set_vertex(this_x, this_y);
+    if(m_eager_prev_index_flag)
+      m_prev_waypt_index = this_i;
+    postFlags(m_wpt_flags);
+    m_wpt_flag_published = true;
+  }
 
   // We want to report the updated cycle info regardless of the 
   // above result. Even if the next_point is false and there are
@@ -489,6 +539,8 @@ IvPFunction *BHV_Waypoint::onRunState()
   // Only publish these reports if we have another point to go.
   if(next_point) {
     postStatusReport();
+    if(!m_eager_prev_index_flag)
+      m_prev_waypt_index = m_waypoint_engine.getCurrIndex();
     postViewableSegList();
     //postMessage("VIEW_POINT", m_prevpt.get_spec("active=true"), "prevpt");
     postMessage("VIEW_POINT", m_nextpt.get_spec("active=true"), "wpt");
@@ -516,7 +568,6 @@ IvPFunction *BHV_Waypoint::onRunState()
   IvPFunction *ipf = buildOF(m_ipf_type);
   if(ipf)
     ipf->setPWT(m_priority_wt);
-
 
   return(ipf);
 }
@@ -581,6 +632,7 @@ bool BHV_Waypoint::updateInfoIn()
 
 bool BHV_Waypoint::setNextWaypoint()
 {
+  m_waypt_hit = false;
   if(m_waypoint_engine.size() == 0)
     return(false);
 
@@ -588,6 +640,10 @@ bool BHV_Waypoint::setNextWaypoint()
 
   // Returns either: empty_seglist, completed, cycled, advanced, or in-transit
   string feedback_msg = m_waypoint_engine.setNextWaypoint(m_osx, m_osy);
+
+  if((feedback_msg == "completed") || (feedback_msg == "cycled") ||
+     (feedback_msg == "advanced"))
+    m_waypt_hit = true;
   
   if(feedback_msg == "empty_seglist")
     return(false);
@@ -603,21 +659,21 @@ bool BHV_Waypoint::setNextWaypoint()
       postMessage((m_var_report + m_var_suffix), feedback_msg_aug);
     }
     
-    postCycleFlags();
+    postFlags(m_cycle_flags);
   }
+
+  postMessage("FEEDBACK_MSG", feedback_msg);
    
   if(feedback_msg == "completed") {
-    double this_x = m_waypoint_engine.getPointX();
-    double this_y = m_waypoint_engine.getPointY();
-    postWptFlags(this_x, this_y);
-    
+    //postFlags(m_wpt_flags);
+    //m_completed = true;
     setComplete();
     m_markpt.set_active(false);
     if(m_perpetual)
       m_waypoint_engine.resetForNewTraversal();
     return(false);
   }
-  
+
   double next_ptx = m_waypoint_engine.getPointX();
   double next_pty = m_waypoint_engine.getPointY();
   m_nextpt.set_vertex(next_ptx, next_pty);
@@ -719,9 +775,15 @@ IvPFunction *BHV_Waypoint::buildOF(string method)
 
     if(method == "zaic_spd") {
       ZAIC_SPD spd_zaic(m_domain, "speed");
+      //spd_zaic.setMedSpeed(m_cruise_speed);
+      //spd_zaic.setLowSpeed(0.1);
+      //spd_zaic.setHghSpeed(m_cruise_speed+0.4);
+      //spd_zaic.setLowSpeedUtil(70);
+      //spd_zaic.setHghSpeedUtil(20);
+      //spd_zaic.setMaxSpdUtil(20);
+
       spd_zaic.setParams(m_cruise_speed, 0.1, m_cruise_speed+0.4, 70, 20);
       spd_ipf = spd_zaic.extractIvPFunction();
-      //spd_ipf->getPDMap()->print();
       if(!spd_ipf)
 	postWMessage("Failure on the SPD ZAIC via ZAIC_SPD utility");
     }
@@ -746,10 +808,6 @@ IvPFunction *BHV_Waypoint::buildOF(string method)
     
     IvPFunction *crs_ipf = crs_zaic.extractIvPFunction(false);
 
-    //cout << "crs pieces: " << crs_ipf->getPDMap()->size() << endl;
-    //crs_ipf->getPDMap()->print();
-
-    
     if(!crs_ipf) 
       postWMessage("Failure on the CRS ZAIC");
     
@@ -791,7 +849,6 @@ void BHV_Waypoint::postStatusReport()
   if(m_var_index != "silent") {
     if(current_waypt != m_prev_waypt_index) {
       postMessage((m_var_index + m_var_suffix), current_waypt);
-      m_prev_waypt_index = current_waypt;
     }
   }
 }
@@ -817,6 +874,7 @@ void BHV_Waypoint::postViewableSegList()
     seglist.set_edge_size(m_hint_edge_size);
   if(m_hint_vertex_size >= 0)
     seglist.set_vertex_size(m_hint_vertex_size);
+  seglist.set_active(m_hint_active);
   string segmsg = seglist.get_spec();
   postMessage("VIEW_SEGLIST", segmsg);
 }
@@ -860,29 +918,14 @@ void BHV_Waypoint::postCycleFlags()
 //-----------------------------------------------------------
 // Procedure: postWptFlags()
 
+#if 0
 void BHV_Waypoint::postWptFlags(double x, double y)
 {
-  string xpos = doubleToStringX(x,2);
-  string ypos = doubleToStringX(y,2);
-
-  string nextx = doubleToStringX(m_nextpt.x(),2);
-  string nexty = doubleToStringX(m_nextpt.y(),2);
-
-  int vsize = m_wpt_flags.size();
-  for(int i=0; i<vsize; i++) {
-    string var   = m_wpt_flags[i].get_var();
+  for(unsigned int i=0; i<m_wpt_flags.size(); i++) {
+    string var = m_wpt_flags[i].get_var();
     if(m_wpt_flags[i].is_string()) {
       string sdata = m_wpt_flags[i].get_sdata();
-
-      sdata = findReplace(sdata, "$(X)", xpos);
-      sdata = findReplace(sdata, "$(Y)", ypos);
-      sdata = findReplace(sdata, "$[X]", xpos);
-      sdata = findReplace(sdata, "$[Y]", ypos);
-
-      sdata = findReplace(sdata, "$(NX)", nextx);
-      sdata = findReplace(sdata, "$(NY)", nexty);
-      sdata = findReplace(sdata, "$[NX]", nextx);
-      sdata = findReplace(sdata, "$[NY]", nexty);
+      sdata = expandMacros(sdata);
       postRepeatableMessage(var, sdata);
     }
     else {
@@ -891,6 +934,8 @@ void BHV_Waypoint::postWptFlags(double x, double y)
     }
   }
 }
+#endif
+
 
 //-----------------------------------------------------------
 // Procedure: handleVisualHint()
@@ -911,6 +956,8 @@ void BHV_Waypoint::handleVisualHint(string hint)
     m_hint_edge_color = value;
   else if((param == "label_color") && isColor(value))
     m_hint_label_color = value;
+  else if(param == "active")
+    setBooleanOnString(m_hint_active, value);
   else if((param == "nextpt_color") && isColor(value)) 
     m_hint_nextpt_color = value;
   else if((param == "nextpt_lcolor") && isColor(value)) 
@@ -1079,10 +1126,126 @@ void BHV_Waypoint::markOdoLeg()
   m_dist_leg_odo = 0;
 }
 
+//-----------------------------------------------------------
+// Procedure: postConfigStatus
+
+void BHV_Waypoint::postConfigStatus()
+{
+  string str = "type=BHV_Waypoint,name=" + m_descriptor;
+
+  str += ",points=" + m_waypoint_engine.getPointsStr();
+  str += ",speed=" + doubleToStringX(m_cruise_speed,1);
+  str += ",speed_alt=" + doubleToStringX(m_cruise_speed_alt,1);
+
+  str += ",currix=" + intToString(m_waypoint_engine.getCurrIndex());
+  str += ",greedy_tour=" + boolToString(m_greedy_tour_pending);
+  str += ",use_alt_speed=" + boolToString(m_use_alt_speed);
+  str += ",wpt_status=" + m_var_report;
+  str += ",wpt_dist_to_prev=" + m_var_dist_to_prev;
+  str += ",wpt_dist_to_next=" + m_var_dist_to_next;
+  str += ",wpt_index=" + m_var_index;
+
+  str += ",cycle_index_var=" + m_var_cyindex;
+  str += ",post_suffix=" + m_var_suffix;
+  str += ",post_suffix=" + m_var_suffix;
+  str += ",ipf_type=" + m_ipf_type;
+  str += ",lead=" + doubleToStringX(m_lead_distance,1);
+  str += ",lead_damper=" + doubleToStringX(m_lead_damper,1);
+  str += ",lead_to_start=" + boolToString(m_lead_to_start);
+
+  str += ",order=" + getReverseStr();
+
+  bool repeats_endless = m_waypoint_engine.getRepeatsEndless();
+  if(repeats_endless)
+    str += ",repeats=forever";
+  else {
+    unsigned int repeats = m_waypoint_engine.getRepeats();
+    str += ",repeats=" + uintToString(repeats);
+  }
+  str += ",efficiency_measure=" + m_efficiency_measure;
+
+  double capture_radius = m_waypoint_engine.getCaptureRadius();
+  double slip_radius = m_waypoint_engine.getSlipRadius();
+  
+
+  str += ",capture_radius=" + doubleToStringX(capture_radius, 1);
+  str += ",slip_radius=" + doubleToStringX(slip_radius, 1);
+
+  bool using_capture_line = m_waypoint_engine.usingCaptureLine();
+  if(using_capture_line) {
+    if((capture_radius == 0) && (slip_radius == 0))
+      str += ",capture_line=absolute";
+    else
+      str += ",capture_line=" + boolToString(using_capture_line);
+  }
+  
+  str += ",crs_spd_zaic_ratio=" + doubleToStringX(m_course_pct,2);
+
+  postRepeatableMessage("BHV_SETTINGS", str);
+}
 
 
 
+//-----------------------------------------------------------
+// Procedure: expandMacros()
+
+string BHV_Waypoint::expandMacros(string sdata)
+{
+  // =======================================================
+  // First expand the macros defined at the superclass level
+  // =======================================================
+  sdata = IvPBehavior::expandMacros(sdata);
+
+  // =======================================================
+  // Expand configuration parameters
+  // =======================================================
+  sdata = macroExpand(sdata, "POINTS", m_waypoint_engine.getPointsStr());
+  sdata = macroExpand(sdata, "SPEED", m_cruise_speed);
+  sdata = macroExpand(sdata, "SPEED_ALT", m_cruise_speed_alt);
+  sdata = macroExpand(sdata, "USE_SPEED_ALT", m_use_alt_speed);
+  sdata = macroExpand(sdata, "IPF_TYPE", m_ipf_type);
+  sdata = macroExpand(sdata, "WPT_FLAG_ON_START", m_wpt_flag_on_start);
+  sdata = macroExpand(sdata, "LEAD_TO_START", m_lead_to_start);
+  sdata = macroExpand(sdata, "LEAD_DAMPER", m_lead_damper);
+  sdata = macroExpand(sdata, "ORDER", getReverseStr());
+  
+  // =======================================================
+  // Expand Behavior State
+  // =======================================================
+  sdata = macroExpand(sdata, "NI", m_waypoint_engine.getCurrIndex());
+  sdata = macroExpand(sdata, "NX", m_nextpt.x());
+  sdata = macroExpand(sdata, "NY", m_nextpt.y());
+
+  sdata = macroExpand(sdata, "PI", m_prev_waypt_index); 
+  sdata = macroExpand(sdata, "PX", m_prevpt.x());
+  sdata = macroExpand(sdata, "PY", m_prevpt.y());
+
+  sdata = macroExpand(sdata, "X", m_prevpt.x()); // deprecated
+  sdata = macroExpand(sdata, "Y", m_prevpt.y()); // deprecated
 
 
+  
+  sdata = macroExpand(sdata, "IX", m_waypoint_engine.getCurrIndex()); // deprecated
+  sdata = macroExpand(sdata, "CYCLES", m_waypoint_engine.getCycleCount());
+  sdata = macroExpand(sdata, "CYCREM", m_waypoint_engine.resetsRemaining());
+  sdata = macroExpand(sdata, "WPTS_HIT", m_waypoint_engine.getTotalHits());
+ 
+  sdata = macroExpand(sdata, "WPTS_REM", m_waypoint_engine.size() -
+		      m_waypoint_engine.getCurrIndex());
+  sdata = macroExpand(sdata, "WPTS", m_waypoint_engine.size());
+
+  return(sdata);
+}
 
 
+//-----------------------------------------------------------
+// Procedure: getReverseStr()
+
+string BHV_Waypoint::getReverseStr() const
+{
+  bool reversed_order = m_waypoint_engine.getReverse();
+  if(reversed_order)
+    return("reverse");
+  
+  return("normal");
+}

@@ -69,6 +69,8 @@ void showHelpAndExit()
   blk("      Display MOOS publications and subscriptions.              ");
   mag("  --version,-v                                                  ");
   blk("      Display the release version of uLoadWatch.                ");
+  mag("  --web,-w                                                      ");
+  blk("      Open browser to: https://oceanai.mit.edu/apps/uLoadWatch  ");
   blk("                                                                ");
   blk("Note: If argv[2] does not otherwise match a known option,       ");
   blk("      then it will be interpreted as a run alias. This is       ");
@@ -95,7 +97,11 @@ void showExampleConfigAndExit()
   blk("  thresh = app=pHelmIvP, gapthresh=1.5                          ");
   blk("  thresh = app=any,      gapthresh=2.0                          ");
   blk("                                                                ");
+  blk("  near_breach_thresh = 0.9  // default                          ");
+  blk("                                                                ");
   blk("  breach_trigger = 1    // default (first offense forgiven)     ");
+  blk("                                                                ");
+  blk("  app_logging = true  // {true or file} By default disabled     ");
   blk("}                                                               ");
   blk("                                                                ");
   exit(0);
@@ -109,7 +115,7 @@ void showInterfaceAndExit()
 {
   blk("                                                                ");
   blu("=============================================================== ");
-  blu("uLoadWatch INTERFACE                                    ");
+  blu("uLoadWatch INTERFACE                                            ");
   blu("=============================================================== ");
   blk("                                                                ");
   showSynopsis();
@@ -123,6 +129,14 @@ void showInterfaceAndExit()
   blk("------------------------------------                            ");
   blk("  LOAD_WARNING = app=pHelmIvP, maxgap=1.54                      ");
   blk("                                                                ");
+  blk("  ULW_BREACH       = true                                       ");
+  blk("  ULW_BREACH_COUNT = 3                                          ");
+  blk("  ULW_BREACH_LIST  = uSimMarine                                 ");
+  blk("                                                                ");
+  blk("  ULW_NEAR_BREACH       = true                                  ");
+  blk("  ULW_NEAR_BREACH_COUNT = 12                                    ");
+  blk("  ULW_NEAR_BREACH_LIST  = pHelmIvP,uSimMarine                   ");
+  blk("                                                                ");
   exit(0);
 }
 
@@ -134,11 +148,3 @@ void showReleaseInfoAndExit()
   showReleaseInfo("uLoadWatch", "gpl");
   exit(0);
 }
-
-
-
-
-
-
-
-

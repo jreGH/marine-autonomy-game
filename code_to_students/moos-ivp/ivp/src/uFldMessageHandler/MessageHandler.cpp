@@ -25,7 +25,9 @@
 #include "MessageHandler.h"
 #include "MBUtils.h"
 #include "NodeMessage.h"
+#include "MacroUtils.h"
 #include "NodeMessageUtils.h"
+#include "VarDataPairUtils.h"
 #include "ACTable.h"
 
 using namespace std;
@@ -47,6 +49,8 @@ MessageHandler::MessageHandler()
   // Initialize config variables
   m_strict_addressing   = false;
   m_appcast_trunc_msg   = 75;
+
+  m_aux_info = "node";  // or else "node+app"
 }
 
 //---------------------------------------------------------
@@ -121,6 +125,12 @@ bool MessageHandler::OnStartUp()
     if(param == "strict_addressing")
       handled = setBooleanOnString(m_strict_addressing, value);
 
+    if(param == "aux_info") {
+      if((value == "node") || (value == "node+app")) {
+	m_aux_info = value;
+	handled = true;
+      }
+    }
     else if((param == "appcast_trunc_msg") && isNumber(value)) {
       int ival = atoi(value.c_str());
       if(ival < 0)
@@ -128,6 +138,10 @@ bool MessageHandler::OnStartUp()
       m_appcast_trunc_msg = (unsigned int)(ival);
       handled = true;
     }
+    else if(param == "msg_flag") 
+      handled = addVarDataPairOnString(m_msg_flags, value);
+    else if(param == "bad_msg_flag") 
+      handled = addVarDataPairOnString(m_bad_msg_flags, value);
     
     if(!handled)
       reportUnhandledConfigWarning(orig);
@@ -144,7 +158,7 @@ bool MessageHandler::OnStartUp()
 void MessageHandler::registerVariables()
 {
   AppCastingMOOSApp::RegisterVariables();
-  m_Comms.Register("NODE_MESSAGE", 0);
+  Register("NODE_MESSAGE", 0);
 }
 
 
@@ -171,6 +185,7 @@ bool MessageHandler::handleMailNodeMessage(const string& msg)
   m_valid_messages_rcvd++;
 
   string src_node   = message.getSourceNode();
+  string src_app    = message.getSourceApp();
   string dest_node  = message.getDestNode();
   string dest_group = message.getDestGroup();
   string var_name   = message.getVarName();
@@ -217,9 +232,12 @@ bool MessageHandler::handleMailNodeMessage(const string& msg)
     m_last_rejected_msgs.push_back(msg);
     if(m_last_rejected_msgs.size() > 5) 
       m_last_rejected_msgs.pop_front();
+    postFlags(m_bad_msg_flags);
     return(false);
   }
 
+  if((m_aux_info == "node+app") && (src_app != ""))
+    src_node += "+" + src_app;
 
   // Part 3: Handling and Posting the Message
   if(is_string) 
@@ -227,7 +245,35 @@ bool MessageHandler::handleMailNodeMessage(const string& msg)
   else
     Notify(var_name, var_dval, src_node);
 
+  postFlags(m_msg_flags);
   return(true);
+}
+
+
+//------------------------------------------------------------
+// Procedure: postFlags()
+
+void MessageHandler::postFlags(const vector<VarDataPair>& flags)
+{
+  for(unsigned int i=0; i<flags.size(); i++) {
+    VarDataPair pair = flags[i];
+    string moosvar = pair.get_var();
+
+    // If posting is a double, just post. No macro expansion
+    if(!pair.is_string()) {
+      double dval = pair.get_ddata();
+      Notify(moosvar, dval);
+    }
+    // Otherwise if string posting, handle macro expansion
+    else {
+      string sval = pair.get_sdata();
+      sval = macroExpand(sval, "CTR", m_total_messages_rcvd);
+      sval = macroExpand(sval, "GOOD_CTR", m_valid_messages_rcvd);
+      sval = macroExpand(sval, "BAD_CTR", m_rejected_messages_rcvd);
+      
+      Notify(moosvar, sval);
+    }
+  }
 }
 
 
@@ -354,11 +400,3 @@ bool MessageHandler::buildReport()
   
   return(true);
 }
-
-
-
-
-
-
-
-

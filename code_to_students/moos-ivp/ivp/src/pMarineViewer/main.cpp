@@ -25,6 +25,7 @@
 #include <iostream>
 #include <FL/Fl.H>
 #include "MBUtils.h"
+#include "OpenURL.h"
 #include "Threadsafe_pipe.h"
 #include "MOOS_event.h"
 #include "MOOSAppRunnerThread.h"
@@ -47,11 +48,14 @@ int main(int argc, char *argv[])
   string mission_file;
   string run_command = argv[0];
   string size_request;
+  bool   verbose=false;
 
   for(int i=1; i<argc; i++) {
     string argi = argv[i];
     if((argi=="-v") || (argi=="--version") || (argi=="-version"))
       showReleaseInfoAndExit();
+    if((argi=="--verbose") || (argi=="-verbose"))
+      verbose = true;
     else if((argi=="-e") || (argi=="--example") || (argi=="-example"))
       showExampleConfigAndExit();
     else if((argi == "-h") || (argi == "--help") || (argi=="-help"))
@@ -66,6 +70,8 @@ int main(int argc, char *argv[])
       size_request = argi.substr(7);
     else if(strBegins(argi, "--alias="))
       run_command = argi.substr(8);
+    else if((argi == "-w") || (argi == "--web") || (argi == "-web"))
+      openURLX("https://oceanai.mit.edu/ivpman/apps/pMarineViewer");
     else if(i==2)
       run_command = argi;
   }
@@ -77,7 +83,8 @@ int main(int argc, char *argv[])
   cout << "pMarineViewer launching as " << run_command << endl;
   cout << termColor() << endl;
 
-  AppCastRepo appcast_repo;
+  AppCastRepo appcast_repo(true);
+  RealmRepo   realm_repo;
 
   int gui_wid = 0.85 * Fl::w();
   int gui_hgt = 0.85 * Fl::h();
@@ -90,21 +97,23 @@ int main(int argc, char *argv[])
 
   // For document screen shots:
   // PMV_GUI* gui = new PMV_GUI(1100,640, "pMarineViewer");
-  string title_base = "pMarineViewer (MIT Version 19.8.1)";
+  string title_base = "pMarineViewer (MIT Version 19.8.2 trunk)";
   PMV_GUI* gui = new PMV_GUI(gui_wid, gui_hgt, title_base.c_str());
   if(!gui) {
     cout << "Unable to instantiate the GUI - exiting." << endl;
     return(-1);
   }
   gui->setTitleBase(title_base);
-
+  gui->setVerbose(verbose);
 
   PMV_MOOSApp thePort;
 
   thePort.setGUI(gui);
   thePort.setPendingEventsPipe(& g_pending_moos_events);
   thePort.setAppCastRepo(&appcast_repo);
+  thePort.setRealmRepo(&realm_repo);
   gui->setAppCastRepo(&appcast_repo);
+  gui->setRealmRepo(&realm_repo);
   
   // start the MOOSPort in its own thread
   
@@ -113,7 +122,9 @@ int main(int argc, char *argv[])
   // sections are looked up in the .moos file based on the simple
   // filename, we need to strip off other pathname components.
 
-  string name = parseAppName(argv[0]);
+  //string name = parseAppName(argv[0]);
+  string name = parseAppName(run_command);
+
   char * appFilename = const_cast<char*>(name.c_str());
 
   MOOSAppRunnerThread portAppRunnerThread(&thePort, appFilename, 

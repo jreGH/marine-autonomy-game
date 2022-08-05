@@ -3,6 +3,7 @@
 /*    ORGN: Dept of Mechanical Eng / CSAIL, MIT Cambridge MA     */
 /*    FILE: PSG_MOOS_App.h                                       */
 /*    DATE: Dec 7th 2011                                         */
+/*    DATE: Mar 12th 2022 Add support for delta updates          */
 /*                                                               */
 /* This file is part of MOOS-IvP                                 */
 /*                                                               */
@@ -26,11 +27,12 @@
 
 #include "MOOS/libMOOS/Thirdparty/AppCasting/AppCastingMOOSApp.h"
 #include "XYConvexGrid.h"
+#include "ExFilterSet.h"
 
 class SearchGrid : public AppCastingMOOSApp
 {
  public:
-  SearchGrid() {}
+  SearchGrid();
   virtual ~SearchGrid() {}
 
   bool OnNewMail(MOOSMSG_LIST &NewMail);
@@ -41,16 +43,24 @@ class SearchGrid : public AppCastingMOOSApp
  protected:
   bool buildReport();
   void registerVariables();
-  void handleNodeReport(std::string);
+  void handleMailNodeReport(std::string);
 
   void postGrid();
+  void postGridUpdates();
+  
+protected: // Config vars
+  bool        m_report_deltas;
+  std::string m_grid_label;
+  std::string m_grid_var_name;
 
- protected:
+  ExFilterSet m_filter_set;
+
+protected: // State vars
+  
   XYConvexGrid m_grid;
+
+  std::map<unsigned int, double> m_map_deltas;
+
 };
 
 #endif 
-
-
-
-

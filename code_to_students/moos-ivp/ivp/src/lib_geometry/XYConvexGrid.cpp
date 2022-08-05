@@ -27,10 +27,21 @@
 #include <cmath>
 #include <cstdlib>
 #include "XYConvexGrid.h"
+#include "XYGridUpdate.h"
 #include "MBUtils.h"
 #include "XYFormatUtilsPoly.h"
 
 using namespace std;
+
+//-------------------------------------------------------------
+// Constructor()
+
+XYConvexGrid::XYConvexGrid()
+{
+  m_pix_per_mtr_x = -1;
+  m_pix_per_mtr_y = -1;
+}
+
 
 //-------------------------------------------------------------
 // Procedure: initialize
@@ -189,8 +200,13 @@ XYSquare XYConvexGrid::getElement(unsigned int ix) const
 
 bool XYConvexGrid::hasCellVar(const string& cell_var) const
 {
-  unsigned int i, vsize = m_cell_vars.size();
-  for(i=0; i<vsize; i++) {
+  unsigned int vsize = m_cell_vars.size();
+
+  // An empty-string cell_var is OK if there is only one cell_var
+  if((cell_var == "") && (vsize == 1))
+    return(true);
+  
+  for(unsigned int i=0; i<vsize; i++) {
     if(m_cell_vars[i] == cell_var)
       return(true);
   }
@@ -203,8 +219,13 @@ bool XYConvexGrid::hasCellVar(const string& cell_var) const
 
 unsigned int XYConvexGrid::getCellVarIX(const string& cell_var) const
 {
-  unsigned int i, vsize = m_cell_vars.size();
-  for(i=0; i<vsize; i++) {
+  unsigned int vsize = m_cell_vars.size();
+  
+  // An empty-string cell_var is OK if there is only one cell_var  
+  if((cell_var == "") && (vsize == 1))
+    return(0);
+  
+  for(unsigned int i=0; i<vsize; i++) {
     if(m_cell_vars[i] == cell_var)
       return(i);
   }
@@ -538,11 +559,12 @@ string XYConvexGrid::get_spec() const
     for(cix=0; cix<csize; cix++) {
       if(m_cell_vals[ix][cix] != m_cell_init_vals[cix]) {
 	double dval = m_cell_vals[ix][cix];
-	cell_spec += m_cell_vars[cix] + ":" + doubleToStringX(dval);	
+	//cell_spec += m_cell_vars[cix] + ":" + doubleToStringX(dval);	
+	cell_spec += ":" + m_cell_vars[cix] + ":" + doubleToStringX(dval);
       }
     }
     if(cell_spec != "") {
-      cell_spec = ",cell=" + uintToString(ix) + ":" + cell_spec;
+      cell_spec = ",cell=" + uintToString(ix) + cell_spec;
       spec += cell_spec;
     }
   }
@@ -599,6 +621,88 @@ string XYConvexGrid::getConfigStr() const
   return(spec);
 }
 
+
+//-------------------------------------------------------------
+// Procedure: processDelta()
+//   Example: label@ix,delta:ix,delta : ... :ix,delta
+
+//   label@cell=ix:var:val:var:val:var:val, or
+//   wind@cell=23:force_angle:180:magnitude:2.3
+
+
+bool XYConvexGrid::processDelta(string str)
+{
+  XYGridUpdate update = stringToGridUpdate(str);
+  if(!update.valid())
+    return(false);
+
+  if(update.getGridName() != m_label)
+    return(false);
+  
+  // Make a first pass over all updates. Reject them all (return false
+  // before applying) if even one of them is invalid.
+  for(unsigned int i=0; i<update.size(); i++) {
+    unsigned int grid_ix = update.getCellIX(i);
+    string cell_var      = update.getCellVar(i);
+    if(grid_ix >= m_cell_vals.size())
+      return(false);
+    if(!hasCellVar(cell_var))
+      return(false);
+  }
+
+  for(unsigned int i=0; i<update.size(); i++) {
+    unsigned int grid_ix = update.getCellIX(i);
+    string cell_var      = update.getCellVar(i);
+    double cell_val      = update.getCellVal(i);
+    unsigned int cix     = getCellVarIX(cell_var);
+
+    if(update.isUpdateTypeDelta())
+      m_cell_vals[grid_ix][cix] += cell_val; 
+    else if(update.isUpdateTypeReplace())
+      m_cell_vals[grid_ix][cix] = cell_val; 
+  }
+  
+  return(true);
+}
+
+//-------------------------------------------------------------
+// Procedure: setEdgeCache()
+//   Returns: true if the cache changed, false otherwise
+
+bool XYConvexGrid::setEdgeCache(double pix_per_mtr_x,
+				double pix_per_mtr_y)
+{
+  if((m_pix_per_mtr_x == pix_per_mtr_x) &&
+     (m_pix_per_mtr_y == pix_per_mtr_y))
+    return(false);
+
+  m_pix_per_mtr_x = pix_per_mtr_x;
+  m_pix_per_mtr_y = pix_per_mtr_y;
+  
+  vector<vector<double> > new_cache;
+  for(unsigned int i=0; i<m_elements.size(); i++) {
+    vector<double> element_cache;
+    
+    element_cache.push_back(m_elements[i].getVal(0,0) * pix_per_mtr_x);
+    element_cache.push_back(m_elements[i].getVal(1,0) * pix_per_mtr_y);
+    
+    element_cache.push_back(m_elements[i].getVal(0,1) * pix_per_mtr_x);
+    element_cache.push_back(m_elements[i].getVal(1,0) * pix_per_mtr_y);
+    
+    element_cache.push_back(m_elements[i].getVal(0,1) * pix_per_mtr_x);
+    element_cache.push_back(m_elements[i].getVal(1,1) * pix_per_mtr_y);
+    
+    element_cache.push_back(m_elements[i].getVal(0,0) * pix_per_mtr_x);
+    element_cache.push_back(m_elements[i].getVal(1,1) * pix_per_mtr_y);
+
+    new_cache.push_back(element_cache);
+  }
+
+  m_edge_cache = new_cache;
+  return(true);
+}
+
+
 //-------------------------------------------------------------
 // Procedure: print
 //   Purpose: For debugging.
@@ -609,13 +713,3 @@ void XYConvexGrid::print() const
   for(i=0; i<vsize; i++) 
     cout << "[" << i << "]: " << m_elements[i].get_spec() << endl;
 }
-
-
-
-
-
-
-
-
-
-

@@ -33,6 +33,7 @@ class ManifestSet
   ManifestSet getManifestSetByAuthor(std::string key) const;
   ManifestSet getManifestSetByOrg(std::string key) const;
   ManifestSet getManifestSetByGroup(std::string key) const;
+  ManifestSet getManifestSetByDistro(std::string key) const;
   ManifestSet getManifestSetByDependency(std::string key) const;
   ManifestSet getManifestSetByType(std::string key) const;
 
@@ -40,6 +41,7 @@ class ManifestSet
   std::vector<std::string> getAllAuthorsX() const;
   std::vector<std::string> getAllOrgs() const;
   std::vector<std::string> getAllGroups() const;
+  std::vector<std::string> getAllDistros() const;
   std::vector<std::string> getAllDependencies() const;
   std::vector<std::string> getAllKeyWords() const;
   std::vector<std::string> getAllTypes() const;
@@ -47,6 +49,8 @@ class ManifestSet
   // Getters based on GroupName
   std::vector<std::string> getGroupSynopsis(std::string grpname) const;
   std::string getGroupDocURL(std::string grpname) const;
+  std::string getGroupDistro(std::string grpname) const;
+  std::string getGroupDownload(std::string grpname) const;
 
   // Modifiers
   void orderNewToOld();
@@ -55,7 +59,7 @@ class ManifestSet
   void associateLinesOfCode();
   
   // Analysis/Utilities
-  unsigned int size() const {return(m_manifests.size());}
+  unsigned int size() const;
 
   unsigned int getAllLinesOfCode() const;
   unsigned int getAllFilesOfCode() const;

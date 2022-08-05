@@ -6,6 +6,8 @@
 SET(SRC
   DubinsTurn.cpp
   DubinsCache.cpp
+  EdgeTag.cpp
+  EdgeTagSet.cpp
   AngleUtils.cpp
   ArtifactUtils.cpp
   WallEngine.cpp
@@ -25,7 +27,6 @@ SET(SRC
   PathUtils.cpp
   Seglr.cpp
   SeglrUtils.cpp
-  VPlug_AppCastSettings.cpp
   VPlug_DropPoints.cpp
   VPlug_GeoSettings.cpp
   VPlug_GeoShapes.cpp
@@ -33,10 +34,13 @@ SET(SRC
   VPlug_VehiSettings.cpp
   ProxPoint.cpp
   XYArc.cpp
+  XYArrow.cpp
   XYArtifactGrid.cpp
   XYCircle.cpp
+  XYOval.cpp
   XYCommsPulse.cpp
   XYConvexGrid.cpp
+  XYGridUpdate.cpp
   XYEncoders.cpp
   XYFieldGenerator.cpp
   XYFormatUtilsCircle.cpp
@@ -58,6 +62,7 @@ SET(SRC
   XYPatternBlock.cpp
   XYPoint.cpp
   XYPolygon.cpp
+  XYPolyExpander.cpp
   XYRangePulse.cpp
   XYSegList.cpp
   XYSeglr.cpp
@@ -68,6 +73,8 @@ SET(SRC
   )
 
 SET(HEADERS
+  EdgeTag.h
+  EdgeTagSet.h
   AngleUtils.h
   ArtifactUtils.h
   ConvexHullGenerator.h
@@ -89,9 +96,11 @@ SET(HEADERS
   XYWedge.h
   ProxPoint.h
   XYArc.h
+  XYArrow.h
   XYArtifactGrid.h
   XYBuildUtils.h
   XYCircle.h
+  XYOval.h
   XYEncoders.h
   XYFormatUtilsCircle.h
   XYFormatUtilsWedge.h
@@ -116,6 +125,7 @@ SET(HEADERS
   XYFieldGenerator.h
   XYPoint.h
   XYPolygon.h
+  XYPolyExpander.h
   XYSegList.h
   XYSeglr.h
   XYSegment.h

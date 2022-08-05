@@ -88,6 +88,7 @@ bool Populator_ManifestSet::populateLOC(string filename)
 
     string module_name, loc_str, foc_str, wkyrs_str;
     
+    
     for(unsigned int j=0; j<svector.size(); j++) {
       string param = tolower(biteStringX(svector[j], '='));
       string value = svector[j];
@@ -106,20 +107,34 @@ bool Populator_ManifestSet::populateLOC(string filename)
       }
     }	
 
+    // Handle cases where the loc file uses "app_foobar" for an app
+    // that is otherwise know just as "foobar". We'll associate the
+    // loc info with both names so downstream this info will be
+    // available either way.
+    string modified_module_name = module_name;
+    if(strBegins(modified_module_name, "app_"))
+      biteString(modified_module_name, '_');
+    
     if(loc_str != "") {
       int loc_int = atoi(loc_str.c_str());
-      if(loc_int >= 0)
+      if(loc_int >= 0) {
 	m_manifest_set.setLinesOfCode(module_name, loc_int);
+	m_manifest_set.setLinesOfCode(modified_module_name, loc_int);
+      }
     }
     if(foc_str != "") {
       int foc_int = atoi(foc_str.c_str());
-      if(foc_int >= 0)
+      if(foc_int >= 0) {
 	m_manifest_set.setFilesOfCode(module_name, foc_int);
+	m_manifest_set.setFilesOfCode(modified_module_name, foc_int);
+      }
     }
     if(wkyrs_str != "") {
       double wkyrs_dbl = atof(wkyrs_str.c_str());
-      if(wkyrs_dbl >= 0)
+      if(wkyrs_dbl >= 0) {
 	m_manifest_set.setWorkYears(module_name, wkyrs_dbl);
+	m_manifest_set.setWorkYears(modified_module_name, wkyrs_dbl);
+      }
     }
   }
   
@@ -215,7 +230,8 @@ bool Populator_ManifestSet::populateManifest(string filename)
     else if(param == "borndate") {
       bool ok_date = m_curr_manifest.setDate(value);
       if(!ok_date) {
-	cout << "Not ok borndate!! [" << filename << "][" << value << "]" << endl;
+	cout << "Not ok borndate!! [" << filename <<
+	  "][" << value << "]" << endl;
 	exit(1);
       }
     }
@@ -224,6 +240,8 @@ bool Populator_ManifestSet::populateManifest(string filename)
       m_curr_manifest.setLicense(value);
     else if(param == "distro")
       m_curr_manifest.setDistro(value);
+    else if(param == "download")
+      m_curr_manifest.setDownload(value);
     else if(param == "mod_date")
       m_curr_manifest.addModDate(value);
     else {
@@ -303,6 +321,8 @@ bool Populator_ManifestSet::validLineKey(string linekey) const
   else if(linekey == "group")
     return(true);
   else if(linekey == "distro")
+    return(true);
+  else if(linekey == "download")
     return(true);
   else if(linekey == "mod_date")
     return(true);

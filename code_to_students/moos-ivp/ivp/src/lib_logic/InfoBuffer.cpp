@@ -34,7 +34,7 @@
 using namespace std;
 
 //-----------------------------------------------------------
-// Procedure: dQuery
+// Procedure: dQuery()
 
 double InfoBuffer::dQuery(string var, bool& result) const
 {
@@ -44,6 +44,37 @@ double InfoBuffer::dQuery(string var, bool& result) const
     result = true;
     return(p2->second);
   }
+
+  // Added by mikerb Apr 9th, 2021.  For vars ending in _DELTA, for
+  // example MARK_DELTA. If MARK_DELTA is not known to the InfoBuffer,
+  // then check if MARK is known, and treat it as a UTC
+  // timestamp. Then return delta time since that time stamp as the
+  // value of MARK_DELTA.
+  if(strEnds(var, "_DELTA") && (var.length() > 6)) {
+    rbiteString(var, '_');
+    // Handle case if the base variable is of type double
+    map<string, double>::const_iterator p = dmap.find(var);
+    if(p != dmap.end()) {
+      result = true;
+      double var_utc = p->second;
+      double delta = m_curr_time_utc - var_utc;
+      //cout << " delta: " << delta << endl;
+      return(delta);
+    }
+    
+    // Handle case if the base variable is of type string
+    map<string, string>::const_iterator q = smap.find(var);
+    if(q != smap.end()) {
+      string sval = q->second;
+      if(isNumber(sval)) {
+	double var_utc = atof(sval.c_str());
+	double delta = m_curr_time_utc - var_utc;
+	//cout << " delta: " << delta << endl;
+	result = true;
+	return(delta);
+      }
+    }
+  }
   
   // If all fails, return ZERO and indicate failure.  
   result = false;
@@ -51,7 +82,7 @@ double InfoBuffer::dQuery(string var, bool& result) const
 }
 
 //-----------------------------------------------------------
-// Procedure: tQuery
+// Procedure: tQuery()
 //      Note: Returns the time since the given variable was
 //            last updated.
 
@@ -70,7 +101,7 @@ double InfoBuffer::tQuery(string var, bool elapsed) const
 }
 
 //-----------------------------------------------------------
-// Procedure: mtQuery
+// Procedure: mtQuery()
 //      Note: Returns the time since the given variable was
 //            last updated.
 
@@ -89,7 +120,7 @@ double InfoBuffer::mtQuery(string var, bool elapsed) const
 }
 
 //-----------------------------------------------------------
-// Procedure: sQuery
+// Procedure: sQuery()
 
 string InfoBuffer::sQuery(string var, bool& result) const
 {
@@ -106,7 +137,7 @@ string InfoBuffer::sQuery(string var, bool& result) const
 }
 
 //-----------------------------------------------------------
-// Procedure: sQueryDeltas
+// Procedure: sQueryDeltas()
 
 vector<string> InfoBuffer::sQueryDeltas(string var, bool& result) const
 {
@@ -127,7 +158,7 @@ vector<string> InfoBuffer::sQueryDeltas(string var, bool& result) const
 }
 
 //-----------------------------------------------------------
-// Procedure: dQueryDeltas
+// Procedure: dQueryDeltas()
 
 vector<double> InfoBuffer::dQueryDeltas(string var, bool& result) const
 {
@@ -148,7 +179,7 @@ vector<double> InfoBuffer::dQueryDeltas(string var, bool& result) const
 }
 
 //-----------------------------------------------------------
-// Procedure: isKnown
+// Procedure: isKnown()
 //   Purpose: Check whether the given variable was ever posted
 //            to the info buffer. Regardless of whether it was
 //            posted as a string or a double, it is registered
@@ -215,7 +246,7 @@ unsigned long int InfoBuffer::sizeFull() const
 
 
 //-----------------------------------------------------------
-// Procedure: setValue
+// Procedure: setValue()
 //      Note: msg_time is the timestamp embedded in the incoming 
 //            message, vs. the time stamp of when this buffer is 
 //            beig updated.
@@ -239,7 +270,7 @@ bool InfoBuffer::setValue(string var, double val, double msg_time)
 }
 
 //-----------------------------------------------------------
-// Procedure: setValue
+// Procedure: setValue()
 
 bool InfoBuffer::setValue(string var, string val, double msg_time)
 {
@@ -260,7 +291,7 @@ bool InfoBuffer::setValue(string var, string val, double msg_time)
 }
 
 //-----------------------------------------------------------
-// Procedure: clearDeltaVectors
+// Procedure: clearDeltaVectors()
 
 void InfoBuffer::clearDeltaVectors()
 {
@@ -269,7 +300,7 @@ void InfoBuffer::clearDeltaVectors()
 }
 
 //-----------------------------------------------------------
-// Procedure: print
+// Procedure: print()
 
 void InfoBuffer::print(string vars_str) const
 {
@@ -307,34 +338,61 @@ void InfoBuffer::print(string vars_str) const
   cout << " Time Data: " << endl;
   map<string, double>::const_iterator pt;
   for(pt=tmap.begin(); pt!=tmap.end(); pt++) {
-    string var = ps->first;
+    string var = pt->first;
     if((vars.size() == 0) || vectorContains(vars, var))
       cout << "  " << var << ": " << m_curr_time_utc - pt->second << endl;
   }
 }
 
 
+//-----------------------------------------------------------
+// Procedure: getReport()
+//   Purpose: Get an info_buffer report for all variables known
+//            to the info_buffer. Uses local tmap to get list of
+//            known variables and then uses this set of vars to
+//            call the more general getReport() function
 
+vector<string> InfoBuffer::getReport(bool verbose) const
+{
+  // Since all variables, string or double, create a tmap entry,
+  // then use the tmap for an exhaustive list of all vars known.
+  vector<string> vars;
+  map<string,double>::const_iterator p;
+  for(p=tmap.begin(); p!=tmap.end(); p++) 
+    vars.push_back(p->first);
 
+  return(getReport(vars, verbose));
+}
 
+//-----------------------------------------------------------
+// Procedure: getReport()
+//   Purpose: Get an info_buffer report for all given variables.
+//            This list may include variables for which the
+//            info_buffer may not yet know anything.
 
+vector<string> InfoBuffer::getReport(vector<string> vars, bool verbose) const
+{
+  vector<string> report_lines;
 
+  unsigned int longest_var = 0;
+  for(unsigned int i=0; i<vars.size(); i++) {
+    if(vars[i].length() > longest_var)
+      longest_var = vars[i].length();
+  }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  for(unsigned int i=0; i<vars.size(); i++) {
+    string line, val;
+    string var = vars[i];
+    line += padString(var, longest_var, true) + "  ";
+    if(dmap.count(var))
+      line += doubleToStringX(dmap.at(var),2);
+    else if(smap.count(var))
+      line += smap.at(var);
+    else
+      line += "[---]";
+    
+    report_lines.push_back(line);
+  }
+  
+  return(report_lines);
+}

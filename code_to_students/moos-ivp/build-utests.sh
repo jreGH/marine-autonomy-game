@@ -90,7 +90,6 @@ cmake -DUTX_LIB_DIRECTORY="${LIB_ABS_DIR}"                 \
       -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}"               \
       -DUSE_UTM=ON                                         \
       ${UTX_CMAKE_FLAGS}                                   \
-	  -Wno-dev                                             \
       "${SRC_ABS_DIR}"
 
 ################################################################################

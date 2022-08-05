@@ -54,7 +54,7 @@ vector<string> parseString(const string& string_str, char separator)
 
   char *buff = new char[strlen(str)+1];
 
-  vector<string> rvector;
+  vector<string> rvector; 
 
   while(str[0] != '\0') {    
     int i=0;
@@ -391,10 +391,13 @@ vector<string> chompString(const string& string_str, char separator)
 }
 
 //----------------------------------------------------------------
-// Procedure: augmentSpec
+// Procedure: augmentSpec()
 
 string augmentSpec(const string& orig, const string& new_part, char sep)
 {
+  if(new_part == "")
+    return(orig);
+
   string return_str = orig;
   if(orig != "")
     return_str += sep;
@@ -418,6 +421,26 @@ string removeWhite(const string& str)
       return_string += str.at(i);
   }
   return(return_string);
+}
+
+//----------------------------------------------------------------
+// Procedure: removeWhiteEnd(const string&)
+//   Example: input_str = "apples, pears, bananas     "
+//            str = removeWhiteEnd(input_str)
+//            str = "apples, pears, bananas"
+
+string removeWhiteEnd(const string& str)
+{
+  unsigned int vsize = str.size();
+  
+  for(unsigned int i=0; i<vsize; i++) {
+    unsigned int index = vsize-1-i;
+    
+    int c = (int)(str.at(index));
+    if((c != 9) && (c != 32))
+      return(str.substr(0,index+1));
+  }
+  return("");
 }
 
 //----------------------------------------------------------------
@@ -487,6 +510,18 @@ string biteStringX(string& str, char separator)
   string front = stripBlankEnds(biteString(str, separator));
   str = stripBlankEnds(str);
   return(front);
+}
+
+//----------------------------------------------------------------
+// Procedure: rbiteStringX(string&, char)
+//      Note: Same as rbiteString except blank ends will be removed
+//            from both the returned and remaining value.
+
+string rbiteStringX(string& str, char separator)
+{
+  string str_back = stripBlankEnds(rbiteString(str, separator));
+  str = stripBlankEnds(str);
+  return(str_back);
 }
 
 //----------------------------------------------------------------
@@ -621,6 +656,29 @@ bool vectorContains(const vector<string>& svector,
     string lower_str = tolower(str);
     for(vector<string>::size_type i=0; i<vsize; i++)
       if(tolower(svector[i]) == lower_str)
+	return(true);
+  }
+
+  return(false);
+}
+
+//----------------------------------------------------------------
+// Procedure: listContains()
+
+bool listContains(const list<string>& str_list,
+		  const string& str,
+		  bool case_sensitive)
+{
+  list<string>::const_iterator p;
+  if(case_sensitive) {
+    for(p=str_list.begin(); p!=str_list.end(); p++)
+      if(*p == str)
+	return(true);
+  }
+  else {
+    string lower_str = tolower(str);
+    for(p=str_list.begin(); p!=str_list.end(); p++)
+      if(tolower(*p) == lower_str)
 	return(true);
   }
 
@@ -775,11 +833,14 @@ string intToString(int val)
   return(str);
 }
 
-string uintToString(unsigned int val)
+string uintToString(unsigned int val, unsigned int padlen)
 {
   char buff[500];
   sprintf(buff, "%u", val);
   string str = buff;
+  while(str.size() < padlen)
+    str = "0" + str;
+  
   return(str);
 }
 
@@ -1554,6 +1615,10 @@ bool isNumber(const string& str, bool blanks_allowed)
 bool isQuoted(const string& str)
 {
   string mod_str = stripBlankEnds(str);
+  string::size_type len = mod_str.length();
+  if(len < 2)
+    return(false);
+
   if((mod_str[0] == '"') && (mod_str[str.length()-1] == '"'))
     return(true);
   return(false);
@@ -1567,7 +1632,28 @@ bool isQuoted(const string& str)
 bool isBraced(const string& str)
 {
   string mod_str = stripBlankEnds(str);
+  string::size_type len = mod_str.length();
+  if(len < 2)
+    return(false);
+
   if((mod_str[0] == '{') && (mod_str[str.length()-1] == '}'))
+    return(true);
+  return(false);
+}
+
+//----------------------------------------------------------------
+// Procedure: isChevroned
+//      Note: Returns true if the given string begins with a '<' and 
+//            ends witha a '>'. Returns false otherwise.
+
+bool isChevroned(const string& str)
+{
+  string mod_str = stripBlankEnds(str);
+  string::size_type len = mod_str.length();
+  if(len < 2)
+    return(false);
+  
+  if((mod_str[0] == '<') && (mod_str[str.length()-1] == '>'))
     return(true);
   return(false);
 }
@@ -1601,6 +1687,24 @@ string stripBraces(const string& given_str)
     return(given_str);
 
   if((str[0] != '{') || (str[len-1] != '}'))
+    return(given_str);
+
+  str.replace(len-1, 1, "");
+  str.replace(0, 1, "");
+  return(str);
+}
+
+//----------------------------------------------------------------
+// Procedure: stripChevrons
+
+string stripChevrons(const string& given_str)
+{
+  string str = stripBlankEnds(given_str);
+  string::size_type len = str.length();
+  if(len < 2)
+    return(given_str);
+
+  if((str[0] != '<') || (str[len-1] != '>'))
     return(given_str);
 
   str.replace(len-1, 1, "");
@@ -1828,6 +1932,31 @@ double snapDownToStep(double value, double step)
 }
   
 //-------------------------------------------------------------
+// Procedure: setPortTurnOnString
+//      Note: This function is designed to set the given boolean value
+//            based on its existing value and the contents of the str.
+//      Note: The case_tolow argument is true by default. By giving 
+//            the caller this option, some efficiency can be gained if
+//            the caller knows that the str argument has already been
+//            converted to lower case.
+
+bool setPortTurnOnString(bool& boolval, string str, bool case_tolow)
+{
+  if(case_tolow)
+    str = tolower(str);
+
+  if(str == "toggle")
+    boolval = !boolval;
+  else if(str == "port")
+    boolval = true;
+  else if((str == "starboard") || (str == "star"))
+    boolval = false;
+  else
+    return(false);
+  return(true);
+}
+
+//-------------------------------------------------------------
 // Procedure: setBooleanOnString
 //      Note: This function is designed to set the given boolean value
 //            based on its existing value and the contents of the str.
@@ -1842,9 +1971,9 @@ bool setBooleanOnString(bool& boolval, string str, bool case_tolow)
     str = tolower(str);
   if(str == "toggle")
     boolval = !boolval;
-  else if((str == "on") || (str == "true"))
+  else if((str == "on") || (str == "true") || (str == "yes"))
     boolval = true;
-  else if((str == "off") || (str == "false"))
+  else if((str == "off") || (str == "false") || (str == "no"))
     boolval = false;
   else
     return(false);
@@ -1908,10 +2037,67 @@ bool setDoubleOnString(double& given_dval, string str)
 }
 
 //-------------------------------------------------------------
+// Procedure: setDoubleRngOnString
+//      Note: This function is designed to possibly set the given 
+//            double based on the contents of the str.
+//      Note: If the given value is outside the given range, the
+//            given value is clipped.
+//   Returns: false if the string is not numerical.
+//            false if the given value is outside the given range
+//            false if the given range is not proper.
+//            true otherwise
+
+bool setDoubleRngOnString(double& dval, string str,
+			  double minv, double maxv)
+{
+  if(!isNumber(str))
+    return(false);
+  if(minv > maxv)
+    return(false);
+  
+  dval = atof(str.c_str());
+  if(dval < minv)
+    dval = minv;
+  else if(dval > maxv)
+    dval = maxv;
+  else
+    return(true);
+     
+  return(false);
+}
+
+//-------------------------------------------------------------
+// Procedure: setDoubleStrictRngOnString
+//      Note: This function is designed to possibly set the given 
+//            double based on the contents of the str.
+//      Note: If the given value is outside the given range, the
+//            given value is NOT SET.
+//   Returns: false if the string is not numerical.
+//            false if the given value is outside the given range
+//            false if the given range is not proper.
+//            true otherwise
+
+bool setDoubleStrictRngOnString(double& dval, string str,
+				double minv, double maxv)
+{
+  if(!isNumber(str))
+    return(false);
+  if(minv > maxv)
+    return(false);
+  
+  double maybe_val = atof(str.c_str());
+  if((maybe_val < minv) || (maybe_val > maxv))
+    return(false);
+
+  dval = maybe_val;
+  return(true);     
+}
+
+//-------------------------------------------------------------
 // Procedure: setUintOnString
 //      Note: This function is designed to possibly set the given 
 //            unsigned int based on the contents of the str.
-//   Returns: false if the string is not a positive number.
+//   Returns: false if the string is a negative number.
 //            true  otherwise.
 
 bool setUIntOnString(unsigned int& given_val, string str)
@@ -1921,6 +2107,26 @@ bool setUIntOnString(unsigned int& given_val, string str)
 
   double dval = atof(str.c_str());
   if(dval < 0)
+    return(false);
+
+  given_val = (unsigned int)(dval);
+  return(true);
+}
+
+//-------------------------------------------------------------
+// Procedure: setPosUintOnString
+//      Note: This function is designed to possibly set the given 
+//            unsigned int based on the contents of the str.
+//   Returns: false if the string is not a positive number.
+//            true  otherwise.
+
+bool setPosUIntOnString(unsigned int& given_val, string str)
+{
+  if(!isNumber(str))
+    return(false);
+
+  double dval = atof(str.c_str());
+  if(dval < 1)
     return(false);
 
   given_val = (unsigned int)(dval);
@@ -1958,6 +2164,56 @@ bool setNonWhiteVarOnString(string& given_var, string str)
     return(false);
 
   given_var = str;
+  return(true);
+}
+
+//-------------------------------------------------------------
+// Procedure: setMinPartOfPairOnString()
+//   Purpose: Sets given min value reference based on given string.
+//      Note: If given max value is less than the given min, then
+//            the given max will be adjusted.
+//   Returns: true if given string is a non-negative number.
+//            If negok=true then negative numbers are permitted
+
+
+bool setMinPartOfPairOnString(double& minval, double& maxval,
+			      string str, bool negok)
+{
+  if(!isNumber(str))
+    return(false);
+  double dval = atof(str.c_str());
+  if((dval < 0) && !negok)
+    return(false);
+
+  minval = dval;
+  if(maxval < minval)
+    maxval = minval;
+
+  return(true);
+}
+
+//-------------------------------------------------------------
+// Procedure: setMaxPartOfPairOnString()
+//   Purpose: Sets given max value reference based on given string.
+//      Note: If given min value is more than the given max, then
+//            the given min will be adjusted.
+//   Returns: true if given string is a non-negative number.
+//            If negok=true then negative numbers are permitted
+
+
+bool setMaxPartOfPairOnString(double& minval, double& maxval,
+			      string str, bool negok)
+{
+  if(!isNumber(str))
+    return(false);
+  double dval = atof(str.c_str());
+  if((dval < 0) && !negok)
+    return(false);
+
+  maxval = dval;
+  if(minval > maxval)
+    minval = maxval;
+
   return(true);
 }
 
@@ -2196,9 +2452,12 @@ string parseAppName(const string& name){
 bool isKnownVehicleType(const string& vehicle_type)
 {
   string vtype = tolower(vehicle_type);
-  if((vtype == "auv")  || (vtype != "uuv") || (vtype != "kayak")  || 
-     (vtype == "usv")  || (vtype != "asv") || (vtype != "glider") ||
-     (vtype == "ship") || (vtype != "mokai") || (vtype != "kingfisher")) {
+  if((vtype == "auv")  || (vtype.find("uuv")==0) || (vtype == "kayak")  || 
+     (vtype == "usv")  || (vtype == "asv") || (vtype == "glider") ||
+     (vtype == "ship") || (vtype == "mokai") || (vtype == "longship") ||
+     (vtype == "swimmer") || (vtype == "heron") || (vtype == "tuna") ||
+	 (vtype == "shark") || (vtype == "goldfish") || (vtype == "dory") ||
+	 (vtype == "nemo") || (vtype == "octopus") || (vtype == "whale")) {
     return(true);
   }
   
@@ -2386,3 +2645,169 @@ vector<string> breakLen(const vector<string>& svector, unsigned int maxlen)
   
   return(rvector);
 }
+
+//----------------------------------------------------------------
+// Procedure: breakLen
+//   Purpose: Convenience function to accept single string input
+
+vector<string> breakLen(const string& str, unsigned int maxlen) 
+{
+  vector<string> svector;
+  svector.push_back(str);
+
+  return(breakLen(svector, maxlen));
+}
+
+
+//---------------------------------------------------------
+// Procedure: checksumHexStr()
+
+string checksumHexStr(string str)
+{
+  int dec = 0;
+  for(unsigned int i=0; i<str.size(); i++)
+    dec ^= str[i];
+  
+  string hexstr;
+  char hex[]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+
+  while(dec>0) {
+    int r = dec % 16;
+    hexstr = hex[r] + hexstr;
+    dec = dec/16;
+  }
+
+  return(hexstr);
+}
+
+
+
+//---------------------------------------------------------
+// Procedure: stringListToString()
+
+string stringListToString(list<string> str_list, char sep)
+{
+  string result;
+  
+  list<string>::iterator p;
+  for(p=str_list.begin(); p!=str_list.end(); p++) {
+    if(result != "")
+      result += sep;
+    result += *p;
+  }
+
+  return(result);
+}
+
+
+//---------------------------------------------------------
+// Procedure: stringSetToString()
+
+string stringSetToString(set<string> str_set, char sep)
+{
+  string result;
+  
+  set<string>::iterator p;
+  for(p=str_set.begin(); p!=str_set.end(); p++) {
+    if(result != "")
+      result += sep;
+    result += *p;
+  }
+
+  return(result);
+}
+
+
+//---------------------------------------------------------
+// Procedure: stringVectorToString()
+
+string stringVectorToString(vector<string> str_vector, char sep)
+{
+  string result;
+  
+  vector<string>::iterator p;
+  for(p=str_vector.begin(); p!=str_vector.end(); p++) {
+    if(result != "")
+      result += sep;
+    result += *p;
+  }
+
+  return(result);
+}
+
+//---------------------------------------------------------
+// Procedure: uintVectorToString()
+
+string uintVectorToString(vector<unsigned int> uint_vector, char sep)
+{
+  string result;
+  
+  vector<unsigned int>::iterator p;
+  for(p=uint_vector.begin(); p!=uint_vector.end(); p++) {
+    if(result != "")
+      result += sep;
+    result += uintToString(*p);
+  }
+
+  return(result);
+}
+
+//---------------------------------------------------------
+// Procedure: intToMonth()
+
+string intToMonth(int imonth, bool brief)
+{
+  string month = "unknown";
+  if(imonth == 1)
+    month = "January";
+  else if(imonth == 2)
+    month = "February";
+  else if(imonth == 3)
+    month = "March";
+  else if(imonth == 4)
+    month = "April";
+  else if(imonth == 5)
+    month = "May";
+  else if(imonth == 6)
+    month = "June";
+  else if(imonth == 7)
+    month = "July";
+  else if(imonth == 8)
+    month = "August";
+  else if(imonth == 9)
+    month = "September";
+  else if(imonth == 10)
+    month = "October";
+  else if(imonth == 11)
+    month = "November";
+  else if(imonth == 12)
+    month = "December";
+  
+  if(brief)
+    month = month.substr(0,3);
+
+  return(month);
+}
+
+//---------------------------------------------------------
+// Procedure: hashAlphaNum()
+
+string hashAlphaNum(unsigned int len)
+{
+  string pchars="0123456789";
+  pchars += "abcdefghijklmnpqrstuvwxyz";
+  pchars += "ABCDEFGHIJKLMNPQRSTUVWXYZ";
+
+  unsigned int pamt = pchars.size();
+
+  string hash_str;
+  
+  for(unsigned int i=0; i<len; i++) {
+    int randix = rand() % pamt;
+    hash_str += pchars.at(randix);
+  }
+
+  return(hash_str);
+}
+
+  

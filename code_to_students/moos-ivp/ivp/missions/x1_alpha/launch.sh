@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash 
 #----------------------------------------------------------
 #  Script: launch.sh
 #  Author: Michael Benjamin
@@ -6,7 +6,6 @@
 #----------------------------------------------------------
 #  Part 1: Set Exit actions and declare global var defaults
 #----------------------------------------------------------
-trap "kill -- -$$" EXIT SIGTERM SIGHUP SIGINT SIGKILL
 TIME_WARP=1
 COMMUNITY="alpha"
 
@@ -21,8 +20,8 @@ for ARGI; do
     elif [ "${ARGI//[^0-9]/}" = "$ARGI" -a "$TIME_WARP" = 1 ]; then 
         TIME_WARP=$ARGI
     else 
-	echo "Bad Argument: " $ARGI
-	exit 0
+        echo "Launch.sh Bad arg:" $ARGI " Exiting with code: 1"
+	exit 1
     fi
 done
 
@@ -34,3 +33,5 @@ echo "Launching $COMMUNITY MOOS Community. WARP is" $TIME_WARP
 pAntler $COMMUNITY.moos --MOOSTimeWarp=$TIME_WARP >& /dev/null &
 
 uMAC  $COMMUNITY.moos
+
+kill -- -$$

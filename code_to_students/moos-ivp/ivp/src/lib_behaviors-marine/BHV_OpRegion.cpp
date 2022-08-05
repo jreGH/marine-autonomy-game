@@ -1,5 +1,5 @@
 /*****************************************************************/
-/*    NAME: Michael Benjamin, Henrik Schmidt, and John Leonard   */
+/*    NAME: Michael Benjamin                                     */
 /*    ORGN: Dept of Mechanical Eng / CSAIL, MIT Cambridge MA     */
 /*    FILE: BHV_OpRegion.cpp                                     */
 /*    DATE: May 1st, 2005 Sunday at Joe's in Maine               */
@@ -29,6 +29,7 @@
 #include <cstdlib>
 #include "BHV_OpRegion.h"
 #include "MBUtils.h"
+#include "VarDataPairUtils.h"
 #include "XYFormatUtilsPoly.h"
 
 using namespace std;
@@ -46,6 +47,7 @@ BHV_OpRegion::BHV_OpRegion(IvPDomain gdomain) : IvPBehavior(gdomain)
   m_hint_vertex_color = "brown"; 
   m_hint_edge_size    = 1;
   m_hint_edge_color   = "aqua"; 
+  m_hint_label_color  = "aqua"; 
 
   m_breached_poly_flags_posted  = false;
   m_breached_time_flags_posted  = false;
@@ -124,82 +126,38 @@ bool BHV_OpRegion::setParam(string param, string val)
     if(!new_poly.is_convex())  // Should be convex - false otherwise
       return(false);
     m_polygon = new_poly;
+    m_polygons.clear();
     m_polygons.push_back(new_poly);
     return(true);
   }
-  else if(param == "max_depth") {
-    double dval = atof(val.c_str());
-    if((dval < 0) || (!isNumber(val)))
-      return(false);
-    m_max_depth = dval;
-    return(true);
-  }
+  else if(param == "max_depth") 
+    return(setNonNegDoubleOnString(m_max_depth, val));
   else if(param == "reset_var") {
-    if(strContainsWhite(val))
-      return(false);
-    m_reset_var = val;
-    addInfoVars(m_reset_var);
-    return(true);
+    bool ok = setNonWhiteVarOnString(m_reset_var, val);
+    if(ok)
+      addInfoVars(m_reset_var);
+    return(ok);
   }
-  else if(param == "time_remaining_var") {
-    if(strContainsWhite(val))
-      return(false);
-    m_time_remaining_var = val;
-    return(true);
-  }
-  else if(param == "breached_poly_flag") {
-    string varname = biteStringX(val, '=');
-    string varval  = val;
-    if(strContainsWhite(varname) || (varval == ""))
-      return(false);
-    VarDataPair pair(varname, varval, "auto");
-    m_breached_poly_flags.push_back(pair);
-    return(true);
-  }
-  else if(param == "breached_time_flag") {
-    string varname = biteStringX(val, '=');
-    string varval  = val;
-    if(strContainsWhite(varname) || (varval == ""))
-      return(false);
-    VarDataPair pair(varname, varval, "auto");
-    m_breached_time_flags.push_back(pair);
-    return(true);
-  }
-  else if(param == "breached_altitude_flag") {
-    string varname = biteStringX(val, '=');
-    string varval  = val;
-    if(strContainsWhite(varname) || (varval == ""))
-      return(false);
-    VarDataPair pair(varname, varval, "auto");
-    m_breached_altitude_flags.push_back(pair);
-    return(true);
-  }
-  else if(param == "breached_depth_flag") {
-    string varname = biteStringX(val, '=');
-    string varval  = val;
-    if(strContainsWhite(varname) || (varval == ""))
-      return(false);
-    VarDataPair pair(varname, varval, "auto");
-    m_breached_depth_flags.push_back(pair);
-    return(true);
-  }
-  else if(param == "soft_poly_breach") {
+  else if(param == "time_remaining_var")
+    return(setNonWhiteVarOnString(m_time_remaining_var, val));
+  else if(param == "breached_poly_flag") 
+    return(addVarDataPairOnString(m_breached_poly_flags, val));
+  else if(param == "breached_time_flag") 
+    return(addVarDataPairOnString(m_breached_time_flags, val));
+  else if(param == "breached_altitude_flag") 
+    return(addVarDataPairOnString(m_breached_altitude_flags, val));
+  else if(param == "breached_depth_flag") 
+    return(addVarDataPairOnString(m_breached_depth_flags, val));
+  else if(param == "soft_poly_breach") 
     return(setBooleanOnString(m_soft_poly_breach, val));
-  }
-  else if(param == "min_altitude") {
-    double dval = atof(val.c_str());
-    if((dval < 0) || (!isNumber(val)))
-      return(false);
-    m_min_altitude = dval;
-    return(true);
-  }
-  else if(param == "max_time") {
-    double dval = atof(val.c_str());
-    if((dval < 0) || (!isNumber(val)))
-      return(false);
-    m_max_time = dval;
-    return(true);
-  }
+  else if(param == "min_altitude") 
+    return(setNonNegDoubleOnString(m_min_altitude, val));
+  else if(param == "max_time")
+    return(setNonNegDoubleOnString(m_max_time, val));
+  else if(param == "trigger_exit_time") 
+    return(setNonNegDoubleOnString(m_trigger_exit_time, val));
+  else if(param == "opregion_poly_var") 
+    return(setNonWhiteVarOnString(m_opregion_poly_var, val));
   else if(param == "trigger_entry_time") {
     double dval = atof(val.c_str());
     if((dval < 0) || (!isNumber(val)))
@@ -207,19 +165,6 @@ bool BHV_OpRegion::setParam(string param, string val)
     m_trigger_entry_time = dval;
     if(m_trigger_entry_time > 0)
       m_trigger_on_poly_entry = true;
-    return(true);
-  }
-  else if(param == "trigger_exit_time") {
-    double dval = atof(val.c_str());
-    if((dval < 0) || (!isNumber(val)))
-      return(false);
-    m_trigger_exit_time = dval;
-    return(true);
-  }
-  else if(param == "opregion_poly_var") {
-    if(strContainsWhite(val))
-      return(false);
-    m_opregion_poly_var = val;
     return(true);
   }
   else if(param == "visual_hints")  {
@@ -645,6 +590,8 @@ void BHV_OpRegion::postViewablePolygon()
     poly_duplicate.set_color("vertex", m_hint_vertex_color);
   if(m_hint_edge_color != "")
     poly_duplicate.set_color("edge", m_hint_edge_color);
+  if(m_hint_label_color != "")
+    poly_duplicate.set_color("label", m_hint_label_color);
   if(m_hint_edge_size >= 0)
     poly_duplicate.set_edge_size(m_hint_edge_size);
   if(m_hint_vertex_size >= 0)
@@ -739,47 +686,31 @@ void BHV_OpRegion::checkForReset()
 
 void BHV_OpRegion::postBreachFlags(string str)
 {
-  if((str == "poly") && m_breached_poly_flags_posted)
-    return;
-  if((str == "time") && m_breached_time_flags_posted)
-    return;
-  if((str == "altitude") && m_breached_altitude_flags_posted)
-    return;
-  if((str == "depth") && m_breached_depth_flags_posted)
-    return;
-
-  vector<VarDataPair> flags;
   if(str == "poly") {
-    flags = m_breached_poly_flags;
-    m_breached_poly_flags_posted = true;
+    if(!m_breached_poly_flags_posted) {
+      m_breached_poly_flags_posted = true;
+      postFlags(m_breached_poly_flags);
+    }
   }
   else if(str == "time") {
-    flags = m_breached_time_flags;
-    m_breached_time_flags_posted = true;
+    if(!m_breached_time_flags_posted) {
+      m_breached_time_flags_posted = true;
+      postFlags(m_breached_time_flags);
+    }
   }
   else if(str == "altitude") {
-    flags = m_breached_altitude_flags;
-    m_breached_altitude_flags_posted = true;
+    if(!m_breached_altitude_flags_posted) {
+      m_breached_altitude_flags_posted = true;
+      postFlags(m_breached_altitude_flags);
+    }
   }
   else if(str == "depth") {
-    flags = m_breached_depth_flags;
-    m_breached_depth_flags_posted = true;
+    if(!m_breached_depth_flags_posted) {
+      m_breached_depth_flags_posted = true;
+      postFlags(m_breached_depth_flags);
+    }
   }
 
-  unsigned int i, vsize = flags.size();
-  for(i=0; i<vsize; i++) {
-    string var = flags[i].get_var();
-    if(flags[i].is_string()) {
-      string sdata = flags[i].get_sdata();
-      sdata = findReplace(sdata, "$[OWNSHIP]", m_us_name);
-      sdata = findReplace(sdata, "$[BHVNAME]", m_descriptor);
-      postRepeatableMessage(var, sdata);
-    }
-    else {
-      double ddata = flags[i].get_ddata();
-      postRepeatableMessage(var, ddata);
-    }	
-  }    
 }
 
 //-----------------------------------------------------------
@@ -787,14 +718,16 @@ void BHV_OpRegion::postBreachFlags(string str)
 
 void BHV_OpRegion::handleVisualHint(string hint)
 {
-  string param = tolower(stripBlankEnds(biteString(hint, '=')));
-  string value = stripBlankEnds(hint);
+  string param = tolower(biteStringX(hint, '='));
+  string value = hint;
   double dval  = atof(value.c_str());
 
   if((param == "vertex_color") && isColor(value))
     m_hint_vertex_color = value;
   else if((param == "edge_color") && isColor(value))
     m_hint_edge_color = value;
+  else if((param == "label_color") && isColor(value))
+    m_hint_label_color = value;
   else if((param == "edge_size") && isNumber(value) && (dval >= 0))
     m_hint_edge_size = dval;
   else if((param == "vertex_size") && isNumber(value) && (dval >= 0))

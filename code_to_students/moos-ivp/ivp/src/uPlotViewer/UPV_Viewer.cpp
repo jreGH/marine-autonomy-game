@@ -70,7 +70,7 @@ void UPV_Viewer::draw()
 #else
   glViewport(0, 0, w(), h());
 #endif
-
+  
   drawGrids();
   drawPartitions();
   drawAxes();

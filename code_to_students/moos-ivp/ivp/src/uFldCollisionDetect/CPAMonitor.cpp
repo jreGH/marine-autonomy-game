@@ -42,6 +42,7 @@ CPAMonitor::CPAMonitor()
   m_verbose      = false;
 
   m_closest_range = -1;
+  m_closest_range_ever = -1;
 }
 
 //---------------------------------------------------------
@@ -83,6 +84,71 @@ void CPAMonitor::setSwingRange(double val)
 
 
 //---------------------------------------------------------
+// Procedure: addIgnoreGroup()
+
+bool CPAMonitor::addIgnoreGroup(string grp_name)
+{
+  if(strContainsWhite(grp_name))
+    return(false);
+  
+  grp_name = tolower(grp_name);
+  if(vectorContains(m_ignore_groups, grp_name))
+    return(false);
+
+  m_ignore_groups.push_back(grp_name);
+  return(true);
+}
+
+
+//---------------------------------------------------------
+// Procedure: addRejectGroup()
+
+bool CPAMonitor::addRejectGroup(string grp_name)
+{
+  if(strContainsWhite(grp_name))
+    return(false);
+
+  grp_name = tolower(grp_name);
+  if(vectorContains(m_reject_groups, grp_name))
+    return(false);
+
+  m_reject_groups.push_back(grp_name);
+  return(true);
+}
+
+
+//---------------------------------------------------------
+// Procedure: getIgnoreGroups()
+
+string CPAMonitor::getIgnoreGroups() const
+{
+  string rval;
+  for(unsigned int i=0; i<m_ignore_groups.size(); i++) {
+    if(i != 0)
+      rval += ",";
+    rval += m_ignore_groups[i];
+  }
+
+  return(rval);
+}
+
+//---------------------------------------------------------
+// Procedure: getRejectGroups()
+
+string CPAMonitor::getRejectGroups() const
+{
+  string rval;
+  for(unsigned int i=0; i<m_reject_groups.size(); i++) {
+    if(i != 0)
+      rval += ",";
+    rval += m_reject_groups[i];
+  }
+
+  return(rval);
+}
+
+
+//---------------------------------------------------------
 // Procedure: getEvent()
 
 CPAEvent CPAMonitor::getEvent(unsigned int ix) const
@@ -97,6 +163,8 @@ CPAEvent CPAMonitor::getEvent(unsigned int ix) const
 // Procedure: handleNodeReport()
 //   Purpose: Handle a single node report, presumably within a
 //            round of multiple incoming updated reports.
+//    Return: false if syntactically invalid node report
+//            true otherwise
 
 bool CPAMonitor::handleNodeReport(string node_report)
 {
@@ -104,7 +172,12 @@ bool CPAMonitor::handleNodeReport(string node_report)
   if(!record.valid())
     return(false);
   string vname = record.getName();
+  string group = tolower(record.getGroup());
+  if(vectorContains(m_reject_groups, group))
+    return(true);
 
+  m_map_vgroup[vname] = group;
+  
   // Part 1: Update the node record list for this vehicle
   m_map_vrecords[vname].push_front(record);
   if(m_map_vrecords[vname].size() > 2)
@@ -157,6 +230,15 @@ bool CPAMonitor::examineAndReport(string vname, string contact)
   if(!m_map_vrecords.count(vname) || !m_map_vrecords.count(contact))
     return(false);
 
+  // Part 1B: Check ignore groups. If both vehicles have a group on
+  // the list of ignore groups, then just consider ourselves done now.  
+  string vname_group   = m_map_vgroup[vname];
+  string contact_group = m_map_vgroup[contact];
+  if(vectorContains(m_ignore_groups, vname_group) &&
+     vectorContains(m_ignore_groups, contact_group))
+    return(true);
+
+  
   // Part 2: Create a unique "pairtag" so an event betweeen two
   //         vehicles is singular and not treated twice
   string tag = pairTag(vname, contact);
@@ -235,6 +317,9 @@ bool CPAMonitor::updatePairRangeAndRate(string vname, string contact)
 
   if((m_closest_range < 0) || (dist < m_closest_range))
     m_closest_range = dist;
+  
+  if((m_closest_range_ever < 0) || (dist < m_closest_range_ever))
+    m_closest_range_ever = dist;
   
   // Note that this pair has been examined on this round. This is cleared
   // for all pairs at the end of a round.
@@ -345,6 +430,46 @@ double CPAMonitor::relBng(string vname1, string vname2)
   double cny = record2.getY();
 
   return(relBearing(osx, osy, osh, cnx, cny));
+}
+
+
+//---------------------------------------------------------
+// Procedure: getContactDensity()
+
+unsigned int CPAMonitor::getContactDensity(string vname, double range) const
+{
+  // Sanity checks
+  if((vname == "") || (range <= 0))
+    return(0);
+
+  if(m_map_vrecords.count(vname) == 0)
+    return(0);
+  if(m_map_vrecords.at(vname).size() == 0)
+    return(0);
+  
+  // Part 1: Get ownship position
+  NodeRecord os_record = m_map_vrecords.at(vname).front();
+  double osx = os_record.getX();
+  double osy = os_record.getY();
+  
+  // Part 2: Examine contact ranges, maybe increment counter
+  unsigned int counter = 0;
+
+  map<string, list<NodeRecord> >::const_iterator p;
+  for(p=m_map_vrecords.begin(); p!=m_map_vrecords.end(); p++) {
+    string contact = p->first;
+    NodeRecord record = p->second.back();
+
+    if(vname != contact) {
+      double cnx = record.getX();
+      double cny = record.getY();
+      double cn_range = hypot(osx-cnx, osy-cny);
+      if(cn_range <= range)
+	counter++;
+    }
+  }
+      
+  return(counter);
 }
 
 

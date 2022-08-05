@@ -14,6 +14,8 @@ ADD_EXECUTABLE(uFldObstacleSim ${SRC})
 TARGET_LINK_LIBRARIES(uFldObstacleSim
    ${MOOS_LIBRARIES}
    apputil
+   obstacles
+   contacts
    geometry
    mbutil
    m

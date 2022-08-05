@@ -5,11 +5,9 @@ SET(SOURCES
    Flv_Style.cxx
    Flv_Table.cxx)
 
-
-
 FIND_PACKAGE( FLTK REQUIRED)
 
-# removed by mikerb Nov 23rd, 2020
+# commented out by mikerb Oct 8th 2020
 #FIND_LIBRARY(GLUT  REQUIRED )
 #FIND_LIBRARY(OpenGL REQUIRED )
 

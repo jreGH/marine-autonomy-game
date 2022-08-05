@@ -1,5 +1,5 @@
 /*****************************************************************/
-/*    NAME: Michael Benjamin, Henrik Schmidt, and John Leonard   */
+/*    NAME: Michael Benjamin                                     */
 /*    ORGN: Dept of Mechanical Eng / CSAIL, MIT Cambridge MA     */
 /*    FILE: BHV_AvoidObstacle.cpp                                */
 /*    DATE: Aug 2nd 2006                                         */
@@ -32,6 +32,7 @@
 #include "GeomUtils.h"
 #include "BuildUtils.h"
 #include "XYFormatUtilsPoly.h"
+#include "XYPolyExpander.h"
 
 using namespace std;
 
@@ -42,8 +43,6 @@ BHV_AvoidObstacle::BHV_AvoidObstacle(IvPDomain gdomain) :
   IvPBehavior(gdomain)
 {
   this->setParam("descriptor", "avoid_obstacles");
-  //this->setParam("build_info", "uniform_piece=discrete@course:2,speed:3");
-  //this->setParam("build_info", "uniform_grid =discrete@course:9,speed:6");
 
   m_domain = subDomain(m_domain, "course,speed");
 
@@ -194,7 +193,6 @@ void BHV_AvoidObstacle::onHelmStart()
 
 void BHV_AvoidObstacle::onIdleState()
 {
-  checkForObstacleUpdate();
   postErasablePolygons();
 }
 
@@ -212,7 +210,7 @@ void BHV_AvoidObstacle::onCompleteState()
 
 void BHV_AvoidObstacle::onInactiveState()
 {
-  //postErasablePolygons();
+  postErasablePolygons();
 }
 
 //-----------------------------------------------------------
@@ -236,42 +234,39 @@ void BHV_AvoidObstacle::onSpawn()
 
 IvPFunction *BHV_AvoidObstacle::onRunState() 
 {
+  // Part 1: Handle case where behavior may have been resolved because
+  // we no longer have sensor informaion on the obstacle, even though
+  // we may still be in range of its last known location.
   if(m_resolved_pending) {
     setComplete();
     return(0);
   }
     
-  checkForObstacleUpdate();
-  
-  // Part 1: Sanity checks
+  // Part 2: Sanity checks
   if(!updatePlatformInfo())
     return(0);  
   if(!m_obstacle_orig.is_convex())
     return(0);
+
+  // Part 3: Build/update the buffer retion around the obstacle
   bool buffer_applied = applyBuffer();
   if(!buffer_applied)
     return(0);
 
-  // failsafe
-  if(!m_obstacle_orig.is_convex())
-    m_obstacle_buff = m_obstacle_orig;
-  
-  // Part 2: Handle case where behavior is completed 
+  // Part 4: Handle case where behavior is completed due to range 
   double os_dist_to_poly = m_obstacle_orig.dist_to_poly(m_osx, m_osy);
+  postMessage("OS_DIST_TO_POLY", os_dist_to_poly);
   if(os_dist_to_poly > m_completed_dist) {
     setComplete();
     return(0);
   }
 
-  if(polyAft(m_osx, m_osy, m_osh, m_obstacle_orig, 20))
-    return(0);
-  
-  // Part 3: Determine the relevance
+  // Part 5: Determine the relevance
   m_obstacle_relevance = getRelevance();
   if(m_obstacle_relevance <= 0)
     return(0);
     
-  // Part 4: Build/update underlying objective function and initialize
+  // Part 6: Build/update underlying objective function and init
   AOF_AvoidObstacle  aof_avoid(m_domain);
   aof_avoid.setObstacleOrig(m_obstacle_orig);
   aof_avoid.setObstacleBuff(m_obstacle_buff);
@@ -281,7 +276,6 @@ IvPFunction *BHV_AvoidObstacle::onRunState()
   aof_avoid.setParam("buffer_dist", m_buffer_dist);
   aof_avoid.setParam("allowable_ttc", m_allowable_ttc);
 
-  // Part 5: Initialize the AOF
   bool ok_init = aof_avoid.initialize();
   if(!ok_init) {
     string aof_msg = aof_avoid.getCatMsgsAOF();
@@ -289,7 +283,7 @@ IvPFunction *BHV_AvoidObstacle::onRunState()
     return(0);
   }
   
-  // Part 6: Build the actual objective function with reflector
+  // Part 7: Build the actual objective function with reflector
   OF_Reflector reflector(&aof_avoid, 1);
   if(m_build_info != "")
     reflector.create(m_build_info);
@@ -302,8 +296,8 @@ IvPFunction *BHV_AvoidObstacle::onRunState()
     postWMessage(reflector.getWarnings());
     return(0);
   }
-
-  // Part 7: Extract objective function, apply priority, post visuals
+  
+  // Part 8: Extract objective function, apply priority, post visuals
   IvPFunction *ipf = reflector.extractIvPFunction(true); // true means normalize
   if(ipf) {
     ipf->setPWT(m_obstacle_relevance * m_priority_wt);
@@ -324,6 +318,11 @@ double BHV_AvoidObstacle::getRelevance()
   if(m_pwt_outer_dist < m_pwt_inner_dist)
     return(0);
 
+  // Part 2: Zero relevance if the obstacle is more than 20 degs
+  // abaft our beam.
+  if(polyAft(m_osx, m_osy, m_osh, m_obstacle_orig, 20))
+    return(0);
+  
   // Part 3: Get the obstacle range and reject if zero
   double obstacle_range = m_obstacle_orig.dist_to_poly(m_osx, m_osy);
   if(obstacle_range == 0)
@@ -360,31 +359,6 @@ double BHV_AvoidObstacle::getRelevance()
 
   return(d_relevance);  
 }
-
-//-----------------------------------------------------------
-// Procedure: checkForObstacleUpdate
-
-bool BHV_AvoidObstacle::checkForObstacleUpdate()
-{
-  if(m_obstacle_update_var == "") 
-    return(true);
-      
-  double time_since_update = getBufferTimeVal(m_obstacle_update_var);
-  if(time_since_update > 0)
-    return(false);  
-
-  bool ok;
-  string str = getBufferStringVal(m_obstacle_update_var, ok);
-  if(!ok)
-    return(false);
-
-  // Example: pts={120,-80:120,-50:150,-50:150,-80:138,-80},label=a
-  
-  bool update_ok = setParam("poly", str);
-   
-  return(update_ok);
-}
-  
 
 //-----------------------------------------------------------
 // Procedure: handleVisualHints()
@@ -446,7 +420,7 @@ void BHV_AvoidObstacle::postViewablePolygons()
       m_obstacle_orig.set_color("fill", m_hint_obst_fill_color);
       m_obstacle_orig.set_transparency(m_hint_obst_fill_transparency);
     }
-    string spec = m_obstacle_orig.get_spec();
+    string spec = m_obstacle_orig.get_spec(3);
     postMessage("VIEW_POLYGON", spec, "orig");
   }
     
@@ -461,7 +435,7 @@ void BHV_AvoidObstacle::postViewablePolygons()
       m_obstacle_buff.set_color("fill", m_hint_buff_fill_color);
       m_obstacle_buff.set_transparency(m_hint_buff_fill_transparency);
     }
-    string spec = m_obstacle_buff.get_spec();
+    string spec = m_obstacle_buff.get_spec(3);
     postMessage("VIEW_POLYGON", spec, "buff");
   }
 }
@@ -473,14 +447,12 @@ void BHV_AvoidObstacle::postViewablePolygons()
 void BHV_AvoidObstacle::postErasablePolygons()
 {
   if(m_obstacle_orig.is_convex()) {
-    m_obstacle_orig.set_active(false);
-    string spec = m_obstacle_orig.get_spec();
+    string spec = m_obstacle_orig.get_spec_inactive();
     postMessage("VIEW_POLYGON", spec, "orig");
   }
    
   if(m_obstacle_buff.is_convex() && (m_buffer_dist > 0)) {
-    m_obstacle_buff.set_active(false);
-    string spec = m_obstacle_buff.get_spec();
+    string spec = m_obstacle_buff.get_spec_inactive();
     postMessage("VIEW_POLYGON", spec, "buff");
   }
 }
@@ -521,38 +493,32 @@ bool BHV_AvoidObstacle::applyBuffer()
   if(m_obstacle_orig.contains(m_osx, m_osy))
     return(false);
 
+  double curr_buffer_dist = m_buffer_dist;
+  double os_rng_to_obstacle = m_obstacle_orig.dist_to_poly(m_osx, m_osy);
+  if(os_rng_to_obstacle < (m_buffer_dist + 1)) {
+    curr_buffer_dist = os_rng_to_obstacle - 2;
+    if(curr_buffer_dist < 0)
+      curr_buffer_dist = 0;
+  }
+
   // Part 1: Build the buffer poly to spec size.
-  m_obstacle_buff.grow_by_amt(m_buffer_dist);
+  XYPolyExpander expander;
+  expander.setPoly(m_obstacle_orig);
+  expander.setDegreeDelta(10);
+  expander.setVertexProximityThresh(0.5);
+  m_obstacle_buff = expander.getBufferPoly(curr_buffer_dist);
 
   if(!m_obstacle_buff.is_convex()) {
-    m_obstacle_buff = m_obstacle_orig;
-  }
-
-  // Part 2: If ownship is currently in the buffer poly, then rebuild
-  // the buffer poly by incrementally growing to the largest buffer
-  // poly (up to m_buffer_dist) that does not contain ownship.
-  if(m_obstacle_buff.contains(m_osx, m_osy)) {
-    bool os_in_newb = false;
-    for(unsigned int j=0; ((j<=100) && (!os_in_newb)); j++) {
-      XYPolygon new_poly = m_obstacle_orig;
-      double grow_amt = ((double)(j) / 100.0) * m_buffer_dist;
-      new_poly.grow_by_amt(grow_amt);
-      os_in_newb = new_poly.contains(m_osx, m_osy);
-      if(!os_in_newb && (new_poly.dist_to_poly(m_osx, m_osy) < 1))
-	os_in_newb = true;
-      os_in_newb = new_poly.contains(m_osx, m_osy);
-      if(!os_in_newb) 
-	m_obstacle_buff = new_poly;
-    }
-  }
-
-  // Part 3: Sanity check Parts 1 and 2. One way or another the buffer
-  // poly should NOT contain ownship. Just double check that here.
-  if(m_obstacle_buff.contains(m_osx, m_osy)) {
+    postWMessage("Buffer obstacle not convex");
     m_obstacle_buff = m_obstacle_orig;
     return(false);
   }
-  
+  if(m_obstacle_buff.contains(m_osx, m_osy)) {
+    postWMessage("Buffer obstacle contains OS position");
+    m_obstacle_buff = m_obstacle_orig;
+    return(false);
+  }
+
   m_obstacle_buff.set_label(m_obstacle_orig.get_label() + "_buff");
 
   return(true);
@@ -573,7 +539,6 @@ void BHV_AvoidObstacle::postConfigStatus()
   str += ",completed_dist=" + doubleToString(m_completed_dist,2);
 
   str += ",obstacle_key=" + m_obstacle_key;
-  str += ",obtacle_update_var=" + m_obstacle_update_var;
 
   postRepeatableMessage("BHV_SETTINGS", str);
 }

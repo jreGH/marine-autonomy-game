@@ -41,7 +41,8 @@ USM_MOOSApp::USM_MOOSApp()
   m_sim_prefix  = "USM";
   m_reset_count = 0;
   m_geo_ok      = false;
-
+  m_enabled     = true;
+  
   buoyancy_requested = false;
   trim_requested = false;
   buoyancy_delay = 5;
@@ -155,6 +156,11 @@ bool USM_MOOSApp::OnNewMail(MOOSMSG_LIST &NewMail)
       Notify("USM_RESET_COUNT", m_reset_count);
       m_model.initPosition(sval);
     }
+
+    else if(key == "USM_TURN_RATE") 
+      m_model.setParam("turn_rate", dval);
+    else if(key == "USM_ENABLED")
+      setBooleanOnString(m_enabled, sval);
     
     else if(key == "OBSTACLE_HIT") {
       if(dval != 0)
@@ -213,9 +219,8 @@ bool USM_MOOSApp::OnNewMail(MOOSMSG_LIST &NewMail)
   return(true);
 }
   
-  //------------------------------------------------------------------------
+//------------------------------------------------------------------------
 // Procedure: OnStartUp
-//      Note: 
 
 bool USM_MOOSApp::OnStartUp()
 {
@@ -265,14 +270,10 @@ bool USM_MOOSApp::OnStartUp()
       handled = m_model.setParam("max_depth_rate", dval);
     else if((param == "MAX_DEPTH_RATE_SPEED") && isNumber(value))
       handled = m_model.setParam("max_depth_rate_speed", dval);
-
     else if((param == "MAX_RUDDER_DEGS_PER_SEC") && isNumber(value))
       handled = m_model.setMaxRudderDegreesPerSec(dval);
-
-    else if((param == "PREFIX") && !strContainsWhite(value)) {      
-      m_sim_prefix = value;
-      handled = true;
-    }
+    else if(param == "PREFIX")
+      handled = setNonWhiteVarOnString(m_sim_prefix, value);
     else if(param == "DRIFT_VECTOR")
       handled = m_model.setDriftVector(value);
     else if((param == "SIM_PAUSE") && isBoolean(value)) {
@@ -400,34 +401,37 @@ void USM_MOOSApp::registerVariables()
   Register("DESIRED_THRUST_L", 0);
   Register("DESIRED_THRUST_R", 0);
 
-  Register("USM_BUOYANCY_RATE", 0);  // Deprecated
+  //Register("USM_BUOYANCY_RATE", 0);  // Deprecated
   Register("BUOYANCY_RATE", 0);
 
-  Register("USM_WATER_DEPTH", 0);    // Deprecated
+  //Register("USM_WATER_DEPTH", 0);    // Deprecated
   Register("WATER_DEPTH", 0);
 
-  Register("USM_FORCE_X", 0);  // Deprecated
+  //Register("USM_FORCE_X", 0);  // Deprecated
   Register("CURRENT_X",0);
   Register("DRIFT_X",0);
 
-  Register("USM_FORCE_Y", 0);  // Dperecated
+  //Register("USM_FORCE_Y", 0);  // Dperecated
   Register("CURRENT_Y",0);
   Register("DRIFT_Y",0);
 
-  Register("USM_FORCE_VECTOR", 0); // Deprecated
+  //Register("USM_FORCE_VECTOR", 0); // Deprecated
   Register("DRIFT_VECTOR", 0);
 
-  Register("USM_FORCE_VECTOR_ADD", 0); // Deprecated
+  //Register("USM_FORCE_VECTOR_ADD", 0); // Deprecated
   Register("DRIFT_VECTOR_ADD", 0);
 
-  Register("USM_FORCE_VECTOR_MULT", 0); // Deprecated
+  //Register("USM_FORCE_VECTOR_MULT", 0); // Deprecated
   Register("DRIFT_VECTOR_MULT", 0);
 
-  Register("USM_FORCE_THETA", 0); // Deprecated
+  //Register("USM_FORCE_THETA", 0); // Deprecated
   Register("ROTATE_SPEED", 0);
 
   Register("USM_SIM_PAUSED", 0); 
   Register("USM_RESET", 0);
+
+  Register("USM_TURN_RATE", 0);
+  Register("USM_ENABLED", 0);
 
   Register("OBSTACLE_HIT", 0);
 
@@ -449,12 +453,16 @@ bool USM_MOOSApp::Iterate()
 
   if(!m_obstacle_hit)
     m_model.propagate(m_curr_time);
+
+  if(!m_enabled) {
+    AppCastingMOOSApp::PostReport();
+    return(true);
+  }
   
   NodeRecord record = m_model.getNodeRecord();
 
   double pitch_degrees = record.getPitch()*180.0/M_PI;
 
-#if 1
   if(m_thrust_mode_reverse) {
     record.setHeading(angle360(record.getHeading()+180));
     record.setHeadingOG(angle360(record.getHeadingOG()+180));
@@ -466,7 +474,6 @@ bool USM_MOOSApp::Iterate()
       new_yaw = new_yaw - (2 * pi);
     record.setYaw(new_yaw);
   }
-#endif
 
   // buoyancy and trim control
   if(buoyancy_requested) {
@@ -592,7 +599,6 @@ bool USM_MOOSApp::handleThrustMapping(string mapping)
 
 //--------------------------------------------------------------------
 // Procedure: handleConfigDeprecations
-//
 
 string USM_MOOSApp::handleConfigDeprecations(string param)
 {
@@ -693,6 +699,7 @@ bool USM_MOOSApp::buildReport()
   string datum_lat = doubleToStringX(m_geodesy.GetOriginLatitude(),9);
   string datum_lon = doubleToStringX(m_geodesy.GetOriginLongitude(),9);
   
+  m_msgs << "Enabled: " + boolToString(m_enabled) << endl;
   m_msgs << "Datum: " + datum_lat + "," + datum_lon;
   m_msgs << endl << endl;
   // Part 1: Pose Information ===========================================

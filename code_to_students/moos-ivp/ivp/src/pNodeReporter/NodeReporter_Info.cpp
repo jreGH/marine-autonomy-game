@@ -66,6 +66,9 @@ void showHelpAndExit()
   blk("      Display MOOS publications and subscriptions.              ");
   mag("  --version,-v                                                  ");
   blk("      Display the release version of pNodeReporter.             ");
+  mag("  --web,-w                                                      ");
+  blk("      Open browser to:                                          ");
+  blk("      https://oceanai.mit.edu/ivpman/apps/pNodeReporter         ");
   blk("                                                                ");
   blk("Note: If argv[2] does not otherwise match a known option,       ");
   blk("      then it will be interpreted as a run alias. This is       ");
@@ -79,7 +82,6 @@ void showHelpAndExit()
 
 void showExampleConfigAndExit()
 {
-  blk("                                                                ");
   blu("=============================================================== ");
   blu("pNodeReporter Example MOOS Configuration                        ");
   blu("=============================================================== ");
@@ -93,6 +95,7 @@ void showExampleConfigAndExit()
   blk("  // Configure key aspects of the node                          ");
   blk("  platform_type      = glider  "," // or {uuv,auv,ship,kayak}   ");
   blk("  platform_length    = 8       "," // meters.  Range [0,inf)    ");
+  blk("  platform_group     = alpha   "," // Default is no group       ");
   blk("  platform_color     = green   "," // or any legal color        ");
   blk("                                                                ");
   blk("  // Configure optional blackout functionality                  ");
@@ -111,14 +114,23 @@ void showExampleConfigAndExit()
   blu("  nohelm_threshold   = 5       "," // seconds                   ");
   blk("                                                                ");
   blk("  // Policy for filling in missing lat/lon from x/y or v.versa  ");
-  blu("  crossfill_policy   = literal "," // or {fill-empty,use-latest}");
+  blk("  // Valid policies: [literal], fill-empty, use-latest, global  ");
+  blu("  cross_fill_policy   = literal                                 ");
   blk("                                                                ");
   blk("  // Configure monitor/reporting of dual nav solution           ");
   blk("  alt_nav_prefix     = NAV_GT                                   ");
   blk("  alt_nav_name       = _GT                                      ");
   blk("                                                                ");
+  blk("  // Set grace period before posting reports with no NAV info   ");
+  blu("  nav_grace_period = 60       "," // seconds. -1 means infinity ");
+  blk("                                                                ");
   blk("  // Declare the vehicle to be part of group tango.             ");
   blk("  group = tango                                                 ");
+  blk("                                                                ");
+  blk("  // Allow NODE_COLOR_CHANGE msgs to dyn modify vcolor.         ");
+  blk("  allow_color_change = true (default is false)                  ");
+  blk("                                                                ");
+  blk("  app_logging = true  // {true or file} By default disabled     ");
   blk("}                                                               ");
   blk("                                                                ");
   exit(0);
@@ -147,6 +159,9 @@ void showInterfaceAndExit()
   blk("  NAV_SPEED       = 2.0                                         ");
   blk("  NAV_YAW         = 118.8                                       ");
   blk("  NAV_DEPTH       = 4.6                                         ");
+  blk("                                                                ");
+  blk("  NODE_COLOR_CHANGE = yellow                                    ");
+  blk("                                                                ");
   blk("  IVPHELM_SUMMARY =                                             ");
   blk("     iter=1,ofnum=1,warnings=0,utc_time=23839589908.76,         ");
   blk("     solve_time=0.00,create_time=0.00,loop_time=0.00,           ");
@@ -157,6 +172,7 @@ void showInterfaceAndExit()
   blk("     completed_bhvs=none                                        ");
   blk("  IVPHELM_ENGAGED = ENGAGED                                     ");
   blk("  IVPHELM_ALLSTOP = clear                                       ");
+  blk("  NODE_GROUP_UPDATE = friendly                                  ");
   blk("                                                                ");
   blk("PUBLICATIONS:                                                   ");
   blk("------------------------------------                            ");

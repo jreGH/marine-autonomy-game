@@ -3,6 +3,7 @@
 /*    ORGN: Dept of Mechanical Eng / CSAIL, MIT Cambridge MA     */
 /*    FILE: main.cpp                                             */
 /*    DATE: June 3rd, 2008                                       */
+/*    DATE: Dec 22nd, 2021 Substantial restructure               */
 /*                                                               */
 /* This file is part of MOOS-IvP                                 */
 /*                                                               */
@@ -25,143 +26,204 @@
 #include <cstdlib>
 #include <iostream>
 #include "MBUtils.h"
+#include "OpenURL.h"
 #include "ReleaseInfo.h"
 #include "GrepHandler.h"
 
 using namespace std;
+
+void showHelpAndExit();
 
 //--------------------------------------------------------
 // Procedure: main
 
 int main(int argc, char *argv[])
 {
-  // Look for a request for version information
-  if(scanArgs(argc, argv, "-v", "--version", "-version")) {
-    showReleaseInfo("aloggrep", "gpl");
-    return(0);
-  }
-  
-  bool comments_retained = true;
-  if(scanArgs(argc, argv, "--no_comments", "-nc"))
-    comments_retained = false;
-  
-  bool badlines_retained = false;
-  if(scanArgs(argc, argv, "--keep_badlines", "-kb"))
-    badlines_retained = true;
-  
-  bool make_end_report = true;
-  if(scanArgs(argc, argv, "--no_report", "-nr"))
-    make_end_report = false;
-  
-  bool gaplines_retained = true;
-  if(scanArgs(argc, argv, "--gap_len", "-gl"))
-    gaplines_retained = false;
-  
-  bool appcast_retained = true;
-  if(scanArgs(argc, argv, "--appcast", "-ac"))
-    appcast_retained = false;
-  
-  if(scanArgs(argc, argv, "--quiet", "-q")) {
-    comments_retained = false;
-    make_end_report = false;
-  }
-    
-  
-  bool file_overwrite = false;
-  if(scanArgs(argc, argv, "-f", "--force", "-force"))
-    file_overwrite = true;
-  
-  // Look for a request for usage information
-  if(scanArgs(argc, argv, "-h", "--help", "-help")) {
-    cout << "Usage: " << endl;
-    cout << "  aloggrep in.alog [VAR] [SRC] [out.alog] [OPTIONS]        " << endl;
-    cout << "                                                           " << endl;
-    cout << "Synopsis:                                                  " << endl;
-    cout << "  Create a new MOOS .alog file by retaining only the       " << endl;
-    cout << "  given MOOS variables or sources, named on the command    " << endl;
-    cout << "  line, from a given .alog file.                           " << endl;
-    cout << "                                                           " << endl;
-    cout << "Standard Arguments:                                        " << endl;
-    cout << "  in.alog  - The input logfile.                            " << endl;
-    cout << "  out.alog - The newly generated output logfile. If no     " << endl;
-    cout << "             file provided, output goes to stdout.         " << endl;
-    cout << "  VAR      - The name of a MOOS variable                   " << endl;
-    cout << "  SRC      - The name of a MOOS process (source)           " << endl;
-    cout << "                                                           " << endl;
-    cout << "Options:                                                   " << endl;
-    cout << "  -h,--help         Displays this help message             " << endl;
-    cout << "  -v,--version      Displays the current release version   " << endl;
-    cout << "  -f,--force        Force overwrite of existing file       " << endl;
-    cout << "  -q,--quiet        Supress summary report, header comments" << endl;
-    cout << "  -nc,--no_comments Supress comment (header) lines         " << endl;
-    cout << "  -nr,--no_report   Supress summary report                 " << endl;
-    cout << "  -gl,--no_gaplen   Supress vars ending in _GAP or _LEN    " << endl;
-    cout << "  -ac,--no_appcast  Supress APPCAST lines                  " << endl;
-    cout << "                                                           " << endl;
-    cout << "  --keep_badlines   Do not disscard lines that don't begin " << endl;
-    cout << "  -kb               with a timestamp or comment character. " << endl;
-    cout << "                                                           " << endl;
-    cout << "Further Notes:                                             " << endl;
-    cout << "  (1) The second alog is the output file. Otherwise the    " << endl;
-    cout << "      order of arguments is irrelevant.                    " << endl;
-    cout << "  (2) VAR* matches any MOOS variable starting with VAR     " << endl;
-    cout << "  (3) See also: alogscan, alogrm, alogclip, alogsplit,     " << endl;
-    cout << "      alogview                                             " << endl;
-    cout << "  (4) If the output file name is vname.alog, will attempt  " << endl;
-    cout << "      to replace with vname_STR.alog where STR is the      " << endl;
-    cout << "      detected community taken from DB_TIME source.        " << endl;
-    cout << endl;
-    return(0);
-  }
-
-  vector<string> keys;
-  string alogfile_in;
-  string alogfile_out;
+  GrepHandler handler;
 
   for(int i=1; i<argc; i++) {
-    string sarg = argv[i];
-    if(strEnds(sarg, ".alog") || strEnds(sarg, ".klog")) {
-      if(alogfile_in == "")
-	alogfile_in = sarg;
-      else 
-	alogfile_out = sarg;
+    bool handled = true;
+    string argi = argv[i];
+    if((argi=="-h") || (argi == "--help") || (argi=="-help"))
+      showHelpAndExit();
+    else if((argi=="-v") || (argi=="--version") || (argi=="-version")) {
+      showReleaseInfo("alogrep", "gpl");
+      return(0);
     }
+    else if((argi == "--no_comments") || (argi == "-nc"))
+      handler.setCommentsRetained(false);
+    else if((argi == "--keep_bad") || (argi == "-kb"))
+      handler.setBadLinesRetained(false);
+    else if((argi == "--no_report") || (argi == "-nr"))
+      handler.setMakeReport(false);
+    else if((argi == "--gap_len") || (argi == "-gl"))
+      handler.setGapLinesRetained(true);
+    else if((argi == "--appcast") || (argi == "-ac"))
+      handler.setAppCastRetained(true);
+    else if((argi == "--sort") || (argi == "-s"))
+      handler.setSortEntries(true);
+    else if((argi == "--duplicates") || (argi == "-d"))
+      handler.setRemoveDups(true);
+    else if((argi == "--sd") || (argi == "-sd")) {
+      handler.setSortEntries(true);
+      handler.setRemoveDups(true);
+    }
+
+    else if((argi == "--csw") || (argi == "-csw"))
+      handler.setColSep(' ');
+    else if((argi == "--csc") || (argi == "-csc"))
+      handler.setColSep(',');
+    else if((argi == "--cso") || (argi == "-cso"))
+      handler.setColSep(':');
+    else if((argi == "--css") || (argi == "-css"))
+      handler.setColSep(';');
+
+    else if((argi == "--v") || (argi == "-vo")) 
+      handler.setFormat("val");
+    else if((argi == "--tv") || (argi == "-tvo"))
+      handler.setFormat("time:val");
+    else if(argi == "--tvv")
+      handler.setFormat("time:var:val");
+
+    else if(strBegins(argi, "--subpat=")) 
+      handler.setSubPattern(argi.substr(9));
+    else if(strBegins(argi, "--format=")) 
+      handled = handler.setFormat(argi.substr(9));
+    else if(argi == "--final") 
+      handler.setFinalOnly(true);
+
+
+    else if((argi == "--quiet") || (argi == "-q")) {
+      handler.setCommentsRetained(false);
+      handler.setMakeReport(false);
+    }
+    else if((argi == "--force") || (argi == "-force") || (argi == "-f")) 
+      handler.setFileOverWrite(true);
+    else if(strEnds(argi, ".alog") || strEnds(argi, ".klog")) 
+      handled = handler.setALogFile(argi);
+    else if((argi == "-w") || (argi == "--web") || (argi == "-web"))
+      openURLX("https://oceanai.mit.edu/ivpman/apps/aloggrep");
+    else if(strBegins(argi, "-"))
+      handled = false;
     else
-      keys.push_back(sarg);
-  }
- 
-  if(alogfile_in == "") {
-    cout << "No alog file given - exiting" << endl;
-    exit(1);
-  }
-  else if(make_end_report)
-    cout << "aloggrep - Processing on file: " << alogfile_in << endl;
-  
-  GrepHandler handler;
-  handler.setFileOverWrite(file_overwrite);
-  handler.setCommentsRetained(comments_retained);
-  handler.setBadLinesRetained(badlines_retained);
-  handler.setGapLinesRetained(gaplines_retained);
-  handler.setAppCastRetained(appcast_retained);
+      handler.addKey(argi);
 
-  int ksize = keys.size();
-  for(int i=0; i<ksize; i++)
-    handler.addKey(keys[i]);
+    if(!handled) {
+      cout << "Exiting due to bad arg: " << argi << endl;
+      return(1);
+    }
+  }
 
-  bool handled = handler.handle(alogfile_in, alogfile_out);
+  bool handled = handler.handle();
   if(!handled)
-    exit(1);
+    return(1);
 
-  if(handled && make_end_report)
-    handler.printReport();
+  handler.printReport();
+  return(0);
 }
 
 
+//------------------------------------------------------------
+// Procedure: showHelpAndExit()  
 
+void showHelpAndExit()
+{
+  cout << "Usage: " << endl;
+  cout << "  aloggrep in.alog [VAR] [SRC] [out.alog] [OPTIONS]        " << endl;
+  cout << "                                                           " << endl;
+  cout << "Synopsis:                                                  " << endl;
+  cout << "  aloggrep is typically used in one of three ways:         " << endl;
+  cout << "  (1) Create a new filtered alog file                      " << endl;
+  cout << "  (2) Create a csv file for plotting                       " << endl;
+  cout << "  (3) A quick-look command-line utility                    " << endl;
+  cout << "                                                           " << endl;
+  cout << "  In (1) a new alog file is provided as a target and some  " << endl;
+  cout << "  set of variables to retain are specified. The new alog   " << endl;
+  cout << "  file retains syntactic structure of an alog file, but all" << endl;
+  cout << "  lines that don't match the grep pattern are removed.     " << endl;
+  cout << "  In addition to variables to be retained, the user may    " << endl;
+  cout << "  specifiy a MOOSApp source, and all variables published   " << endl;
+  cout << "  by that source will be retained.                         " << endl;
+  cout << "                                                           " << endl;
+  cout << "  In (2) some subset of columns will be retained for one   " << endl;
+  cout << "  or more specified variables. The columns are separated by" << endl;
+  cout << "  a comma, or another chosen column separator.             " << endl;
+  cout << "                                                           " << endl;
+  cout << "  In (3), the user omits the second/target alog file and   " << endl;
+  cout << "  output instead just goes to the terminal to enable a     " << endl;
+  cout << "  quick look at log file contents                          " << endl;
+  cout << "                                                           " << endl;
+  cout << "Standard Arguments:                                        " << endl;
+  cout << "  in.alog  - The input logfile.                            " << endl;
+  cout << "  out.alog - The newly generated output logfile. If no     " << endl;
+  cout << "             file provided, output goes to stdout.         " << endl;
+  cout << "  VAR      - The name of a MOOS variable                   " << endl;
+  cout << "  SRC      - The name of a MOOS process (source)           " << endl;
+  cout << "                                                           " << endl;
+  cout << "Options:                                                   " << endl;
+  cout << "  -h,--help         Displays this help message             " << endl;
+  cout << "  -v,--version      Displays the current release version   " << endl;
+  cout << "  -f,--force        Force overwrite of existing file       " << endl;
+  cout << "  -q,--quiet        Supress summary report, header comments" << endl;
+  cout << "  -nc,--no_comments Supress comment (header) lines         " << endl;
+  cout << "  -nr,--no_report   Supress summary report                 " << endl;
+  cout << "  -gl,--no_gaplen   Retain vars ending in _GAP or _LEN     " << endl;
+  cout << "  -kb,--keep_bad    Don't discard lines that don't begin   " << endl;
+  cout << "                    with a timestamp or comment character. " << endl;
+  cout << "                                                           " << endl;
+  cout << "  -s,--sort         Sort the log entries                   " << endl;
+  cout << "  -d,--duplicates   Remove Duplicate entries               " << endl;
+  cout << "  -sd,--sd          Remove Duplicate AND sort              " << endl;
+  cout << "                                                           " << endl;
+  cout << "  --web,-w   Open browser to:                              " << endl;
+  cout << "             https://oceanai.mit.edu/ivpman/apps/aloggrep  " << endl;
+  cout << "                                                           " << endl;
+  cout << "Content/format Options:                                    " << endl;
+  cout << "  --format=val or --v                                      " << endl;
+  cout << "    Output only the value column                           " << endl;
+  cout << "                                                           " << endl;
+  cout << "  --format=time:val or --tv                                " << endl;
+  cout << "    Output only the time and value columns                 " << endl;
+  cout << "                                                           " << endl;
+  cout << "  --format=time:var:val or --tvv                           " << endl;
+  cout << "    Output only time, variable, and value columns          " << endl;
+  cout << "                                                           " << endl;
+  cout << "  --final           Output only final matching line        " << endl;
+  cout << "  --csw,-csw        Columns separated with white space     " << endl;
+  cout << "  --csc,-csc        Columns separated with a comma         " << endl;
+  cout << "  --cso,-cso        Columns separated with a colon         " << endl;
+  cout << "  --csc,-csc        Columns separated with a semi-colon    " << endl;
+  cout << "                    (Default separator is white space )    " << endl;
+  cout << "                                                           " << endl;
+  cout << "  --subpat=pattern                                         " << endl;
+  cout << "    For postings with components with comma-separated      " << endl;
+  cout << "    param=value components, a component can be isolated.   " << endl;
+  cout << "                                                           " << endl;
+  cout << "Further Notes:                                             " << endl;
+  cout << "  (1) The second alog is the output file. Otherwise the    " << endl;
+  cout << "      order of arguments is irrelevant.                    " << endl;
+  cout << "  (2) VAR* matches any MOOS variable starting with VAR     " << endl;
+  cout << "  (3) The --sort and --duplicates options address an issue " << endl;
+  cout << "      with pLogger in that some entries are out of order   " << endl;
+  cout << "      and some entries are logged twice.                   " << endl;
+  cout << "  (4) If output file name contains the string \"vname\",   " << endl;
+  cout << "      e.g., foobar_vname.alog, aloggrep will attempt to    " << endl;
+  cout << "      replace with vname pattern with the detected vehicle " << endl;
+  cout << "      neme found in input alog, by searching for DB_TIME   " << endl;
+  cout << "      entries and counting on the conventin that the source" << endl;
+  cout << "      for these postings is ~MOOSDB_alpha.                 " << endl;
+  cout << "                                                           " << endl;
+  cout << "Examples:                                                  " << endl;
+  cout << " $ aloggrep DEPLOY RETURN file.alog newfile.alog           " << endl;
+  cout << " $ aloggrep file.alog ENCOUNTER_CPA --tv -csw results.dat  " << endl;
+  cout << " $ aloggrep --sd file.alog new_file.alog                   " << endl;
+  cout << " $ aloggrep file.alog NODE_REPORT_LOCAL --subpat=index     " << endl;
+  cout << "                                                           " << endl;
+  cout << "                                                           " << endl;
+  cout << "See Also:                                                  " << endl;
+  cout << "  (5) alogscan, alogrm, alogclip, alogsplit, alogavg,      " << endl;
+  cout << "      alogview, alogsort.                                  " << endl;
+  exit(0);
+}
 
-
-
-
-
-
-
+  

@@ -10,13 +10,24 @@ SET(SRC
   FileBuffer.cpp
   MBTimer.cpp
   MBUtils.cpp
+  MacroUtils.cpp
   TermUtils.cpp
   StringTree.cpp
   StringNode.cpp
   VarDataPair.cpp
+  VarDataPairUtils.cpp
+  AckMessage.cpp
+  NodeMessage.cpp
+  NodeMessageUtils.cpp
+  Odometer.cpp
   Figlog.cpp
+  TStamp.cpp
   ReleaseInfo.cpp
-)
+  MailFlagSet.cpp
+  LatLonFormatUtils.cpp
+  OpenURL.cpp
+  BundleOut.cpp
+  )
 
 SET(HEADERS
   ColorPack.h
@@ -25,12 +36,22 @@ SET(HEADERS
   FileBuffer.h
   MBTimer.h
   MBUtils.h
+  MacroUtils.h
   StringNode.h
   StringTree.h
   TermUtils.h
   VarDataPair.h
+  VarDataPairUtils.h
+  NodeMessage.h
+  NodeMessageUtils.h
+  Odometer.h
+  TStamp.h
   ReleaseInfo.h
   ScopeEntry.h
+  MailFlagSet.h
+  LatLonFormatUtils.h
+  OpenURL.h
+  BundleOut.h
 )
 
 # Build Library

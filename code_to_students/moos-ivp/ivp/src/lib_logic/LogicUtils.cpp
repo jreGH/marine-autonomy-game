@@ -468,6 +468,44 @@ vector<string> getUniqueVars(const vector<LogicCondition>& conditions)
   return(unique_vars);
 }
 
+//----------------------------------------------------------------
+// Procedure: getLogicVars()
+//      Note: Same as getUniqueVars except this returns a set and
+//            therefore duplicate checking not needed.
+
+set<string> getLogicVars(const vector<LogicCondition>& conditions)
+{
+  set<string> all_vars;
+  for(unsigned int i=0; i<conditions.size(); i++) {
+    vector<string> svector = conditions[i].getVarNames();
+    for(unsigned int j=0; j<svector.size(); j++) { 
+      string var = svector[j];
+      all_vars.insert(var);
+      if(strEnds(var, "_DELTA")) {
+	rbiteString(var, '_');
+	if(var != "")
+	  all_vars.insert(var);
+      }
+    }
+  }
+  
+  return(all_vars);
+}
+
+
+//----------------------------------------------------------------
+// Procedure: setLogicConditionOnString()
+
+bool setLogicConditionOnString(vector<LogicCondition>& conditions, string sval)
+{
+  LogicCondition new_condition;
+  bool handled = new_condition.setCondition(sval);
+  if(!handled)
+    return(false);
+  
+  conditions.push_back(new_condition);
+  return(true);
+}
 
 
 

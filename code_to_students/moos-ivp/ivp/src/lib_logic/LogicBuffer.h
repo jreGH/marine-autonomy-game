@@ -28,41 +28,50 @@
 
 #include <string>
 #include <vector>
+#include <set>
 #include "InfoBuffer.h"
 #include "LogicCondition.h"
 
 class LogicBuffer {
 public:
-  LogicBuffer();
-  ~LogicBuffer();
+  LogicBuffer() {m_info_buffer=0;}
+  ~LogicBuffer() {};
 
 public:
-  bool addNewCondition(const std::string&);
+  bool addNewCondition(std::string);
 
-  bool updateInfoBuffer(const std::string& moosvar,
-			const std::string& value);
-
-  bool updateInfoBuffer(const std::string& moosvar,
-			double value);
-
-  bool checkConditions();
-
-  unsigned int size() {return(m_logic_conditions.size());}
-
-  std::vector<std::string> getAllVars();
-
-protected:
-  std::vector<LogicCondition> m_logic_conditions;
+  void setInfoBuffer(InfoBuffer*);
   
+  void updateInfoBuffer(std::string var, std::string val);
+  void setCurrTime(double v);
+  
+  void updateInfoBuffer(std::string var, double val);
+
+  bool checkConditions(std::string required="all");
+
+  unsigned int size() const {return(m_logic_conditions.size());}
+
+  std::set<std::string> getAllVarsSet() const;
+  std::vector<std::string> getAllVars() const;
+  std::vector<std::string> getInfoBuffReport(bool allvars=false) const;
+
+  std::string getNotableCondition() const {return(m_notable_condition);}
+
+  double getCurrTime() const;
+
+  std::vector<std::string> getSpec(std::string pad="") const;
+  
+protected:
   InfoBuffer *m_info_buffer;
+  
+  std::vector<LogicCondition> m_logic_conditions;
+
+  // notable_condition is a failed condition if required=all
+  // notable_condition is a passed condition if required=any
+  std::string m_notable_condition;
+
+  // cache of relevant vars, updated upon new conditions
+  std::set<std::string> m_logic_vars;
+
 };
 #endif
-
-
-
-
-
-
-
-
-

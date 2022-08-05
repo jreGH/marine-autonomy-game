@@ -1,7 +1,7 @@
 /*****************************************************************/
 /*    NAME: Michael Benjamin                                     */
 /*    ORGN: Dept of Mechanical Eng / CSAIL, MIT Cambridge MA     */
-/*    FILE: VarDataPair.h                                        */
+/*    FILE: VarDataPair.cpp                                      */
 /*    DATE: Jul 4th 2005 Monday morning at Brueggers             */
 /*                                                               */
 /* This file is part of IvP Helm Core Libs                       */
@@ -26,6 +26,7 @@
 #include <cstdlib>
 #include "VarDataPair.h"
 #include "MBUtils.h"
+#include "MacroUtils.h"
 
 using namespace std;
 
@@ -58,10 +59,10 @@ VarDataPair::VarDataPair(string var, double ddata)
   m_is_string = false;
   m_is_quoted = false;
 
-  m_var_set   = false;
+  m_var_set   = true;
   m_key_set   = false;
   m_ptype_set = false;
-  m_ddata_set = false;
+  m_ddata_set = true;
   m_sdata_set = false;
 }
 
@@ -78,11 +79,11 @@ VarDataPair::VarDataPair(string var, string sdata)
   if(isQuoted(sdata))
     m_is_quoted = true;
 
-  m_var_set   = false;
+  m_var_set   = true;
   m_key_set   = false;
   m_ptype_set = false;
   m_ddata_set = false;
-  m_sdata_set = false;
+  m_sdata_set = true;
 }
 
 //------------------------------------------------------------------
@@ -104,6 +105,8 @@ VarDataPair::VarDataPair(string var, string sdata, string hint)
   if(isNumber(data)) {
     m_ddata = atof(data.c_str());
     m_is_string = false;
+    m_ddata_set = true;
+    m_sdata_set = false;
   }
   else {
     if(isQuoted(data)) {
@@ -113,13 +116,13 @@ VarDataPair::VarDataPair(string var, string sdata, string hint)
     else
       m_sdata = data;
     m_is_string = true;
+    m_ddata_set = false;
+    m_sdata_set = true;
   }
 
-  m_var_set   = false;
+  m_var_set   = true;
   m_key_set   = false;
   m_ptype_set = false;
-  m_ddata_set = false;
-  m_sdata_set = false;
 }
 
 //------------------------------------------------------------------
@@ -137,11 +140,29 @@ bool VarDataPair::valid() const
 }
 
 //------------------------------------------------------------------
+// Procedure: why_invalid()
+
+int VarDataPair::why_invalid() const
+{
+  if(m_var == "")
+    return(1);
+  if(!m_var_set)
+    return(2);
+
+  if(!m_sdata_set)
+    return(3);
+  if(!m_ddata_set)
+    return(4);
+
+  return(0);
+}
+
+//------------------------------------------------------------------
 // Procedure: set_var()
 
 bool VarDataPair::set_var(string var)
 {
-  if(m_var_set || strContainsWhite(var))
+  if(strContainsWhite(var))
     return(false);
   
   m_var = var;
@@ -238,6 +259,21 @@ bool VarDataPair::set_ptype(string sval)
 }
 
 
+//------------------------------------------------------------------
+// Procedure: is_solo_macro()
+
+bool VarDataPair::is_solo_macro() const
+{
+  if(!strBegins(m_sdata, "$[") || !strEnds(m_sdata, "]"))
+    return(false);
+
+  if((charCount(m_sdata, '[') != 1) || (charCount(m_sdata, ']') != 1))
+    return(false);
+  
+  return(true);
+}
+
+
 
 //------------------------------------------------------------------
 // Procedure: getPrintable
@@ -248,10 +284,15 @@ bool VarDataPair::set_ptype(string sval)
 //         foo = bar  var is of type string since bar is NOT a number.
 
 
-string VarDataPair::getPrintable()
+string VarDataPair::getPrintable() const
 {
-  string rstring = m_var;
-  rstring += "=";
+  string rstring;
+  if(m_post_tag != "")
+    rstring += m_post_tag + " ";
+  if(m_dest_tag != "")
+    rstring += m_dest_tag + " ";
+
+  rstring += m_var + "=";
 
   if(m_is_string) {
     if(isNumber(m_sdata)) {
@@ -271,8 +312,33 @@ string VarDataPair::getPrintable()
   return(rstring);
 }
 
+
+//------------------------------------------------------------------
+// Procedure: getMacroSet()
+
+set<string> VarDataPair::getMacroSet() const
+{
+  set<string> macro_set;
+  vector<string> macros = getMacrosFromString(m_sdata);
+  for(unsigned int i=0; i<macros.size(); i++)
+    macro_set.insert(macros[i]);
+    
+  return(macro_set);
+}
+
+
+//------------------------------------------------------------------
+// Procedure: getMacroVector()
+
+vector<string> VarDataPair::getMacroVector() const
+{
+  return(getMacrosFromString(m_sdata));
+}
+
+
 //------------------------------------------------------------------
 // Procedure: stringToVarDataPair()
+//   Example: var=MSG, sval=hello, key=foo, ptype=a
 
 VarDataPair stringToVarDataPair(string str)
 {
@@ -306,7 +372,4 @@ VarDataPair stringToVarDataPair(string str)
 
   return(pair);
 }
-
-
-
 

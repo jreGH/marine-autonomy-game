@@ -34,26 +34,60 @@ class GrepHandler
   GrepHandler();
   ~GrepHandler() {}
 
-  bool handle(std::string, std::string str="");
+  bool handle();
+  bool setALogFile(std::string);
   void addKey(std::string str);
   void printReport();
-  void setFileOverWrite(bool v)    {m_file_overwrite=v;}
-  void setCommentsRetained(bool v) {m_comments_retained=v;}
-  void setBadLinesRetained(bool v) {m_badlines_retained=v;}
-  void setGapLinesRetained(bool v) {m_gaplines_retained=v;}
-  void setAppCastRetained(bool v)  {m_appcast_retained=v;}
-  
- protected:
-  std::vector<std::string> getMatchedKeys();
-  std::vector<std::string> getUnMatchedKeys();
+  void setFileOverWrite(bool v)     {m_file_overwrite=v;}
+  void setCommentsRetained(bool v)  {m_comments_retained=v;}
+  void setBadLinesRetained(bool v)  {m_badlines_retained=v;}
+  void setGapLinesRetained(bool v)  {m_gaplines_retained=v;}
+  void setAppCastRetained(bool v)   {m_appcast_retained=v;}
+  void setSortEntries(bool v)       {m_sort_entries=v;}
+  void setMakeReport(bool v)        {m_make_report=v;}
+  void setRemoveDups(bool v)        {m_rm_duplicates=v;}
 
+  void setFinalOnly(bool v)         {m_final_only=v;}
+  void setSubPattern(std::string s) {m_subpat=s;}
+  bool setFormat(std::string);
+  void setColSep(char c);
+
+ protected:
+
+  bool checkRetain(std::string& line_raw);
+  void outputLine(const std::string& line, bool last=false);
+  void ignoreLine(const std::string& line);
+    
   std::string quickPassGetVName(const std::string);
   
-  void outputLine(const std::string& line, const std::string& varname="");
-  void ignoreLine(const std::string& line, const std::string& varname="");
-  
- protected:
+ protected: // Config vars
 
+  bool   m_comments_retained;
+  bool   m_badlines_retained;
+  bool   m_gaplines_retained;
+  bool   m_appcast_retained;
+  bool   m_sort_entries;
+  bool   m_rm_duplicates;
+
+  bool   m_final_only;
+  bool   m_format_vals;
+  bool   m_format_vars;
+  bool   m_format_time;
+  bool   m_make_report;
+  char   m_colsep;
+  
+  double m_cache_size;
+  
+  std::string m_filename_in;
+  std::string m_subpat;
+  
+  FILE *m_file_in;
+  FILE *m_file_out;
+
+ protected: // State vars
+  std::string m_final_line;
+  std::string m_last_tstamp;
+  
   std::vector<std::string> m_keys;
   std::vector<bool>        m_pmatch;
 
@@ -63,27 +97,9 @@ class GrepHandler
   double m_chars_retained;
   bool   m_file_overwrite;
 
-  std::string m_var_condition;
-  bool        m_var_condition_met;
-  bool        m_comments_retained;
-  bool        m_badlines_retained;
-  bool        m_gaplines_retained;
-  bool        m_appcast_retained;
+  unsigned int m_re_sorts;
   
   std::set<std::string> m_vars_retained;
-  std::set<std::string> m_vars_removed;
-  
-  FILE *m_file_in;
-  FILE *m_file_out;
 };
 
 #endif
-
-
-
-
-
-
-
-
-

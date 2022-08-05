@@ -41,6 +41,7 @@ class PMV_Viewer : public MarineViewer
   // Pure virtuals that need to be defined
   void  draw();
   int   handle(int);
+  void  modColorScheme() {};
 
   bool  setParam(std::string p, std::string v="");
   bool  setParam(std::string p, double v);
@@ -68,22 +69,27 @@ class PMV_Viewer : public MarineViewer
   std::vector<std::string> getStaleVehicles(double thresh=10);
 
   unsigned int shapeCount(const std::string& gtype, const std::string& vname="") const;
+  double       getVehiclesShapeScale() const;
   unsigned int getDrawCount() const {return(m_draw_count);}
   double       getCurrTime() const {return(m_curr_time);}
   double       getTimeWarp() const {return(m_time_warp);}
   double       getElapsed() const {return(m_elapsed);}
 
+  void   setVerbose(bool bval=true) {m_verbose=bval;}
+  
   void   clearGeoShapes(std::string vname, std::string shape, std::string stype);
 
+  void   setCenterView(double x, double y);
+  void   setCenterView(std::string vname);
+  
  private:
   void   drawVehicle(std::string, bool, std::string);
   void   calculateDrawHash();
   void   drawTrailPoints(CPList&, unsigned int=0);
-  void   handleLeftMouse(int, int);
-  void   handleRightMouse(int, int);
+  void   handleMouse(int, int, std::string s="left");
   void   handleMoveMouse(int, int);
   void   setWeightedCenterView();
-
+  
  private:
   VehicleSet  m_vehiset;
 
@@ -96,6 +102,8 @@ class PMV_Viewer : public MarineViewer
   unsigned int m_draw_count;
   double       m_last_draw_time;
 
+  bool         m_verbose;
+  
   // Member variables for holding scoped info
   bool                     m_scoping;
   std::vector<std::string> m_var_names;

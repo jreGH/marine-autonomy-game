@@ -21,6 +21,7 @@
 /* <http://www.gnu.org/licenses/>.                               */
 /*****************************************************************/
 
+#include <algorithm>
 #include <iostream>
 #include <iterator>
 #include "MBUtils.h"
@@ -31,11 +32,13 @@ using namespace std;
 //---------------------------------------------------------
 // Constructor
 
-AppCastRepo::AppCastRepo()
+AppCastRepo::AppCastRepo(bool strip_color)
 {
   m_current_node = "";
   m_current_proc = "";
   m_refresh_mode = "events";
+
+  m_strip_color = strip_color;
 }
 
 //---------------------------------------------------------
@@ -44,7 +47,15 @@ AppCastRepo::AppCastRepo()
 
 bool AppCastRepo::addAppCast(const string& appcast_str)
 {
-  AppCast appcast = string2AppCast(appcast_str);
+  string str = appcast_str;
+
+  if(m_strip_color) {
+    str = findReplace(appcast_str, "\33[7;32m", "");
+    str = findReplace(str, "\33[7;31m", "");
+    str = findReplace(str, "\33[0m", "");
+  }
+
+  AppCast appcast = string2AppCast(str);
   return(addAppCast(appcast));
 }
 
@@ -165,6 +176,19 @@ vector<string> AppCastRepo::getCurrentNodes() const
 {
   vector<string> rvector;
   rvector = m_appcast_tree.getNodes();
+  if(rvector.size() == 0)
+    return(rvector);
+
+  std::sort(rvector.begin(), rvector.end());
+
+  if(rvector.back() == "shoreside") {
+    vector<string> rvector2;
+    rvector2.push_back("shoreside");
+    for(unsigned int i=0; i<rvector.size()-1; i++)
+      rvector2.push_back(rvector[i]);
+    rvector = rvector2;
+  }
+
   return(rvector);
 }
 

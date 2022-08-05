@@ -52,18 +52,19 @@ Expander::Expander(string given_infile, string given_outfile)
   m_partial_expand_ok = false;
 
   m_interactive = false;
+  m_impatient = false;
 }
 
 //--------------------------------------------------------
 // Procedure: expand
-//     Notes: key functions, chompString and stripBlankEnds
-//            are from MBUtils.h
+//      Note: High level entry point for recursion
 
 bool Expander::expand()
 {
   bool result;
   vector<string> fvector = expandFile(m_infile, m_initial_macros, 
-				      m_initial_filenames, result);
+				      m_initial_filenames,
+				      m_inctag, result);
 
   if(result == false) {
     cout << "#  Aborting without writing the new file." << endl;
@@ -79,11 +80,14 @@ bool Expander::expand()
 // Procedure: expandFile
 //     Notes: key functions, chompString and stripBlankEnds
 //            are from MBUtils.h
+//      Note: inctag added Sep 20th, 2020 to support lines like
+//            #include filename <inctag> which will only include
+//            part of the named file
 
 vector<string> Expander::expandFile(string filename, 
 				    map<string, string>& macros, 
 				    vector<string> filenames, 
-				    bool& result)
+				    string inctag, bool& result)
 {
   vector<string> return_vector;
   vector<string> empty_vector;
@@ -96,6 +100,10 @@ vector<string> Expander::expandFile(string filename,
     return(empty_vector);
   }
 
+  inctag = stripChevrons(inctag);
+
+  string curr_tag;
+  
   for(i=0; i<vsize; i++) {
 
     string line = stripBlankEnds(findReplace(fvector[i], '\t', ' '));
@@ -103,6 +111,18 @@ vector<string> Expander::expandFile(string filename,
     string left = biteStringX(line, ' ');
     string rest = line;
 
+    // Begin tag support, added Sep 2020
+    if(strBegins(line_orig, "<tag>")) {
+      curr_tag = stripChevrons(line_orig.substr(5));
+      continue;
+    }
+    if((inctag != "") && (inctag != curr_tag))
+      continue;
+    if((inctag != "") && strBegins(line_orig, "#"))
+      continue;
+    
+    // End tag support, added Sep 2020
+    
     //------------------------------------------------------------
     if(left == "#ifdef") {
       bool ifdef = checkIfDef(rest, macros, i+1);
@@ -174,7 +194,20 @@ vector<string> Expander::expandFile(string filename,
     //--------------------------------------------------------------
     else if(!skipLines() && (left == "#include")) {
       applyMacrosToLine(rest, macros, i+1);
+
       string file_str = stripBlankEnds(rest);
+
+      // Begin check for file <tag>
+      string inctag;
+      string file_str_copy = file_str;
+      string last_chunk = rbiteStringX(file_str_copy, ' ');
+      if(isChevroned(last_chunk)) {
+	inctag = last_chunk;
+	file_str = file_str_copy;
+      }
+      // End check for file <tag>
+	
+	
       if(isQuoted(file_str))
 	file_str = stripQuotes(file_str);
       string full_file_str = findFileInPath(file_str);
@@ -194,7 +227,7 @@ vector<string> Expander::expandFile(string filename,
 	return(empty_vector);
       }
       vector<string> ilines = expandFile(full_file_str, macros, 
-					 filenames, result);
+					 filenames, inctag, result);
       if(!result) {
 	cout << "#  (Included from file " << filename << ")" << endl;
 	return(empty_vector);
@@ -436,12 +469,14 @@ bool Expander::applyMacrosToLine(string& line,
 	while(!answered) {
 	  cout << "Continue? [Y/n]" << endl;
 	  char c = getCharNoWait();
-	  cout << "char:[" << (int)c << "]" << endl;
-	  cout << "char:[" << c << "]" << endl;
+	  //cout << "char:[" << (int)c << "]" << endl;
+	  //cout << "char:[" << c << "]" << endl;
 	  if((c=='n') || (c=='N') || (c==((int)(3))))   // ASCII 03 is control-c
 	    exit(1);
 	  if((c=='Y') || (c=='y') || (c==((int)(10))))  // ASCII 10 is ENTER
 	    answered = true;
+	  else if(m_impatient)
+	    exit(1);
 	}
       }
     }

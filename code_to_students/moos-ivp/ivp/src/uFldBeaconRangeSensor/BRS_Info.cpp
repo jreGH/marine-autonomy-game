@@ -70,6 +70,8 @@ void showHelpAndExit()
   blk("      Display release version of uFldBeaconRangeSensor.   ");
   mag("  --verbose","=<setting>                                  ");
   blk("      Set verbosity. true or false (default)              ");
+  mag("  --web,-w                                                ");
+  blk("      Open browser to: https://oceanai.mit.edu/apps/uFldBeaconRangeSensor ");
   blk("                                                          ");
   blk("Note: If argv[2] does not otherwise match a known option, ");
   blk("      then it will be interpreted as a run alias. This is ");
@@ -119,6 +121,8 @@ void showExampleConfigAndExit()
   blk("                                                                ");
   blk("  // Configuring Artificial Noise                               ");
   blk("  rn_algorithm  =  uniform,pct=0  "," // pct may be in [0,1]    ");
+  blk("                                                                ");
+  blk("  app_logging = true  // {true or file} By default disabled     ");
   blk("}                                                               ");
   blk("                                                                ");
   exit(0);

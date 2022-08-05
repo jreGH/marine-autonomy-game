@@ -26,6 +26,7 @@
 #ifndef XY_GEOM_UTILS_HEADER
 #define XY_GEOM_UTILS_HEADER
 
+#include <vector>
 #include "XYPoint.h"
 #include "XYPolygon.h"
 
@@ -62,6 +63,11 @@ bool   lineRayCross(double rx, double ry, double ray_angle,
 		    double x1, double y1, double x2, double y2,
 		    double &ix, double& iy);
 
+// Determine whether and where a given ray and segment intersect
+bool   lineSegCross(double sx1, double sy1, double sx2, double sy2,
+		    double lx3, double ly3, double lx4, double ly4,
+		    double &ix1, double& iy1, double& ix2, double& iy2);
+
 // Determine if two line segments intersect
 bool   segmentsCross(double x1, double y1, double x2, double y2,
 		     double x3, double y3, double x4, double y4);
@@ -86,13 +92,19 @@ void   perpLineIntPt(double x1, double y1, double x2, double y2,
 void    projectPoint(double ANGLE, double DIST, double cx, 
 		     double cy,    double& rx,  double &ry);
 XYPoint projectPoint(double ANGLE, double DIST, double cx, double cy);
+XYPoint projectPoint(double ANGLE, double DIST, XYPoint pt);
 
+XYPoint midPoint(const XYPoint& pt1, const XYPoint& pt2);
 
 void   addVectors(double deg1, double mag1, double deg2, double mag2,
 		  double& rdeg, double& rmag); 
 
 bool   bearingMinMaxToPoly(double x, double y, const XYPolygon& poly,
 			   double& bmin, double& bmax);
+
+bool   bearingMinMaxToPolyX(double x, double y, const XYPolygon& poly,
+			    double& bmin, double& bmax,
+			    double& bmin_dist, double& bmax_dist);
 
 double distCircleToLine(double cx, double cy, double radius,
 			double px1, double py1, double px2, double py2);
@@ -140,14 +152,27 @@ double distPointToLine(double px, double py, double x1, double y1,
 
 double distPointToSegl(double px, double py, const XYSegList& segl);
 
+// Below is new after 19.8.1
 
+double polyRayCPA(double rx, double ry, double ray_angle,
+		  const XYPolygon& poly, double& ix, double& iy);
+
+bool randPointOnPoly(double vx, double vy, const XYPolygon&,
+		     double& ix, double& iy);
+
+double polyWidth(XYPolygon, double angle=0);
+double polyHeight(XYPolygon, double angle=0);
+
+void shiftVertices(std::vector<double>& vx, std::vector<double>& vy); 
+
+double polyAspectRatio(XYPolygon);
 
 // DEPRECATED INTERFACES
 double distToPoint(double x1, double y1, double x2, double y2);
 
 double distToSegment(double x1, double y1, double x2, 
 		     double y2, double px, double py);
-  
+
 #endif
 
 

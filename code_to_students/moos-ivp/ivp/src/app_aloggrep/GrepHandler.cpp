@@ -27,11 +27,11 @@
 #include <cmath>
 #include "MBUtils.h"
 #include "GrepHandler.h"
+#include "ALogSorter.h"
 #include "LogUtils.h"
 #include "TermUtils.h"
 
 using namespace std;
-
 
 //--------------------------------------------------------
 // Constructor
@@ -47,62 +47,107 @@ GrepHandler::GrepHandler()
   m_chars_retained = 0;
 
   m_comments_retained = true;
-  m_var_condition_met = true;
   m_file_overwrite = false;
-  m_gaplines_retained = true;
-  m_appcast_retained = true;
+  m_appcast_retained = false;
+
+  m_final_only   = false;
+
+  m_format_vals  = false;
+  m_format_vars  = false;
+  m_format_time  = false;
+  m_make_report  = true;
+  
+  m_cache_size   = 1000;
+
+  m_sort_entries  = false;
+  m_rm_duplicates = false;
   
   // A "bad" line is a line that is not a comment, and does not begin
   // with a timestamp. As found in entries with CRLF's like DB_VARSUMMARY
   m_badlines_retained = false;
 
   // A "gapline" is a line that ends in _GAP or _LEN
-  m_gaplines_retained = true;
+  m_gaplines_retained = false;
+
+  m_re_sorts = 0;
+  m_colsep = ' ';
 }
 
 //--------------------------------------------------------
-// Procedure: handle
+// Procedure: setALogFile()
 
-bool GrepHandler::handle(string alogfile, string new_alogfile)
+bool GrepHandler::setALogFile(string alogfile)
 {
-  if(alogfile == new_alogfile) {
-    cout << "Input and output .alog files cannot be the same. " << endl;
-    cout << "Exiting now." << endl;
+  // =====================================================
+  // Part 1: Sanity Checks
+  if(alogfile == "")
     return(false);
-  }
-
-  if(strContains(new_alogfile, "vname")) {
-    string vname_discovered = quickPassGetVName(alogfile);
-    if(vname_discovered != "")
-      new_alogfile = findReplace(new_alogfile, "vname", vname_discovered);
-  }
-
-
-  m_file_in = fopen(alogfile.c_str(), "r");
-  if(!m_file_in) {
-    cout << "input not found or unable to open - exiting" << endl;
+  if(m_file_in && m_file_out) {
+    cout << "input and output alog files already specified" << endl;
     return(false);
   }
   
-  if(new_alogfile != "") {
-    m_file_out = fopen(new_alogfile.c_str(), "r");
-    if(m_file_out && !m_file_overwrite) {
-      bool done = false;
-      while(!done) {
-	cout << new_alogfile << " already exists. Replace? (y/n [n])" << endl;
-	char answer = getCharNoWait();
-	if((answer != 'y') && (answer != 'Y')){
-	  cout << "Aborted: The file " << new_alogfile;
-	  cout << " will not be overwritten." << endl;
-	  return(false);
-	}
-	if(answer == 'y')
-	  done = true;
-      }
+  
+  // =====================================================
+  // Part 2: If no input file yet, treat this as input file
+  if(!m_file_in) {
+    m_file_in = fopen(alogfile.c_str(), "r");
+    if(!m_file_in) {
+      cout << "Unable to open file for reading: " << alogfile << endl;
+      return(false);
     }
-    m_file_out = fopen(new_alogfile.c_str(), "w");
+    m_filename_in = alogfile;
+    return(true);
   }
 
+  // =====================================================
+  // Part 3: If input file has already been set, treat as output
+  if(alogfile == m_filename_in) {
+    cout << "Input and output .alog files cannot be the same. " << endl;
+    return(false);
+  }
+  
+  if(strContains(alogfile, "vname")) {
+    string vname_discovered = quickPassGetVName(m_filename_in);
+    cout << "vname_discovered:[" << vname_discovered << "]" << endl;
+    if(vname_discovered != "")
+      alogfile = findReplace(alogfile, "vname", vname_discovered);
+  }
+
+  m_file_out = fopen(alogfile.c_str(), "r");
+  if(m_file_out && !m_file_overwrite) {
+    bool done = false;
+    while(!done) {
+      cout << alogfile << " already exists. Replace? (y/n [n])" << endl;
+      char answer = getCharNoWait();
+      if((answer != 'y') && (answer != 'Y')){
+	cout << "Aborted: The file " << alogfile;
+	cout << " will not be overwritten." << endl;
+	return(false);
+      }
+      if(answer == 'y')
+	done = true;
+    }
+  }
+  m_file_out = fopen(alogfile.c_str(), "w");    
+  if(!m_file_out) {
+    cout << "unable to open " << alogfile << " for writing" << endl;
+    return(false);
+  }
+  return(true);  
+}
+
+//--------------------------------------------------------
+// Procedure: handle()
+
+bool GrepHandler::handle()
+{
+  if(!m_file_in) {
+    cout << "No input alog file given - exiting" << endl;    
+    return(false);
+  }
+
+  
   // If DB_VARSUMMARY is explicitly on the variable grep list, then
   // retain all its bad lines (lines not starting with a timestamp)
   for(unsigned int i=0; i<m_keys.size(); i++) {
@@ -110,88 +155,108 @@ bool GrepHandler::handle(string alogfile, string new_alogfile)
       m_badlines_retained = true;
   }
   
-  bool done = false;
-  while(!done) {
-    string line_raw = getNextRawLine(m_file_in);
+  // ==========================================================
+  // Phase 2: Handle the lines
+  // ==========================================================
+  ALogSorter sorter;
+  sorter.checkForDuplicates(m_rm_duplicates);
+  
+  bool done_reading_raw    = false;
+  bool done_reading_sorted = false;
+  while(!done_reading_sorted) {
+
+    if(!done_reading_raw) {
+      string line_raw = getNextRawLine(m_file_in);
     
-    // Part 1: Check if the line is a comment and handle or ignore
-    if((line_raw.length() > 0) && (line_raw.at(0) == '%')) {
-      if(m_comments_retained)
-	outputLine(line_raw);
-      continue;
-    }
+      // Part 1: Check for end of file
+      if(line_raw == "eof") 
+	done_reading_raw = true;
+      else { 
+	if(!checkRetain(line_raw))
+	  ignoreLine(line_raw);
+	else {
+	  if(!m_sort_entries) 
+	    outputLine(line_raw);
+	  else {
+	    string stime = getTimeStamp(line_raw);
+	    double dtime = atof(stime.c_str());
+	    
+	    ALogEntry entry; 
+	    entry.setTimeStamp(dtime);
+	    entry.setRawLine(line_raw);
+	    
+	    bool re_sort_noted = sorter.addEntry(entry);
+	    if(re_sort_noted) 
+	      m_re_sorts++;
 
-    // Part 2: Check for end of file
-    if(line_raw == "eof") 
-      break;
-
-    // Part 3: Handle lines that do not begin with a number (comment
-    // lines are already handled above)
-    if(!isNumber(line_raw.substr(0,1))) {
-      if(m_badlines_retained)
-	outputLine(line_raw);
-      else
-	ignoreLine(line_raw);
-      continue;
-    }
-
-    // Part 4: If there is a condition, see if it has been met
-    string varname = getVarName(line_raw);
-    if((m_var_condition != "") && (varname == m_var_condition)) {
-      string varval = getDataEntry(line_raw);
-      if(tolower(varval) == "true")
-	m_var_condition_met = true;
-      else
-	m_var_condition_met = false;
-    }
-
-    if(!m_var_condition_met) {
-      ignoreLine(line_raw, varname);
-      continue;
-    }
-      
-    if(!m_gaplines_retained) {
-      if(strEnds(varname, "_LEN") || strEnds(varname, "_GAP")) {
-	ignoreLine(line_raw, varname);
-	continue;
+	  }
+	}
       }
     }
 
-    if((!m_appcast_retained) && (varname == "APPCAST")) {
-      ignoreLine(line_raw, varname);
-      continue;
+    // Part 2: pull back the sorted line from the sorter, if any left
+    if((sorter.size() > m_cache_size) || done_reading_raw) {
+      if(sorter.size() == 0) 
+	done_reading_sorted = true;
+      else {
+	ALogEntry entry = sorter.popEntry();
+	string line_raw = entry.getRawLine();
+	outputLine(line_raw);
+      }
     }
-
-    // Part 5: Check if this line matches a named var or src
-    string srcname = getSourceNameNoAux(line_raw);
-
-    bool match = false;
-
-    for(unsigned int i=0; ((i<m_keys.size()) && !match); i++) {
-      if((varname == m_keys[i]) || (srcname == m_keys[i]))
-	match = true;
-      else if(m_pmatch[i] && (strContains(varname, m_keys[i]) ||
-			      strContains(srcname, m_keys[i])))
-	match = true;
-    }
-
-    // Part 6: Depending whether a match was made, output or ignore the line
-    if(match) 
-      outputLine(line_raw, varname);
-    else
-      ignoreLine(line_raw, varname);
-
   }
 
+  // ==========================================================
+  // Phase 3: Handle last line only case
+  // ==========================================================
+  if(m_final_only)
+    outputLine(m_final_line, true);
+
+  
   if(m_file_out)
     fclose(m_file_out);
-  m_file_out = 0;
-
   if(m_file_in)
     fclose(m_file_in);
-  m_file_in = 0;
-
+  
   return(true);
+}
+
+//--------------------------------------------------------
+// Procedure: checkRetain()
+
+bool GrepHandler::checkRetain(string& line_raw)
+{
+  // Check if the line is a comment and handle or ignore
+  if((line_raw.length() > 0) && (line_raw.at(0) == '%'))
+    return(m_comments_retained);
+
+  // Handle lines that do not begin with a number (comment
+  // lines are already handled above)
+  if(!isNumber(line_raw.substr(0,1)))
+    return(m_badlines_retained);
+      
+  string varname = getVarName(line_raw);
+      
+  if(!m_gaplines_retained) {
+    if(strEnds(varname, "_LEN") || strEnds(varname, "_GAP"))
+      return(false);
+  }
+      
+  if((!m_appcast_retained) && (varname == "APPCAST"))
+    return(false);
+  
+  // Part 5: Check if this line matches a named var or src
+  string srcname = getSourceNameNoAux(line_raw);
+
+  for(unsigned int i=0; i<m_keys.size(); i++) {
+    if((varname == m_keys[i]) || (srcname == m_keys[i]))
+      return(true);
+    else if(m_pmatch[i] && (strContains(varname, m_keys[i]) ||
+			    strContains(srcname, m_keys[i])))
+      return(true);
+  }
+  
+  return(false);
 }
 
 //--------------------------------------------------------
@@ -233,8 +298,16 @@ string GrepHandler::quickPassGetVName(string alogfile)
 }
 
 //--------------------------------------------------------
-// Procedure: addKey
-//     Notes: 
+// Procedure: setColSep()
+
+void GrepHandler::setColSep(char c)
+{
+  if((c == ',') || (c == ':') || (c == ';') || (c == ' '))
+    m_colsep = c;  
+}
+
+//--------------------------------------------------------
+// Procedure: addKey()
 
 void GrepHandler::addKey(string key)
 {
@@ -266,72 +339,122 @@ void GrepHandler::addKey(string key)
 
 
 //--------------------------------------------------------
-// Procedure: getMatchedKeys()
-//     Notes: 
+// Procedure: setFormat()
+//    Format: part:part:part
+//  Examples: time:val
+//            val
+//            time:var:val
+//      Note: Ok components: var,val,time
 
-vector<string> GrepHandler::getMatchedKeys()
+bool GrepHandler::setFormat(string str)
 {
-  vector<string> rvector;
-
-  unsigned int i, vsize = m_keys.size();
-  for(i=0; i<vsize; i++) {
-    if(m_pmatch[i])
-      rvector.push_back(m_keys[i]);
+  if(str == "")
+    return(false);
+  
+  vector<string> svector = parseString(str, ':');
+  for(unsigned int i=0; i<svector.size(); i++) {
+    string part = tolower(svector[i]);
+    if(part == "var")
+      m_format_vars = true;
+    else if(part == "time")
+      m_format_time = true;
+    else if(part != "val")
+      return(false);
   }
-  return(rvector);
-}
-
-
-//--------------------------------------------------------
-// Procedure: getUnMatchedKeys()
-//     Notes: 
-
-vector<string> GrepHandler::getUnMatchedKeys()
-{
-  vector<string> rvector;
-
-  unsigned int i, vsize = m_keys.size();
-  for(i=0; i<vsize; i++) {
-    if(!m_pmatch[i])
-      rvector.push_back(m_keys[i]);
-  }
-  return(rvector);
+  
+  m_format_vals = true;
+  m_comments_retained = false;
+  return(true);
 }
 
 //--------------------------------------------------------
 // Procedure: outputLine()
 
-void GrepHandler::outputLine(const string& line, const string& var)
+void GrepHandler::outputLine(const string& line, bool last)
 {
+  if(line == "")
+    return;
+  
+  if(!last && m_final_only) {
+    m_final_line = line;
+    return;
+  }
+  
+  // First handle if just output value field
+  if(m_format_vals) {
+    string line_val = stripBlankEnds(getDataEntry(line));
+    string tstamp = getTimeStamp(line);
+    if(tstamp == m_last_tstamp)
+      return;
+
+    if(m_subpat != "") {
+      string line_val_low = tolower(line_val);
+      if(strContains(line_val_low, m_subpat)) {
+	string val = tokStringParse(line_val_low, m_subpat, ',', '=');
+	if(val != "")
+	  line_val = val;
+      }
+    }
+    
+    if(m_format_vars) {
+      string line_var = stripBlankEnds(getVarName(line));	
+      line_val = line_var + m_colsep + line_val;
+    }
+
+    if(m_format_time)
+      line_val = tstamp + m_colsep + line_val;
+      
+    if(m_file_out)
+      fprintf(m_file_out, "%s\n", line_val.c_str());
+    else
+      cout << line_val << endl;
+    m_last_tstamp = tstamp;
+    return;
+  }
+
+  string varname = getVarName(line);
+  
   if(m_file_out)
     fprintf(m_file_out, "%s\n", line.c_str());
   else
     cout << line << endl;
 
+  // If line is a comment, don't include in statistics
+  if(strBegins(line, "%%"))
+     return;
+     
   m_lines_retained++;
   m_chars_retained += line.length();
-  if(var.length() > 0)
-    m_vars_retained.insert(var);
+  if(varname.length() > 0)
+    m_vars_retained.insert(varname);
 }
 
 //--------------------------------------------------------
 // Procedure: ignoreLine()
 
-void GrepHandler::ignoreLine(const string& line, const string& var)
+void GrepHandler::ignoreLine(const string& line)
 {
   m_lines_removed++;
   m_chars_removed += line.length();
-  if(var.length() > 0)
-    m_vars_removed.insert(var);
 }
 
 
 //--------------------------------------------------------
-// Procedure: printReport
-//     Notes: 
+// Procedure: printReport()
 
 void GrepHandler::printReport()
 {
+  // If explicitly asked not to make the report, then dont
+  if(!m_make_report)
+    return;
+
+  // Don't print the report if in column-data mode
+  if(m_format_vals)
+    return;
+
+  if(m_sort_entries) 
+    cout << "  Total re-sorts: " << uintToString(m_re_sorts) << endl;
+  
   double total_lines = m_lines_retained + m_lines_removed;
   double total_chars = m_chars_retained + m_chars_removed;
 

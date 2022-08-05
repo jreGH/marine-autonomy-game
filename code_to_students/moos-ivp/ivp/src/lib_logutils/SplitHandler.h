@@ -39,17 +39,19 @@ class SplitHandler
   bool handlePreCheckALogFile();
   void setVerbose(bool v)          {m_verbose=v;}
   void setDirectory(std::string s) {m_given_dir=s;}
-  
+  void setMaxFilePtrCache(unsigned int);
+
  protected:
   bool handlePreCheckSplitDir();
   bool handleMakeSplitFiles();
   bool handleMakeSplitSummary();
   
  protected: // Config variables
-  std::string m_alog_file;
-  std::string m_given_dir;
-  bool        m_verbose;
-
+  std::string  m_alog_file;
+  std::string  m_given_dir;
+  bool         m_verbose;
+  unsigned int m_max_cache;
+  
  protected: // State variables
   std::string m_basedir;
   std::string m_logstart;
@@ -63,7 +65,8 @@ class SplitHandler
   bool m_alog_file_confirmed;
 
   bool m_split_dir_prior;
-
+  bool m_max_cache_exceeded;
+  
   std::string m_curr_helm_iter;
 
   // Each map key is a MOOS variable name
@@ -73,11 +76,8 @@ class SplitHandler
 
   // Keep track of all unique bhv names for summary file
   std::set<std::string> m_bhv_names;
+  // Keep track of all unique apps with applogging for summary file
+  std::set<std::string> m_applogging_app_names;
 };
 
 #endif
-
-
-
-
-

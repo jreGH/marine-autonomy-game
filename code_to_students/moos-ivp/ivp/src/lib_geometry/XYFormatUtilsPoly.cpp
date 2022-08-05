@@ -137,7 +137,7 @@ XYPolygon stringStandard2Poly(string str)
     
     if(left == "pts") {
       string pstr = biteStringX(rest, '}');
-      
+
       // Empty set of points is an error
       if(pstr == "")
 	return(null_poly);
@@ -166,7 +166,7 @@ XYPolygon stringStandard2Poly(string str)
 	string pstr = biteStringX(vertex, ',');
 	  
 	string property;
-	  
+	
 	if(!isNumber(xstr) || !isNumber(ystr))
 	  return(null_poly);
 	double xval = atof(xstr.c_str());
@@ -195,8 +195,16 @@ XYPolygon stringStandard2Poly(string str)
 	
   if(new_poly.is_convex())
     return(new_poly);
-  else
-    return(null_poly);
+
+  // Mod by mikerb Jan 26,2020 Support for deactivation poly strings
+  // such as "label=foobar,active=false". This lightens the burden
+  // for apps that simply want to erase a polygon without having to
+  // provide any points.
+  if(new_poly.active() == false) {
+    null_poly.set_label(new_poly.get_label());
+    null_poly.set_active(false);
+  }
+  return(null_poly);
 }
 
 //---------------------------------------------------------------

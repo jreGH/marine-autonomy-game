@@ -2,7 +2,7 @@
 /*    NAME: Michael Benjamin                                     */
 /*    ORGN: Dept of Mechanical Eng / CSAIL, MIT Cambridge MA     */
 /*    FILE: CollisionDetector_Info.cpp                           */
-/*    DATE: Dec 29th 1963                                        */
+/*    DATE: Dec 21st 2015                                        */
 /*                                                               */
 /* This file is part of MOOS-IvP                                 */
 /*                                                               */
@@ -77,6 +77,8 @@ void showHelpAndExit()
   blk("      Display MOOS publications and subscriptions.              ");
   mag("  --version,-v                                                  ");
   blk("      Display the release version of uCollisionDetector.        ");
+  mag("  --web,-w                                                      ");
+  blk("      Open browser to: https://oceanai.mit.edu/apps/uFldCollisionDetect ");
   blk("                                                                ");
   blk("Note: If argv[2] does not otherwise match a known option,       ");
   blk("      then it will be interpreted as a run alias. This is       ");
@@ -105,13 +107,22 @@ void showExampleConfigAndExit()
   blk("  collision_flag = COLLISION = $CPA                             ");
   blk("  near_miss_flag = NEAR_MISS = vname1=$V1,vname2=$V2,cpa=$CPA   ");
   blk("                                                                ");
-  blk("  encounter_range = 10        // (the default) in meters        ");
-  blk("  near_miss_range = 6         // (the default) in meters        ");
-  blk("  collision_range = 3         // (the default) in meters        ");
+  blk("  encounter_range = 10         // (the default) in meters       ");
+  blk("  near_miss_range = 6          // (the default) in meters       ");
+  blk("  collision_range = 3          // (the default) in meters       ");
   blk("                                                                ");
-  blk("  pulse_render   = true       // (the default)                  ");
-  blk("  pulse_range    = 20         // (the default) in meters        ");  
-  blk("  pulse_duration = 10         // (the default) in seconds       ");  
+  blk("  ignore_group = alpha                                          ");
+  blk("  reject_group = bravo                                          ");
+  blk("                                                                ");
+  blk("  post_closest_range = true     // default is false             ");
+  blk("                                                                ");
+  blk("  pulse_render   = true         // default true                 ");
+  blk("  pulse_range    = 20           // default is 20 meters         ");  
+  blk("  pulse_duration = 10           // default is 10 seconds        ");  
+  blk("                                                                ");
+  blk("  report_all_encounters = true  // default is false             ");
+  blk("                                                                ");
+  blk("  app_logging = true  // {true or file} By default disabled     ");
   blk("}                                                               ");  
 
 exit(0);
@@ -153,6 +164,8 @@ void showInterfaceAndExit()
   blk("                     time=65286252381.7,edge_size=1             ");
   blk("                                                                ");
   blk("  ENCOUNTER_TOTAL  = 193                                        ");
+  blk("  NEAR_MISS_TOTAL  =   8                                        ");
+  blk("  COLLISION_TOTAL  =   0                                        ");
   blk("                                                                ");
   blk("  COLLISION_DETECT_PARAMS = collision_range=4,near_miss_range=8,");
   blk("                            encounter_range=20                  ");

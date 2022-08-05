@@ -56,11 +56,19 @@ PokeDB::PokeDB()
 PokeDB::PokeDB(string g_server_host, long int g_server_port)
 {
   m_db_start_time = 0; 
+  m_db_time       = 0;
   m_iteration     = 0; 
   m_sServerHost   = g_server_host; 
   m_lServerPort   = g_server_port;
 
   m_configure_comms_locally = false;
+
+  m_time_warp_set = false;
+  m_priors_reported = false;
+  m_values_poked  = false;
+  m_poked_reported = false;
+
+  m_poke_iteration = 0;
 }
 
 //------------------------------------------------------------
@@ -171,7 +179,6 @@ bool PokeDB::Iterate()
     }
     m_values_poked = true;
     m_poke_iteration = m_iteration;
-    printf("\n\nAFTER Poking the MOOSDB \n");
     return(true);
   }
   
@@ -360,13 +367,13 @@ void PokeDB::updateVariable(CMOOSMsg &msg)
 
 void PokeDB::printReport()
 {
-  printf("  %-22s", "VarName");
+  printf("  %-24s", "VarName");
   
   printf("%-12s", "(S)ource");
   printf("%-12s", "(T)ime");
   printf("VarValue\n");
   
-  printf("  %-22s", "----------------");
+  printf("  %-24s", "----------------");
   printf("%-12s", "----------");
   printf("%-12s", "----------");
   printf(" -------------\n");
@@ -381,7 +388,7 @@ void PokeDB::printReport()
       wrtime_sval = doubleToString(wrtime_dval,2);
     }
 
-    printf("  %-22s ", m_varname[i].c_str());
+    printf("  %-24s ", m_varname[i].c_str());
     printf("%-12s",    m_source_read[i].c_str());
     printf("%-12s",    wrtime_sval.c_str());
     if(m_valtype_read[i] == "string") {

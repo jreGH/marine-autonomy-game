@@ -39,6 +39,9 @@ class NavPlotViewer : public MarineViewer
   void   draw();
   bool   setParam(std::string p, std::string v);
   bool   setParam(std::string p, double v);  
+  void   modColorScheme() {};
+
+  void   setVerbose(bool v) {m_verbose=v;}
   void   setMinimalMem();
   void   setDataBroker(ALogDataBroker dbroker);
 
@@ -81,7 +84,8 @@ private:
   double      m_curr_time;
   bool        m_step_by_secs;
   bool        m_draw_geo;
-
+  bool        m_verbose;
+  
   // Bounding box of all vehicle positions and timestamps
   double      m_min_xpos;
   double      m_min_ypos;

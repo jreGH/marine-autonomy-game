@@ -113,7 +113,7 @@ void LogPlotViewer::draw()
 #else
   glViewport(0, 0, w(), h());
 #endif
-
+  
   drawLogPlot();
   drawTimeText();
   drawMinMaxVarText();
@@ -146,6 +146,7 @@ void LogPlotViewer::setLeftPlot(unsigned int mix)
   cout << "================================================" << endl;
   
   cout << "LogPlotViewer::setLeftPlot() m_left_mix: " << m_left_mix << endl;
+  cout << "   max_time: " << m_logplot1.getMaxTime() << endl;
   // Check if mix represents a change and a viable change
   if((mix == m_left_mix) || (mix >= m_dbroker.sizeMix()))
     return;
@@ -175,6 +176,7 @@ void LogPlotViewer::setLeftPlot(unsigned int mix)
     
   m_left_mix = mix;
   m_valid_cache = false;
+  cout << "   max_time: " << m_logplot1.getMaxTime() << endl;
 
   cout << "LogPlotViewer::setLeftPlot() new m_left_mix: " << m_left_mix << endl;
   if(!m_zoomed_in)
@@ -186,6 +188,12 @@ void LogPlotViewer::setLeftPlot(unsigned int mix)
 
 void LogPlotViewer::setRightPlot(unsigned int mix)
 {
+  cout << "================================================" << endl;
+  cout << "LogPlotViewer::setRightPlot() mix: " << mix << endl;
+  cout << "================================================" << endl;
+  
+  cout << "LogPlotViewer::setRightPlot() m_right_mix: " << m_right_mix << endl;
+
   // Check if mix represents a change and a viable change
   if((mix == m_right_mix) || (mix >= m_dbroker.sizeMix()))
     return;
@@ -214,6 +222,7 @@ void LogPlotViewer::setRightPlot(unsigned int mix)
   
   m_right_mix = mix;
   m_valid_cache = false;
+  cout << "   max_time: " << m_logplot2.getMaxTime() << endl;
 
   if(!m_zoomed_in)
     adjustTimeBounds();

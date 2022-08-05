@@ -42,6 +42,8 @@ public:
   void           onRunToIdleState();
   void           onSetParamComplete();
   void           onCompleteState() {postErasables();}
+  void           postConfigStatus();
+  std::string    expandMacros(std::string);
 
 protected:
   bool         updateInfoIn();
@@ -58,7 +60,8 @@ protected:
   void         handleVisualHint(std::string);
   void         updateOdoDistance();
   void         markOdoLeg();
-
+  std::string  getReverseStr() const;
+  
 protected: 
   WaypointEngine m_waypoint_engine;
 
@@ -70,6 +73,8 @@ protected: // configuration parameters
   double      m_lead_distance;
   double      m_lead_damper;
   bool        m_lead_allowed;
+  bool        m_wpt_flag_on_start;
+  bool        m_eager_prev_index_flag;
   std::string m_efficiency_measure;
   std::string m_ipf_type;
 
@@ -97,12 +102,9 @@ protected: // configuration parameters
   double      m_hint_vertex_size;
   double      m_hint_edge_size;
   double      m_hint_nextpt_vertex_size;
+  bool        m_hint_active;
 
 protected: // intermediate or object global variables.
-  double    m_osh;  // Ownship heading
-  double    m_osv;  // Ownship velocity
-  double    m_osx;  // Ownship x position
-  double    m_osy;  // Ownship y position
   
   // Time/Distance efficiency state information
   bool      m_odo_set_flag;
@@ -112,6 +114,8 @@ protected: // intermediate or object global variables.
   double    m_odo_sety;
   bool      m_odo_virgin;
 
+  bool      m_wpt_flag_published;
+  
   double    m_dist_leg_odo;
 
   double    m_dist_total_odo;
@@ -129,6 +133,8 @@ protected: // intermediate or object global variables.
   XYPoint   m_trackpt;
   XYPoint   m_markpt;
 
+  bool      m_waypt_hit;
+  
   XYPoint   m_prevpt;
 
   bool      m_greedy_tour_pending;

@@ -25,10 +25,11 @@
 #define MARINE_PID_HEADER
 
 #include <string>
+#include "MOOS/libMOOS/Thirdparty/AppCasting/AppCastingMOOSApp.h"
 #include "MOOS/libMOOS/MOOSLib.h"
 #include "PIDEngine.h"
 
-class MarinePID : public CMOOSApp
+class MarinePID : public AppCastingMOOSApp
 {
 public:
   MarinePID();
@@ -45,9 +46,11 @@ public:
   bool handleSpeedSettings();
   bool handleDepthSettings();
 
+  bool  buildReport();
+  
 protected:
   bool     m_has_control;
-  bool     m_allow_overide;
+  bool     m_allow_override;
   bool     m_allstop_posted;
   double   m_speed_factor;
 
@@ -74,7 +77,6 @@ protected:
   PIDEngine    m_pengine;
   std::string  m_verbose;
 
-  int     m_iteration;
   double  m_start_time;
   bool    m_depth_control;
   bool    m_paused;
@@ -92,6 +94,17 @@ protected:
   bool    m_max_sat_dep_debug;
 
   bool    m_ignore_nav_yaw;
+
+  // Added May 2022 to reset integral when crossing desired command
+  // and/or when desired command changes.
+  bool    m_reset_hdg_i_zero_error;
+  bool    m_reset_spd_i_zero_error;
+  bool    m_reset_dep_i_zero_error;
+  bool    m_reset_pch_i_zero_error;
+  bool    m_reset_hdg_i_new_desired;
+  bool    m_reset_spd_i_new_desired;
+  bool    m_reset_dep_i_new_desired;
+  bool    m_reset_pch_i_new_desired;
 };
 #endif 
 

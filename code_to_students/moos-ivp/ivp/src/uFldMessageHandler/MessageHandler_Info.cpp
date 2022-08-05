@@ -3,6 +3,7 @@
 /*    ORGN: Dept of Mechanical Eng / CSAIL, MIT Cambridge MA     */
 /*    FILE: MessageHandler_Info.cpp                              */
 /*    DATE: Jan 30th 2012                                        */
+/*    DATE: Mar 30th 2022 Added msg_flag, bad_msg_flag feature   */
 /*                                                               */
 /* This file is part of MOOS-IvP                                 */
 /*                                                               */
@@ -20,6 +21,7 @@
 /* License along with MOOS-IvP.  If not, see                     */
 /* <http://www.gnu.org/licenses/>.                               */
 /*****************************************************************/
+
 #include <cstdlib>
 #include <iostream>
 #include "MessageHandler_Info.h"
@@ -66,6 +68,9 @@ void showHelpAndExit()
   blk("      Display MOOS publications and subscriptions.              ");
   mag("  --version,-v                                                  ");
   blk("      Display the release version of uFldMessageHandler.        ");
+  mag("  --web,-w                                                      ");
+  blk("      Open browser to:                                          ");
+  blk("      https://oceanai.mit.edu/ivpman/apps/uFldMessageHandler    ");
   blk("                                                                ");
   blk("Note: If argv[2] does not otherwise match a known option,       ");
   blk("      then it will be interpreted as a run alias. This is       ");
@@ -79,7 +84,6 @@ void showHelpAndExit()
 
 void showExampleConfigAndExit()
 {
-  blk("                                                                ");
   blu("=============================================================== ");
   blu("uFldMessageHandler Example MOOS Configuration                   ");
   blu("=============================================================== ");
@@ -92,8 +96,14 @@ void showExampleConfigAndExit()
   blk("  strict_addressing = false  // default                         ");
   blk("  appcast_trunc_msg = 75     // default: the number of chars per");
   blk("                             // line in the appcasting output   ");
-  blk("}                                                               ");
   blk("                                                                ");
+  blk("  msg_flag     = RETURN=true                                    ");
+  blk("  bad_msg_flag = TOTAL_BAD=$[BAD_CTR]                           ");
+  blk("                                                                ");
+  blk("  aux_info = node+app  // {node or node+app} Default is node    ");
+  blk("                                                                ");
+  blk("  app_logging  = true  // {true or file} By default disabled    ");
+  blk("}                                                               ");
   exit(0);
 }
 
@@ -120,7 +130,10 @@ void showInterfaceAndExit()
   blk("  UMH_SUMMARY_MSGS = total=23,valid=18,rejected=5               ");
   blk("                                                                ");
   blk("                                                                ");
-  blk("  Publications are determined by the node message content.      ");
+  blk("  Publications are determined:                                  ");
+  blk("  (a) node message content                                      ");
+  blk("  (b) msg_flag content                                          ");
+  blk("  (c) bad_msg_flag content                                      ");
   blk("                                                                ");
   exit(0);
 }

@@ -8,6 +8,8 @@ SET(SRC
   BHV_Attractor.cpp
   BHV_AvoidCollision.cpp
   BHV_AvoidObstacle.cpp
+  BHV_AvoidObstacleX.cpp
+  BHV_AvoidObstacleV21.cpp
   BHV_ConstantDepth.cpp
   BHV_ConstantHeading.cpp
   BHV_MaxDepth.cpp
@@ -44,8 +46,9 @@ SET(HEADERS
   BHV_AbortToPoint.h
   BHV_Attractor.h
   BHV_AvoidCollision.h
-  BHV_AvoidObstacles.h
   BHV_AvoidObstacle.h
+  BHV_AvoidObstacleX.h
+  BHV_AvoidObstacleV21.h
   BHV_ConstantDepth.h
   BHV_ConstantHeading.h
   BHV_ConstantSpeed.h

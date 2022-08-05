@@ -69,6 +69,8 @@ void showHelpAndExit()
   blk("      Display the release version of pHelmIvP.                  ");
   mag("  --verbose=<setting>                                           ");
   blk("      May be \"VERBOSE\", \"terse\", or \"quiet\".              ");
+  mag("  --web,-w                                                      ");
+  blk("      Open browser to: https://oceanai.mit.edu/apps/pHelmIvP    ");
   blk("                                                                ");
   blk("Behavior files:                                                 ");
   blk("      One or more filenames to get IvP Helm config parameters.  ");
@@ -119,11 +121,16 @@ void showExampleConfigAndExit()
   blk("  // Configure the verbosity of terminal output.                ");
   blk("  verbose              = terse  "," // or {true,false,quiet}    ");
   blk("                                                                ");
+  blk("  // Insist that at least one non-constraint behavior be active ");
+  blk("  goals_mandatory      = true  "," // or {true,FALSE}           ");
+  blk("                                                                ");
   blk("  // Allow unfound bhv directories to not be a problem.         ");
   blk("  bhv_dir_not_found_ok = true "," // or {true,FALSE}            ");
   blk("                                                                ");
   blk("  // Name apps to wait on before posting onHelmStart messages.  ");
   blk("  hold_on_apps = pBasicContactMgr, pTaskManager                 ");
+  blk("                                                                ");
+  blk("  app_logging = true  // {true or file} By default disabled     ");
   blk("}                                                               ");
   blk("                                                                ");
   exit(0);
@@ -153,6 +160,8 @@ void showInterfaceAndExit()
   blk("  RESTART_HELM                                                  ");
   blk("  IVPHELM_VERBOSE                                               ");
   blk("  IVPHELM_REJOURNAL                                             ");
+  blk("  APPCAST_REQ  = node=all,app=uFldCollObDetect,duration=3.0     ");
+  blk("                 key=pMarineViewer:alphaapp,thresh=run_warning  ");
   blk("                                                                ");
   blk("PUBLICATIONS:                                                   ");
   blk("------------------------------------                            ");

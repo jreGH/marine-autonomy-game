@@ -29,7 +29,6 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "InfoBuffer.h"
 
 class InfoBuffer {
 public:
@@ -62,6 +61,10 @@ public:
   double getCurrTime() const           {return(m_curr_time_utc);}
   double getLocalTime() const          {return(m_curr_time_utc-m_start_time);}
 
+  std::vector<std::string> getReport(bool verbose=false) const;
+  std::vector<std::string> getReport(std::vector<std::string>,
+				     bool verbose=false) const;
+  
 protected:
   std::map<std::string, std::string> smap;
   std::map<std::string, double>      dmap;

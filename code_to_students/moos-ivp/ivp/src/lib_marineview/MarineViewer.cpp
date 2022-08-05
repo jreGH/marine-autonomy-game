@@ -25,7 +25,6 @@
 #include <windows.h>
 #include <GL/gl.h>
 #include "glext.h" // http://www.opengl.org/registry/api/glext.h
- //#include "tiffio.h" // CWG - TIFFIO Not needed
 #else
 #include <tiffio.h>
 #endif
@@ -41,18 +40,33 @@
 #include "FColorMap.h"
 #include "ColorParse.h"
 #include "Shape_Ship.h"
+#include "Shape_LongShip.h"
 #include "Shape_Kayak.h"
 #include "Shape_WAMV.h"
+#include "Shape_Heron.h"
 #include "Shape_AUV.h"
 #include "Shape_Glider.h"
 #include "Shape_MOKAI.h"
 #include "Shape_Gateway.h"
+#include "Shape_Shark.h"
+#include "Shape_Whale.h"
+#include "Shape_Treasure.h"
+#include "Shape_Tuna.h"
+#include "Shape_Octopus.h"
+#include "Shape_Goldfish.h"
+#include "Shape_Nemo.h"
+#include "Shape_Dory.h"
 #include "Shape_Diamond.h"
 #include "Shape_Circle.h"
 #include "Shape_Triangle.h"
 #include "Shape_EField.h"
 #include "Shape_Square.h"
 #include "Shape_Kelp.h"
+#include "Shape_UUV_David.h"
+#include "Shape_UUV_Logan.h"
+#include "Shape_UUV_Jess.h"
+#include "Shape_UUV_Varsha.h"
+#include "Shape_UUV_Aishwaryaa.h"
 #include "XYFormatUtilsPoly.h"
 #include "BearingLine.h"
 
@@ -64,6 +78,11 @@ MarineViewer::MarineViewer(int x, int y, int w, int h, const char *l)
   m_zoom        = 1.0;
   m_vshift_x    = 0;
   m_vshift_y    = 0;
+
+  m_targ_zoom     = -1;
+  m_targ_vshift_x = 0;
+  m_targ_vshift_y = 0;
+
   m_x_origin    = 0;
   m_y_origin    = 0;
 
@@ -80,6 +99,8 @@ MarineViewer::MarineViewer(int x, int y, int w, int h, const char *l)
   m_geodesy_initialized = false;
 
   m_main_window  = 0;
+
+  m_verbose = false;
 
   // The use_high_res_GL function is supported in more recent FLTK
   // packages. FLTK on older non-MacOS systems may not have this
@@ -210,6 +231,15 @@ void MarineViewer::handleNoTiff()
     m_back_img.readTiffInfoEmpty(lat_north, lat_south, lon_east, lon_west);
 }
 
+//-------------------------------------------------------------
+// Procedure: setVerbose()
+
+void MarineViewer::setVerbose(bool bval)
+{
+  m_verbose = bval;
+  m_back_img.setVerbose(bval);
+  m_back_img_b.setVerbose(bval);
+}
 
 
 //-------------------------------------------------------------
@@ -245,18 +275,16 @@ bool MarineViewer::setParam(string param, double v)
     cout << "zoom:" << m_zoom << endl;
   }
   else if(param == "pan_x") {
-    double pix_shift = v * m_back_img.get_pix_per_mtr_x();
+    double pix_shift = v;
     m_vshift_x += pix_shift;
-    cout << "pan_x:" << m_vshift_x << endl;
   }
   else if(param == "set_pan_x") {
     m_vshift_x = v;
     cout << "set_pan_x:" << m_vshift_x << endl;
   }
   else if(param == "pan_y") {
-    double pix_shift = v * m_back_img.get_pix_per_mtr_y();
+    double pix_shift = v;
     m_vshift_y += pix_shift;
-    cout << "pan_y:" << m_vshift_y << endl;
   }
   else if(param == "set_pan_y") {
     m_vshift_y = v;
@@ -318,6 +346,7 @@ bool MarineViewer::setTexture()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     m_back_img_mod = false;
+    modColorScheme();
   }
   
   return(true);
@@ -326,7 +355,7 @@ bool MarineViewer::setTexture()
 //-------------------------------------------------------------
 // Procedure: img2view
 
-double MarineViewer::img2view(char xy, double img_val)
+double MarineViewer::img2view(char xy, double img_val) const
 {
   double view_val = 0.0;
 
@@ -348,8 +377,7 @@ double MarineViewer::img2view(char xy, double img_val)
 // Procedure: view2img
 //      Note: Derived as from img2view above
 
-double MarineViewer::view2img(char xy, double view_val)
-
+double MarineViewer::view2img(char xy, double view_val) const
 {
   double img_val = 0.0;
 
@@ -376,25 +404,37 @@ double MarineViewer::view2img(char xy, double view_val)
 //-------------------------------------------------------------
 // Procedure: meters2img
 
-double MarineViewer::meters2img(char xy, double meters_val)
+double MarineViewer::meters2img(char xy, double meters_val, bool verbose) const
 {
   double img_val = 0.0;
   if(xy == 'x') {
     double range = m_back_img.get_img_mtr_width();
+    if(verbose)
+      cout << "X: range:" << range << endl;
     if(range == 0)
       img_val = 0;
     else {
       double pct = (meters_val - m_back_img.get_x_at_img_ctr()) / range;
       img_val = pct + 0.5;
+      if(verbose) {
+	cout << "m_back_img.get_x_at_img_ctr():" << m_back_img.get_x_at_img_ctr() << endl;
+	cout << "img_val:" << img_val << endl;
+      }
     }
   }
   else if(xy == 'y') {
     double range = m_back_img.get_img_mtr_height();
+    if(verbose)
+      cout << "Y: range:" << range << endl;
     if(range == 0)
       img_val = 0;
     else {
       double pct = (meters_val - m_back_img.get_y_at_img_ctr()) / range;
       img_val = pct + 0.5;
+      if(verbose) {
+	cout << "m_back_img.get_y_at_img_ctr():" << m_back_img.get_y_at_img_ctr() << endl;
+	cout << "img_val:" << img_val << endl;
+      }
     }
   }
 
@@ -402,10 +442,10 @@ double MarineViewer::meters2img(char xy, double meters_val)
 }
 
 // ----------------------------------------------------------
-// Procedure: img2meters
+// Procedure: img2meters()
 //      Note: Derived as from meters2img above
 
-double MarineViewer::img2meters(char xy, double img_val)
+double MarineViewer::img2meters(char xy, double img_val) const
 {
   double meters_val = 0.0;
   if(xy == 'x') {
@@ -423,12 +463,13 @@ double MarineViewer::img2meters(char xy, double img_val)
 }
 
 // ----------------------------------------------------------
-// Procedure: draw
+// Procedure: draw()
 //   Purpose: This is the "root" drawing routine - it is typically
 //            invoked in the draw routines of subclasses. 
 
 void MarineViewer::draw()
 {
+  autoZoom();
   double r = m_fill_shade;
   double g = m_fill_shade;
   double b = m_fill_shade + 0.1;
@@ -704,6 +745,51 @@ void MarineViewer::drawGLPoly(double *points, unsigned int numPoints,
 }
 
 //-------------------------------------------------------------
+// Procedure: coordInView()
+
+bool MarineViewer::coordInView(double x, double y)
+{
+  // Determine position in terms of image percentage
+  double ax = meters2img('x', x);
+  double ay = meters2img('y', y);
+  
+  // Determine position in terms of view percentage
+  double bx = img2view('x', ax);
+  double by = img2view('y', ay);
+
+  // cout << " PositionF: " << doubleToString(bx,0) << "," << doubleToString(by,0) << endl;
+  //cout << "   PixelsF: " << w() << "," << h() << endl;
+  
+  double wid = w();
+  double hgt = h();
+  
+  if((bx < 0.01 * wid) || (by < 0.01*hgt))
+    return(false);
+  if(bx > 0.99 * wid)
+    return(false);
+  if(by > 0.99 * hgt)
+    return(false);
+
+  return(true);
+}
+
+//-------------------------------------------------------------
+// Procedure: coordInViewX()
+
+bool MarineViewer::coordInViewX(double x, double y)
+{
+  if((x < 0) || (y < 0))
+    return(false);
+  if(x > w())
+    return(false);
+  if(y > h())
+    return(false);
+
+  return(true);
+}
+
+
+//-------------------------------------------------------------
 // Procedure: drawCommonVehicle
 
 void MarineViewer::drawCommonVehicle(const NodeRecord& record_mikerb, 
@@ -711,7 +797,8 @@ void MarineViewer::drawCommonVehicle(const NodeRecord& record_mikerb,
 				     const ColorPack& body_color,
 				     const ColorPack& vname_color,
 				     bool  vname_draw, 
-				     unsigned int outer_line)
+				     unsigned int outer_line,
+				     double transparency)
 {
   NodeRecord record = record_mikerb;
 
@@ -760,7 +847,7 @@ void MarineViewer::drawCommonVehicle(const NodeRecord& record_mikerb,
   double factor_x = m_back_img.get_pix_per_mtr_x();
   double factor_y = m_back_img.get_pix_per_mtr_y();
   
-  if((vehibody == "kayak") || (vehibody == "heron")) {
+  if(vehibody == "kayak") {
     if(vlength > 0) {
       factor_x *= (vlength / g_kayakLength);
       factor_y *= (vlength / g_kayakLength);
@@ -768,11 +855,30 @@ void MarineViewer::drawCommonVehicle(const NodeRecord& record_mikerb,
     double cx = g_kayakCtrX * factor_x;
     double cy = g_kayakCtrY * factor_y;
     glTranslatef(-cx, -cy, 0);
-    drawGLPoly(g_kayakBody, g_kayakBodySize, body_color, 0, factor_x);    
+    drawGLPoly(g_kayakBody, g_kayakBodySize, body_color, 0, factor_x, transparency);    
     if(outer_line)
-      drawGLPoly(g_kayakBody, g_kayakBodySize, black, outer_line, factor_x);    
-    drawGLPoly(g_kayakMidOpen, g_kayakMidOpenSize, gray, 0, factor_x);
+      drawGLPoly(g_kayakBody, g_kayakBodySize, black, outer_line, factor_x, transparency);    
+    drawGLPoly(g_kayakMidOpen, g_kayakMidOpenSize, gray, 0, factor_x, transparency);
     glTranslatef(cx, cy, 0);
+  }
+  if(vehibody == "heron") {
+    //ColorPack dk_gray(0.4, 0.4, 0.6);
+    ColorPack dk_gray(0.5, 0.5, 0.9);
+    ColorPack lt_gray(0.8, 0.8, 0.8);
+    if(vlength > 0) {
+      factor_x *= (vlength / g_heronLength);
+      factor_y *= (vlength / g_heronLength);
+    }
+    double cx = (g_heronCtrX + g_heronBase/2) * factor_x;
+    double cy = g_heronCtrY * factor_y;
+    glTranslatef(-cx, -cy, 0);
+
+    drawGLPoly(g_heronBody, g_heronBodySize, dk_gray, 0, factor_x, transparency);
+    glTranslatef(2*cx, 0, 0);
+    drawGLPoly(g_heronBody, g_heronBodySize, dk_gray, 0, factor_x, transparency);
+    glTranslatef(-cx, 0, 0);
+    drawGLPoly(g_heronBack, g_heronBackSize, body_color, 0, factor_x, transparency);
+    drawGLPoly(g_heronFront, g_heronFrontSize, dk_gray, 0, factor_x, transparency);
   }
   else if(vehibody == "mokai") {
     if(vlength > 0) {
@@ -782,14 +888,14 @@ void MarineViewer::drawCommonVehicle(const NodeRecord& record_mikerb,
     double cx = g_mokaiCtrX * factor_x;
     double cy = g_mokaiCtrY * factor_y;
     glTranslatef(-cx, -cy, 0);
-    drawGLPoly(g_mokaiStern,  g_mokaiSternSize, body_color, 0, factor_x);    
-    drawGLPoly(g_mokaiSlice1, g_mokaiSlice1Size, body_color, 0, factor_x);    
-    drawGLPoly(g_mokaiSlice2, g_mokaiSlice2Size, body_color, 0, factor_x);    
-    drawGLPoly(g_mokaiSlice3, g_mokaiSlice3Size, body_color, 0, factor_x);    
-    drawGLPoly(g_mokaiBow,    g_mokaiBowSize, body_color, 0, factor_x);    
+    drawGLPoly(g_mokaiStern,  g_mokaiSternSize, body_color, 0, factor_x, transparency);    
+    drawGLPoly(g_mokaiSlice1, g_mokaiSlice1Size, body_color, 0, factor_x, transparency);    
+    drawGLPoly(g_mokaiSlice2, g_mokaiSlice2Size, body_color, 0, factor_x, transparency);    
+    drawGLPoly(g_mokaiSlice3, g_mokaiSlice3Size, body_color, 0, factor_x, transparency);    
+    drawGLPoly(g_mokaiBow,    g_mokaiBowSize, body_color, 0, factor_x, transparency);    
     if(outer_line)
-      drawGLPoly(g_mokaiBody, g_mokaiBodySize, black, outer_line, factor_x);    
-    drawGLPoly(g_mokaiMidOpen, g_mokaiMidOpenSize, gray, 0, factor_x);
+      drawGLPoly(g_mokaiBody, g_mokaiBodySize, black, outer_line, factor_x, transparency);    
+    drawGLPoly(g_mokaiMidOpen, g_mokaiMidOpenSize, gray, 0, factor_x, transparency);
     glTranslatef(cx, cy, 0);
   }
   else if(vehibody == "wamv"){
@@ -801,12 +907,17 @@ void MarineViewer::drawCommonVehicle(const NodeRecord& record_mikerb,
     double cx = (g_wamvCtrX + g_wamvBase/2) * factor_x;
     double cy = g_wamvCtrY * factor_y;
     glTranslatef(-cx, -cy, 0);
-    drawGLPoly(g_wamvBody, g_wamvBodySize, body_color, 0, factor_x);
-    drawGLPoly(g_wamvpropUnit, g_wamvpropUnitSize, blue, 0, factor_x);
+    drawGLPoly(g_wamvBody, g_wamvBodySize, body_color, 0,
+	       factor_x, transparency);
+    drawGLPoly(g_wamvpropUnit, g_wamvpropUnitSize, blue, 0,
+	       factor_x, transparency);
     glTranslatef(2*cx, 0, 0);
-    drawGLPoly(g_wamvBody, g_wamvBodySize, body_color, 0, factor_x);
-    drawGLPoly(g_wamvpropUnit, g_wamvpropUnitSize, blue, 0, factor_x);
-    drawGLPoly(g_wamvPontoonConnector, g_pontoonConnectorSize, gray, 0, factor_x);
+    drawGLPoly(g_wamvBody, g_wamvBodySize, body_color, 0,
+	       factor_x, transparency);
+    drawGLPoly(g_wamvpropUnit, g_wamvpropUnitSize, blue, 0,
+	       factor_x, transparency);
+    drawGLPoly(g_wamvPontoonConnector, g_pontoonConnectorSize, gray, 0,
+	       factor_x, transparency);
     glTranslatef(-cx, cy, 0);
   }
   else if((vehibody == "auv") || (vehibody == "uuv")) {
@@ -818,10 +929,13 @@ void MarineViewer::drawCommonVehicle(const NodeRecord& record_mikerb,
     double cx = g_auvCtrX * factor_x;
     double cy = g_auvCtrY * factor_y;
     glTranslatef(-cx, -cy, 0);
-    drawGLPoly(g_auvBody, g_auvBodySize, body_color, 0, factor_x);
+    drawGLPoly(g_auvBody, g_auvBodySize, body_color, 0,
+	       factor_x, transparency);
     if(outer_line > 0)
-      drawGLPoly(g_auvBody, g_auvBodySize, black, outer_line, factor_x);
-    drawGLPoly(g_propUnit, g_propUnitSize, blue, 0, factor_x);
+      drawGLPoly(g_auvBody, g_auvBodySize, black, outer_line,
+		 factor_x, transparency);
+    drawGLPoly(g_propUnit, g_propUnitSize, blue, 0,
+	       factor_x, transparency);
     glTranslatef(cx, cy, 0);
   }
   else if(vehibody == "glider") {
@@ -832,10 +946,14 @@ void MarineViewer::drawCommonVehicle(const NodeRecord& record_mikerb,
     double cx = g_gliderCtrX * factor_x;
     double cy = g_gliderCtrY * factor_y;
     glTranslatef(-cx, -cy, 0);
-    drawGLPoly(g_gliderWing, g_gliderWingSize, body_color,  0, factor_x);
-    drawGLPoly(g_gliderWing, g_gliderWingSize, black, 1, factor_x);
-    drawGLPoly(g_gliderBody, g_gliderBodySize, body_color,  0, factor_x);
-    drawGLPoly(g_gliderBody, g_gliderBodySize, black, 1, factor_x);
+    drawGLPoly(g_gliderWing, g_gliderWingSize, body_color,  0,
+	       factor_x, transparency);
+    drawGLPoly(g_gliderWing, g_gliderWingSize, black, 1,
+	       factor_x, transparency);
+    drawGLPoly(g_gliderBody, g_gliderBodySize, body_color,  0,
+	       factor_x, transparency);
+    drawGLPoly(g_gliderBody, g_gliderBodySize, black, 1,
+	       factor_x, transparency);
     glTranslatef(cx, cy, 0);
   }
   else if(vehibody == "ship") {  
@@ -846,19 +964,286 @@ void MarineViewer::drawCommonVehicle(const NodeRecord& record_mikerb,
     double cx = g_shipCtrX * factor_x;
     double cy = g_shipCtrY * factor_y;
     glTranslatef(-cx, -cy, 0);
-    drawGLPoly(g_shipBody, g_shipBodySize, body_color, 0, factor_x);
+    drawGLPoly(g_shipBody, g_shipBodySize, body_color, 0,
+	       factor_x, transparency);
     if(outer_line > 0)
-      drawGLPoly(g_shipBody, g_shipBodySize, black, outer_line, factor_x);
+      drawGLPoly(g_shipBody, g_shipBodySize, black, outer_line,
+		 factor_x, transparency);
+    glTranslatef(cx, cy, 0);
+  }
+  else if(vehibody == "swimmer") {  
+    if(vlength > 0) {
+      factor_x *= (vlength / g_triangleWidth);
+      factor_y *= (vlength / g_triangleWidth);
+    }
+    double cx = g_triangleCtrX * factor_x;
+    double cy = g_triangleCtrY * factor_y;
+    glTranslatef(-cx, -cy, 0);
+    drawGLPoly(g_triangleBody, g_triangleBodySize, body_color, 0,
+	       factor_x, transparency);
+    if(outer_line > 0)
+      drawGLPoly(g_triangleBody, g_triangleBodySize, black, outer_line,
+		 factor_x, transparency);
+    glTranslatef(cx, cy, 0);
+  }
+  else if(vehibody == "longship") {  
+    if(vlength > 0) {
+      factor_x *= (vlength / g_longShipLength);
+      factor_y *= (vlength / g_longShipLength);
+    }
+    double cx = g_longShipCtrX * factor_x;
+    double cy = g_longShipCtrY * factor_y;
+    glTranslatef(-cx, -cy, 0);
+    drawGLPoly(g_longShipBody, g_longShipBodySize, body_color, 0,
+	       factor_x, transparency);
+    if(outer_line > 0)
+      drawGLPoly(g_longShipBody, g_longShipBodySize, black, outer_line,
+		 factor_x, transparency);
     glTranslatef(cx, cy, 0);
   }
   else if(vehibody == "track") {
     double cx = g_shipCtrX * factor_x;
     double cy = g_shipCtrY * factor_y;
     glTranslatef(-cx, -cy, 0);
-    drawGLPoly(g_shipBody, g_shipBodySize, body_color, 0, factor_x);
+    drawGLPoly(g_shipBody, g_shipBodySize, body_color, 0,
+	       factor_x, transparency);
     if(outer_line > 0)
-      drawGLPoly(g_shipBody, g_shipBodySize, black, outer_line, factor_x);
+      drawGLPoly(g_shipBody, g_shipBodySize, black, outer_line,
+		 factor_x, transparency);
     glTranslatef(cx, cy, 0);
+  }
+  else if(vehibody == "shark") {
+    if(vlength > 0) {
+      factor_x *= (vlength / shark_length);
+      factor_y *= (vlength / shark_length);
+    }
+	ColorPack silver = colorParse("hex: 79, c8, c5");
+	//ColorPack silver = colorParse("hex: 6c, 77, 80");
+	  double cx = shark_centerX * factor_x;
+	  double cy = shark_centerY * factor_y;
+	  glTranslatef(-cx, -cy, 0);
+	  for (unsigned int i=0; i<shark_num_triangles;i++) {
+	  	drawGLPoly(&shark_triangles[3*i*2], 3, silver, 0, factor_x, transparency);
+	  }
+	  glTranslatef(cx, cy, 0);
+  }
+  else if(vehibody == "tuna") {
+    if(vlength > 0) {
+      factor_x *= (vlength / g_tunaLength);
+      factor_y *= (vlength / g_tunaLength);
+    }
+	  ColorPack silver = colorParse("silver");
+	  double cx = g_tunaCtrX * factor_x;
+	  double cy = g_tunaCtrY * factor_y;
+	  glTranslatef(-cx, -cy, 0);
+	  drawGLPoly(g_tunaBody, g_tunaBodySize, silver, 0, factor_x, transparency);
+	  drawGLPoly(g_tunaBody, g_tunaBodySize, black, outer_line, factor_y);
+	  glTranslatef(cx, cy, 0);
+  }
+  else if(vehibody == "nemo") {
+    if(vlength > 0) {
+      factor_x *= (vlength / g_nemoLength);
+      factor_y *= (vlength / g_nemoLength);
+    }
+	  ColorPack silver = colorParse("orange");
+	  double cx = g_nemoCtrX * factor_x;
+	  double cy = g_nemoCtrY * factor_y;
+	  glTranslatef(-cx, -cy, 0);
+	  drawGLPoly(g_nemoBody, g_nemoBodySize, silver, 0, factor_x, transparency);
+	  drawGLPoly(g_nemoBody, g_nemoBodySize, black, outer_line, factor_y);
+	  glTranslatef(cx, cy, 0);
+  }
+  else if(vehibody == "octopus") {
+    if(vlength > 0) {
+      factor_x *= (vlength / octopus_length);
+      factor_y *= (vlength / octopus_length);
+    }
+	  ColorPack silver = colorParse("pink");
+	  double cx = octopus_centerX * factor_x;
+	  double cy = octopus_centerY * factor_y;
+	  glTranslatef(-cx, -cy, 0);
+	  for (unsigned int i=0; i<octopus_num_triangles;i++) {
+	  	drawGLPoly(&octopus_triangles[3*i*2], 3, silver, 0, factor_x, transparency);
+	  }
+//drawGLPoly(g_octopusBody, g_octopusBodySize, black, outer_line, factor_y);
+	  glTranslatef(cx, cy, 0);
+  }
+  else if(vehibody == "dory") {
+    if(vlength > 0) {
+      factor_x *= (vlength / dory_length);
+      factor_y *= (vlength / dory_length);
+    }
+	  ColorPack silver = colorParse("blue");
+	  double cx = dory_centerX * factor_x;
+	  double cy = dory_centerY * factor_y;
+	  glTranslatef(-cx, -cy, 0);
+	  for (unsigned int i=0; i<dory_num_triangles;i++) {
+	  	drawGLPoly(&dory_triangles[3*i*2], 3, silver, 0, factor_x, transparency);
+	  }
+//drawGLPoly(g_doryBody, g_doryBodySize, black, outer_line, factor_y);
+	  glTranslatef(cx, cy, 0);
+  }
+  else if((vehibody == "uuv_david")||(vehibody=="fish")) {
+    if(vlength > 0) {
+      factor_x *= (vlength / uuv_david_length);
+      factor_y *= (vlength / uuv_david_length);
+    }
+	  ColorPack silver = colorParse("hex: 3a, 6b, 67");
+	  double cx = uuv_david_centerX * factor_x;
+	  double cy = uuv_david_centerY * factor_y;
+	  glTranslatef(-cx, -cy, 0);
+	  for (unsigned int i=0; i<uuv_david_num_triangles;i++) {
+	  	drawGLPoly(&uuv_david_triangles[3*i*2], 3, silver, 0, factor_x, transparency);
+	  }
+	  glTranslatef(cx, cy, 0);
+  }
+  else if(vehibody == "uuv_logan") {
+    if(vlength > 0) {
+      factor_x *= (vlength / uuv_logan_length);
+      factor_y *= (vlength / uuv_logan_length);
+    }
+	  ColorPack silver = colorParse("pink");
+	  double cx = uuv_logan_centerX * factor_x;
+	  double cy = uuv_logan_centerY * factor_y;
+	  glTranslatef(-cx, -cy, 0);
+	  for (unsigned int i=0; i<uuv_logan_num_triangles;i++) {
+	  	drawGLPoly(&uuv_logan_triangles[3*i*2], 3, silver, 0, factor_x, transparency);
+	  }
+	  glTranslatef(cx, cy, 0);
+  }
+  else if(vehibody == "uuv_jess") {
+    if(vlength > 0) {
+      factor_x *= (vlength / uuv_jess_length);
+      factor_y *= (vlength / uuv_jess_length);
+    }
+	  ColorPack silver = colorParse("blue");
+	  double cx = uuv_jess_centerX * factor_x;
+	  double cy = uuv_jess_centerY * factor_y;
+	  glTranslatef(-cx, -cy, 0);
+	  for (unsigned int i=0; i<uuv_jess_num_triangles;i++) {
+	  	drawGLPoly(&uuv_jess_triangles[3*i*2], 3, silver, 0, factor_x, transparency);
+	  }
+	  glTranslatef(cx, cy, 0);
+  }
+  else if((vehibody == "uuv_aishwaryaa")) {
+    if(vlength > 0) {
+      factor_x *= (vlength / uuv_aishwaryaa_length);
+      factor_y *= (vlength / uuv_aishwaryaa_length);
+    }
+	  ColorPack silver = colorParse("darkblue");
+	  ColorPack gray   = colorParse("blue");
+	  ColorPack black  = colorParse("black");
+	  ColorPack white  = colorParse("white");
+	  double cx = uuv_aishwaryaa_centerX * factor_x;
+	  double cy = uuv_aishwaryaa_centerY * factor_y;
+	  glTranslatef(-cx, -cy, 0);
+	  for (unsigned int i=0; i<uuv_aishwaryaa_1_num_triangles;i++) {
+	  	drawGLPoly(&uuv_aishwaryaa_1_triangles[3*i*2], 3, black, 0, factor_x, transparency);
+	  }
+	  for (unsigned int i=0; i<uuv_aishwaryaa_2_num_triangles;i++) {
+	  	drawGLPoly(&uuv_aishwaryaa_2_triangles[3*i*2], 3, white, 0, factor_x, transparency);
+	  }
+	  for (unsigned int i=0; i<uuv_aishwaryaa_3_num_triangles;i++) {
+	  	drawGLPoly(&uuv_aishwaryaa_3_triangles[3*i*2], 3, black, 0, factor_x, transparency);
+	  }
+	  for (unsigned int i=0; i<uuv_aishwaryaa_4_num_triangles;i++) {
+	  	drawGLPoly(&uuv_aishwaryaa_4_triangles[3*i*2], 3, silver, 0, factor_x, transparency);
+	  }
+	  for (unsigned int i=0; i<uuv_aishwaryaa_5_num_triangles;i++) {
+	  	drawGLPoly(&uuv_aishwaryaa_5_triangles[3*i*2], 3, white, 0, factor_x, transparency);
+	  }
+	  for (unsigned int i=0; i<uuv_aishwaryaa_6_num_triangles;i++) {
+	  	drawGLPoly(&uuv_aishwaryaa_6_triangles[3*i*2], 3, white, 0, factor_x, transparency);
+	  }
+	  for (unsigned int i=0; i<uuv_aishwaryaa_7_num_triangles;i++) {
+	  	drawGLPoly(&uuv_aishwaryaa_7_triangles[3*i*2], 3, white, 0, factor_x, transparency);
+	  }
+	  for (unsigned int i=0; i<uuv_aishwaryaa_8_num_triangles;i++) {
+	  	drawGLPoly(&uuv_aishwaryaa_8_triangles[3*i*2], 3, white, 0, factor_x, transparency);
+	  }
+	  for (unsigned int i=0; i<uuv_aishwaryaa_9_num_triangles;i++) {
+	  	drawGLPoly(&uuv_aishwaryaa_9_triangles[3*i*2], 3, gray, 0, factor_x, transparency);
+	  }
+	  for (unsigned int i=0; i<uuv_aishwaryaa_10_num_triangles;i++) {
+	  	drawGLPoly(&uuv_aishwaryaa_10_triangles[3*i*2], 3, gray, 0, factor_x, transparency);
+	  }
+	  glTranslatef(cx, cy, 0);
+  }
+  else if(vehibody == "uuv_varsha") {
+    if(vlength > 0) {
+      factor_x *= (vlength / uuv_varsha_length);
+      factor_y *= (vlength / uuv_varsha_length);
+    }
+	  ColorPack silver = colorParse("orange");
+	  double cx = uuv_varsha_centerX * factor_x;
+	  double cy = uuv_varsha_centerY * factor_y;
+	  glTranslatef(-cx, -cy, 0);
+	  for (unsigned int i=0; i<uuv_varsha_num_triangles;i++) {
+	  	drawGLPoly(&uuv_varsha_triangles[3*i*2], 3, silver, 0, factor_x, transparency);
+	  }
+	  glTranslatef(cx, cy, 0);
+  }
+  else if(vehibody == "treasure") {
+    if(vlength > 0) {
+      factor_x *= (vlength / treasure_length);
+      factor_y *= (vlength / treasure_length);
+    }
+	  ColorPack brown = colorParse("brown");
+	  ColorPack black  = colorParse("black");
+	  double cx = treasure_centerX * factor_x;
+	  double cy = treasure_centerY * factor_y;
+	  glTranslatef(-cx, -cy, 0);
+	  for (unsigned int i=0; i<treasure_1_num_triangles;i++) {
+	  	drawGLPoly(&treasure_1_triangles[3*i*2], 3, brown, 0, factor_x, transparency);
+	  }
+	  for (unsigned int i=0; i<treasure_2_num_triangles;i++) {
+	  	drawGLPoly(&treasure_2_triangles[3*i*2], 3, brown, 0, factor_x, transparency);
+	  }
+	  for (unsigned int i=0; i<treasure_3_num_triangles;i++) {
+	  	drawGLPoly(&treasure_3_triangles[3*i*2], 3, black, 0, factor_x, transparency);
+	  }
+  }
+  else if(vehibody == "whale") {
+    if(vlength > 0) {
+      factor_x *= (vlength / whale_length);
+      factor_y *= (vlength / whale_length);
+    }
+	ColorPack blue = colorParse("blue");
+	ColorPack darkblue = colorParse("darkblue");
+	ColorPack cyan = colorParse("cyan");
+	  ColorPack red = colorParse("red");
+	  ColorPack black  = colorParse("black");
+	  double cx = whale_centerX * factor_x;
+	  double cy = whale_centerY * factor_y;
+	  glTranslatef(-cx, -cy, 0);
+	  for (unsigned int i=0; i<whale_1_num_triangles;i++) {
+	  	drawGLPoly(&whale_1_triangles[3*i*2], 3, blue, 0, factor_x, transparency);
+	  }
+	  for (unsigned int i=0; i<whale_2_num_triangles;i++) {
+	  	drawGLPoly(&whale_2_triangles[3*i*2], 3, darkblue, 0, factor_x, transparency);
+	  }
+	  for (unsigned int i=0; i<whale_3_num_triangles;i++) {
+	  	drawGLPoly(&whale_3_triangles[3*i*2], 3, cyan, 0, factor_x, transparency);
+	  }
+	  for (unsigned int i=0; i<whale_4_num_triangles;i++) {
+	  	drawGLPoly(&whale_4_triangles[3*i*2], 3, black, 0, factor_x, transparency);
+	  }
+	  for (unsigned int i=0; i<whale_5_num_triangles;i++) {
+	  	drawGLPoly(&whale_5_triangles[3*i*2], 3, red, 0, factor_x, transparency);
+	  }
+  }
+  else if(vehibody == "goldfish") {
+    if(vlength > 0) {
+      factor_x *= (vlength / g_goldfishLength);
+      factor_y *= (vlength / g_goldfishLength);
+    }
+	  ColorPack gold = colorParse("goldenrod");
+	  double cx = g_goldfishCtrX * factor_x;
+	  double cy = g_goldfishCtrY * factor_y;
+	  glTranslatef(-cx, -cy, 0);
+	  drawGLPoly(g_goldfishBody, g_goldfishBodySize, gold, 0, factor_x, transparency);
+	  drawGLPoly(g_goldfishBody, g_goldfishBodySize, black, outer_line, factor_y);
+	  glTranslatef(cx, cy, 0);
   }
   else {  // vehibody == "auv" is the default
     ColorPack blue("blue");
@@ -869,14 +1254,22 @@ void MarineViewer::drawCommonVehicle(const NodeRecord& record_mikerb,
     double cx = g_auvCtrX * factor_x;
     double cy = g_auvCtrY * factor_y;
     glTranslatef(-cx, -cy, 0);
-    drawGLPoly(g_auvBody, g_auvBodySize, body_color, 0, factor_x);
+    drawGLPoly(g_auvBody, g_auvBodySize, body_color, 0,
+	       factor_x, transparency);
     if(outer_line > 0)
-      drawGLPoly(g_auvBody, g_auvBodySize, blue, outer_line, factor_x);
-    drawGLPoly(g_propUnit, g_propUnitSize, blue, 0, factor_x);
+      drawGLPoly(g_auvBody, g_auvBodySize, blue, outer_line,
+		 factor_x, transparency);
+    drawGLPoly(g_propUnit, g_propUnitSize, blue, 0,
+	       factor_x, transparency);
     glTranslatef(cx, cy, 0);
   }
 
   if(vname_draw) {
+    double vx = record.getX();
+    double vy = record.getY();    
+    if(!coordInView(vx, vy))
+      return;
+  
     glColor3f(vname_color.red(), vname_color.grn(), vname_color.blu());
     gl_font(1, 10);
     if(m_zoom > 4)
@@ -918,7 +1311,8 @@ void MarineViewer::drawCommonVehicle(const NodeRecord& record_mikerb,
 //-------------------------------------------------------------
 // Procedure: drawMarkers
 
-void MarineViewer::drawMarkers(const map<string, XYMarker>& markers)
+void MarineViewer::drawMarkers(const map<string, XYMarker>& markers,
+			       double timestamp)
 {
   // If the viewable parameter is set to false just return. In 
   // querying the parameter the optional "true" argument means return
@@ -928,18 +1322,19 @@ void MarineViewer::drawMarkers(const map<string, XYMarker>& markers)
 
   map<string, XYMarker>::const_iterator p;
   for(p=markers.begin(); p!=markers.end(); p++)
-    if(p->second.active())
-      drawMarker(p->second);
+    drawMarker(p->second, timestamp);
 }
 
 //-------------------------------------------------------------
 // Procedure: drawMarker
 
-void MarineViewer::drawMarker(const XYMarker& marker)
+void MarineViewer::drawMarker(const XYMarker& marker, double timestamp)
 {
   if(!marker.active())
     return;
   if(!marker.valid())
+    return;
+  if(marker.expired(timestamp))
     return;
 
   double    gscale = m_geo_settings.geosize("marker_scale");
@@ -1073,10 +1468,9 @@ void MarineViewer::drawMarker(const XYMarker& marker)
     drawGLPoly(g_kelpBody, g_kelpBodySize, black, bw, factor_y);
     glTranslatef(cx, cy, 0);
   }
-
   bool draw_labels = m_geo_settings.viewable("marker_viewable_labels");
 
-  if(draw_labels && ((label != "") || (message != ""))) {
+  if(draw_labels && ((label != "") || (message != "")) && coordInView(x,y)) {
     glColor3f(labelc.red(), labelc.grn(), labelc.blu());
     gl_font(1, 10);
     if(m_zoom > 4)
@@ -1124,6 +1518,9 @@ void MarineViewer::drawOpArea(const OpAreaSpec& op_area)
   double qx = img2view('x', tx);
   double qy = img2view('y', ty);
 
+  if(!coordInView(qx, qy))
+    return;
+  
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
   glLoadIdentity();
@@ -1254,63 +1651,14 @@ bool MarineViewer::initGeodesy(const string& str)
 //-------------------------------------------------------------
 // Procedure: drawPolygons
 
-void MarineViewer::drawPolygons(const vector<XYPolygon>& polys)
+void MarineViewer::drawPolygons(const vector<XYPolygon>& polys,
+				double timestamp)
 {
   // If the viewable parameter is set to false just return. In 
   // querying the parameter the optional "true" argument means return
   // true if nothing is known about the parameter.
   if(!m_geo_settings.viewable("polygon_viewable_all", true))
     return;
-
-  unsigned int i, vsize = polys.size();
-  for(i=0; i<vsize; i++) 
-    if(polys[i].active()) 
-      drawPolygon(polys[i]);
-}
-
-//-------------------------------------------------------------
-// Procedure: drawPolygon
-
-void MarineViewer::drawPolygon(const XYPolygon& poly)
-{
-  ColorPack edge_c("aqua");      // default if no drawing hint
-  ColorPack fill_c("invisible"); // default if no drawing hint
-  ColorPack vert_c("red");       // default if no drawing hint
-  ColorPack labl_c("white");     // default if no drawing hint
-  double transparency = 0.2;     // default if no drawing hint
-  double line_width   = 1;       // default if no drawing hint
-  double vertex_size  = 2;       // default if no drawing hint
-
-  if(poly.color_set("label"))            // label_color
-    labl_c = poly.get_color("label");
-  if(poly.color_set("vertex"))           // vertex_color
-    vert_c = poly.get_color("vertex");
-  if(poly.color_set("edge"))             // edge_color
-    edge_c = poly.get_color("edge");
-  if(poly.color_set("fill"))             // fill_color
-    fill_c = poly.get_color("fill");
-  if(poly.transparency_set())            // transparency
-    transparency = poly.get_transparency(); 
-  if(poly.edge_size_set())               // edge_size
-    line_width = poly.get_edge_size();
-  if(poly.vertex_size_set())             // vertex_size
-    vertex_size = poly.get_vertex_size();
-  
-  unsigned int vsize = poly.size();
-  if(vsize < 1)
-    return;
-  
-  unsigned int i, j;
-  double *points = new double[2*vsize];
-  
-  double pix_per_mtr_x = m_back_img.get_pix_per_mtr_x();
-  double pix_per_mtr_y = m_back_img.get_pix_per_mtr_y();
-  int pindex = 0;
-  for(i=0; i<vsize; i++) {
-    points[pindex]   = poly.get_vx(i) * pix_per_mtr_x;
-    points[pindex+1] = poly.get_vy(i) * pix_per_mtr_y;
-    pindex += 2;
-  }
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -1327,112 +1675,180 @@ void MarineViewer::drawPolygon(const XYPolygon& poly)
 
   glTranslatef(qx, qy, 0);
   glScalef(m_zoom, m_zoom, m_zoom);
-  
-  // Fill in the interior of polygon if it is a valid polygon
-  // with greater than two vertices. (Two vertex polygons are
-  // "valid" too, but we decide here not to draw the interior
-  if((vsize > 2) && poly.is_convex() && fill_c.visible()) {
-    glEnable(GL_BLEND);
-    glColor4f(fill_c.red(), fill_c.grn(), fill_c.blu(), transparency);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glBegin(GL_POLYGON);
-    for(i=0; i<vsize*2; i=i+2) {
-      glVertex2f(points[i], points[i+1]);
-    }
-    glEnd();
-    glDisable(GL_BLEND);
-  }
-  
-  // Now draw the edges - if the polygon is invalid, don't draw
-  // the last edge.
-  if((vsize > 1) && (line_width > 0) && edge_c.visible()) {
-    glLineWidth(line_width);
-    glColor3f(edge_c.red(), edge_c.grn(), edge_c.blu());
-    
-    if(poly.is_convex())
-      glBegin(GL_LINE_LOOP);
-    else
-      glBegin(GL_LINE_STRIP);
-    for(i=0; i<vsize*2; i=i+2) {
-      glVertex2f(points[i], points[i+1]);
-    }
-    glEnd();
-    glLineWidth(1.0);
-  }
 
-  // If the polygon is just a single point, draw it big!
-  if(vsize==1) {
-    glPointSize(1.2 * m_zoom);
-    // Draw the vertices with color coding for the first and last
-    
-    //glColor3f(0.7,0.13,0.13);  // Firebrick red b2 22 22
-    glColor3f(0.13, 0.13, 0.7);  // Blueish
-    glEnable(GL_POINT_SMOOTH);
-    glBegin(GL_POINTS);
-    glVertex2f(points[0], points[1]);
-    glEnd();
-    glDisable(GL_POINT_SMOOTH);
-  }
+  ColorPack default_edge_c("aqua");      // default if no drawing hint
+  ColorPack default_fill_c("invisible"); // default if no drawing hint
+  ColorPack default_vert_c("red");       // default if no drawing hint
+  ColorPack default_labl_c("white");     // default if no drawing hint
+  double default_transparency = 0.2;     // default if no drawing hint
+  double default_line_width   = 1;       // default if no drawing hint
+  double default_vertex_size  = 2;       // default if no drawing hint
 
-  if(vertex_size > 0) {
-    glEnable(GL_POINT_SMOOTH);
-    glPointSize(vertex_size);
+  double pix_per_mtr_x = m_back_img.get_pix_per_mtr_x();
+  double pix_per_mtr_y = m_back_img.get_pix_per_mtr_y();
 
-    glColor3f(vert_c.red(), vert_c.grn(), vert_c.blu());
-    glBegin(GL_POINTS);
-    for(j=0; j<vsize; j++) 
-      glVertex2f(points[(j*2)], points[(j*2)+1]);
-    glEnd();
-    glDisable(GL_POINT_SMOOTH);
-  }
-
-  // Draw the labels unless either the viewer has it shut off OR if 
-  // the publisher of the polygon requested it not to be viewed, by
-  // setting the color to be "invisible".
-  bool draw_labels = m_geo_settings.viewable("polygon_viewable_labels");
-  if(draw_labels && labl_c.visible()) {
-    double cx = poly.get_avg_x() * m_back_img.get_pix_per_mtr_x();
-    //double cy = poly.get_avg_y() * m_back_img.get_pix_per_mtr();
-    double my = poly.get_max_y() * m_back_img.get_pix_per_mtr_y();
-    glTranslatef(cx, my, 0);
-    
-    glColor3f(labl_c.red(), labl_c.grn(), labl_c.blu());
-    gl_font(1, 10);
-    string plabel = poly.get_msg();
-    if(plabel == "")
-      plabel = poly.get_label();
-
-    if((plabel != "") && (plabel != "_null_")) {
-      glRasterPos3f(0, 0, 0);
-      gl_draw_aux(plabel.c_str());
-    }
-  }
-  //-------------------------------- perhaps draw poly label
-
-
-#if 0
-  //-------------------------------- perhaps draw poly vertex labels
-  if(m_geo_settings.viewable("polygon_viewable_vertex_labels")) {
-    glTranslatef(0, 0, 0);
-    for(j=0; j<vsize; j++) {
-      double cx = points[(j*2)];
-      double cy = points[(j*2)+1];
+  for(unsigned int k=0; k<polys.size(); k++) {
+    //cout << "drawing poly with label: " << polys[k].get_label() << endl;
+    bool expired = polys[k].expired(timestamp);
       
-      glColor3f(edge_c.red(), edge_c.grn(), edge_c.blu());
-      gl_font(1, 10);
+    if(!expired && polys[k].active() && (polys[k].size() > 0)) {
+      XYPolygon poly = polys[k];
+      //cout << "active poly with label: " << poly.get_label() << endl;
+      unsigned int vsize = poly.size();
+
+      vector<double> points((2*vsize), 2);
       
-      string vlabel = intToString(j);
-      int slen = vlabel.length();
-      glRasterPos3f(cx, cy, 0);
-      gl_draw_aux(vlabel.c_str());
+      int pindex = 0;
+      for(unsigned int i=0; i<vsize; i++) {
+	points[pindex]   = poly.get_vx(i) * pix_per_mtr_x;
+	points[pindex+1] = poly.get_vy(i) * pix_per_mtr_y;
+	pindex += 2;
+      }
+
+      // ========================================================
+      // Part 1: Draw the Interior of the polygon
+      // ========================================================
+      // Fill in the interior of polygon if it is a valid polygon
+      // with greater than two vertices. (Two vertex polygons are
+      // "valid" too, but we decide here not to draw the interior
+      // ========================================================
+      if(vsize > 2) {
+	ColorPack fill_c = default_fill_c;
+	if(poly.color_set("fill"))             // fill_color
+	  fill_c = poly.get_color("fill");
+      
+	if(fill_c.visible() && poly.is_convex()) {
+	  double transparency = default_transparency; 
+	  if(poly.transparency_set())            // transparency
+	    transparency = poly.get_transparency(); 
+	  
+	  glEnable(GL_BLEND);
+	  glColor4f(fill_c.red(), fill_c.grn(), fill_c.blu(), transparency);
+	  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	  glBegin(GL_POLYGON);
+	  for(unsigned int i=0; i<vsize*2; i=i+2) {
+	    glVertex2f(points[i], points[i+1]);
+	  }
+	  glEnd();
+	  glDisable(GL_BLEND);
+	}
+      }
+
+      // ========================================================
+      // Part 2: Draw the Edges of the polygon
+      // ========================================================
+      // If polygon is invalid (non-convex), don't draw last edge.
+      if(vsize > 1) {
+	double line_width = default_line_width;
+	if(poly.edge_size_set())               // edge_size
+	  line_width = poly.get_edge_size();
+	if(line_width > 0) {
+	  ColorPack edge_c = default_edge_c;
+	  if(poly.color_set("edge"))             // edge_color
+	    edge_c = poly.get_color("edge");
+	  if(edge_c.visible()) {
+	    glLineWidth(line_width);
+	    glColor3f(edge_c.red(), edge_c.grn(), edge_c.blu());
+	    
+	    if(poly.is_convex())
+	      glBegin(GL_LINE_LOOP);
+	    else
+	      glBegin(GL_LINE_STRIP);
+	    for(unsigned int i=0; i<vsize*2; i=i+2) {
+	      glVertex2f(points[i], points[i+1]);
+	    }
+	    glEnd();
+	    glLineWidth(1.0);
+	  }
+	}
+      }
+     
+      // ========================================================
+      // Part 3: Special Case Handle a Single Point Polygon
+      // ========================================================
+      // If the polygon is just a single point, draw it big!
+      if(vsize==1) {
+	glPointSize(1.2 * m_zoom);
+	// Draw the vertices with color coding for the first and last
+	
+	//glColor3f(0.7,0.13,0.13);  // Firebrick red b2 22 22
+	glColor3f(0.13, 0.13, 0.7);  // Blueish
+	glEnable(GL_POINT_SMOOTH);
+	glBegin(GL_POINTS);
+	glVertex2f(points[0], points[1]);
+	glEnd();
+	glDisable(GL_POINT_SMOOTH);
+      }
+      
+      // ========================================================
+      // Part 4: Draw the Vertices
+      // ========================================================
+      double vertex_size  = default_vertex_size;
+      if(poly.vertex_size_set())             // vertex_size
+	vertex_size = poly.get_vertex_size();
+      if(vertex_size > 0) {
+	ColorPack vert_c = default_vert_c;
+	if(poly.color_set("vertex"))           // vertex_color
+	  vert_c = poly.get_color("vertex");
+
+	glEnable(GL_POINT_SMOOTH);
+	glPointSize(vertex_size);
+	
+	glColor3f(vert_c.red(), vert_c.grn(), vert_c.blu());
+	glBegin(GL_POINTS);
+	for(unsigned int j=0; j<vsize; j++) 
+	  glVertex2f(points[(j*2)], points[(j*2)+1]);
+	glEnd();
+	glDisable(GL_POINT_SMOOTH);
+      }
+      
+      // ========================================================
+      // Part 5: Draw the Labels
+      // ========================================================
+      // Draw the labels unless either the viewer has it shut off OR
+      // if the publisher of the polygon requested it not to be
+      // viewed, by setting the color to be "invisible".
+      bool draw_labels = m_geo_settings.viewable("polygon_viewable_labels");
+      if(draw_labels && (k<100)) {
+	ColorPack labl_c = default_labl_c;
+	if(poly.color_set("label"))            // label_color
+	  labl_c = poly.get_color("label");
+
+	if(labl_c.visible()) {
+	  double vx = poly.get_avg_x();
+	  double vy = poly.get_avg_y();
+	  double cx = vx * pix_per_mtr_x;
+	  double cy = vy * pix_per_mtr_y;
+
+	  if(coordInView(vx,vy)) {
+	    glColor3f(labl_c.red(), labl_c.grn(), labl_c.blu());
+	    gl_font(1, 10);
+	    string plabel = poly.get_msg();
+	    if(plabel == "")
+	      plabel = poly.get_label();
+	    
+	    if((plabel != "") && (plabel != "_null_")) {
+	      glRasterPos3f(cx, cy, 0);
+	      gl_draw_aux(plabel);
+	    }
+	  }
+	}
+      }
     }
   }
-  //-------------------------------- perhaps draw poly vertex_labels
-#endif
-
-  delete [] points;
+  
   glFlush();
-  glPopMatrix();
+  glPopMatrix();  
+}
+
+//-------------------------------------------------------------
+// Procedure: drawPolygon
+
+void MarineViewer::drawPolygon(const XYPolygon& poly)
+{
+  vector<XYPolygon> vector_of_one;
+  vector_of_one.push_back(poly);
+  drawPolygons(vector_of_one);
 }
 
 //-------------------------------------------------------------
@@ -1535,17 +1951,21 @@ void MarineViewer::drawWedge(const XYWedge& wedge)
     glColor3f(labl_c.red(), labl_c.grn(), labl_c.blu());
     gl_font(1, 10);
     
-    double px = wedge.getX() * m_back_img.get_pix_per_mtr_x();
-    double py = wedge.getY() * m_back_img.get_pix_per_mtr_y();
-
     string plabel = wedge.get_msg();
     if(plabel == "")
       plabel = wedge.get_label();
-
+    
     if(plabel != "") {    
-      double offset = 3.0 * (1/m_zoom);
-      glRasterPos3f(px+offset, py+offset, 0);
-      gl_draw_aux(plabel);
+      double vx = wedge.getX();
+      double vy = wedge.getY();
+      double px = vx * pix_per_mtr_x;
+      double py = vy * pix_per_mtr_y;
+
+      if(coordInView(vx,vy)) {     
+	double offset = 3.0 * (1/m_zoom);
+	glRasterPos3f(px+offset, py+offset, 0);
+	gl_draw_aux(plabel);
+      }
     }
   }
 
@@ -1599,17 +2019,21 @@ void MarineViewer::drawSegment(double x1, double y1, double x2, double y2,
 //-------------------------------------------------------------
 // Procedure: drawSegLists()
 
-void MarineViewer::drawSegLists(const vector<XYSegList>& segls)
+void MarineViewer::drawSegLists(const vector<XYSegList>& segls,
+				double timestamp)
 {
   // If the viewable parameter is set to false just return. In 
   // querying the parameter the optional "true" argument means return
   // true if nothing is known about the parameter.
   if(!m_geo_settings.viewable("seglist_viewable_all", "true"))
     return;
-
-  for(unsigned int i=0; i<segls.size(); i++)
-    if(segls[i].active()) 
-      drawSegList(segls[i]); 
+  
+  for(unsigned int i=0; i<segls.size(); i++) {
+    XYSegList segl = segls[i];
+    
+    if(segl.active() && !segl.expired(timestamp))
+      drawSegList(segl);
+  }
 }
 
 //-------------------------------------------------------------
@@ -1711,19 +2135,21 @@ void MarineViewer::drawSegList(const XYSegList& segl)
   // setting the color to be "invisible".
   bool draw_labels = m_geo_settings.viewable("seglist_viewable_labels");
   if(draw_labels && labl_c.visible()) {
-    double cx = segl.get_avg_x() * m_back_img.get_pix_per_mtr_x();
-    //double cy = poly.get_avg_y() * m_back_img.get_pix_per_mtr();
-    double my = segl.get_max_y() * m_back_img.get_pix_per_mtr_y();
-    glTranslatef(cx, my, 0);
-    
-    glColor3f(labl_c.red(), labl_c.grn(), labl_c.blu());
-    gl_font(1, 10);
     string plabel = segl.get_msg();
     if(plabel == "")
       plabel = segl.get_label();
     if(plabel != "") {
-      glRasterPos3f(0, 0, 0);
-      gl_draw_aux(plabel);
+      double cx = segl.get_avg_x() * m_back_img.get_pix_per_mtr_x();
+      //double cy = poly.get_avg_y() * m_back_img.get_pix_per_mtr();
+      double my = segl.get_max_y() * m_back_img.get_pix_per_mtr_y();
+      
+      if(coordInView(cx,my)) {
+	glTranslatef(cx, my, 0);
+	glColor3f(labl_c.red(), labl_c.grn(), labl_c.blu());
+	gl_font(1, 10);
+	glRasterPos3f(0, 0, 0);
+	gl_draw_aux(plabel);
+      }
     }
   }
   //-------------------------------- perhaps draw seglist label
@@ -1862,9 +2288,6 @@ void MarineViewer::drawSeglr(const XYSeglr& seglr)
   double vbase_x = seglr.getRayBaseX();
   double vbase_y = seglr.getRayBaseY();
 
-  cout << "vbase_x: " << vbase_x << endl;
-  cout << "vbase_y: " << vbase_y << endl;
-  
   // First determine the point on the end of the vector
   double hx, hy;
   projectPoint(vang, vmag, vbase_x, vbase_y, hx, hy);
@@ -1911,23 +2334,20 @@ void MarineViewer::drawSeglr(const XYSeglr& seglr)
   // setting the color to be "invisible".
   
   bool draw_labels = m_geo_settings.viewable("seglr_viewable_labels");
-  if(draw_labels && labl_c.visible()) {
-
+  string plabel = seglr.get_msg();
+  if(draw_labels && labl_c.visible() && (plabel != "")) {
     double cx, cy;
     projectPoint(vang, head_size+4, hx, hy, cx, cy);
-    cx *= m_back_img.get_pix_per_mtr_x();
-    cy *= m_back_img.get_pix_per_mtr_x();
-
-    //double cx = seglr.getAvgX() * m_back_img.get_pix_per_mtr_x();
-    //double cy = poly.get_avg_y() * m_back_img.get_pix_per_mtr();
-    //double my = seglr.getMaxY() * m_back_img.get_pix_per_mtr_y();
-    glTranslatef(cx, cy, 0);
-    
-    glColor3f(labl_c.red(), labl_c.grn(), labl_c.blu());
-    gl_font(1, 10);
-    string plabel = seglr.get_msg();
-
-    if(plabel != "") {
+    if(coordInView(cx,cy)) {
+      cx *= m_back_img.get_pix_per_mtr_x();
+      cy *= m_back_img.get_pix_per_mtr_x();
+      
+      //double cx = seglr.getAvgX() * m_back_img.get_pix_per_mtr_x();
+      //double cy = poly.get_avg_y() * m_back_img.get_pix_per_mtr();
+      //double my = seglr.getMaxY() * m_back_img.get_pix_per_mtr_y();
+      glTranslatef(cx, cy, 0);
+      glColor3f(labl_c.red(), labl_c.grn(), labl_c.blu());
+      gl_font(1, 10);
       glRasterPos3f(0, 0, 0);
       gl_draw_aux(plabel);
     }
@@ -2065,21 +2485,25 @@ void MarineViewer::drawVector(const XYVector& vect)
   // setting the color to be "invisible".
   bool draw_labels = m_geo_settings.viewable("vector_viewable_labels");
   if(draw_labels && labl_c.visible()) {
-    double cx = vect.xpos() * m_back_img.get_pix_per_mtr_x();
-    double cy = vect.ypos() * m_back_img.get_pix_per_mtr_y();
-    glTranslatef(cx, cy, 0);
-    
-    glColor3f(labl_c.red(), labl_c.grn(), labl_c.blu());
-    gl_font(1, 10);
     string plabel = vect.get_msg();
     if(plabel == "")
       plabel = vect.get_label();
-
+    
     if(plabel != "") {
-      glRasterPos3f(0, 0, 0);
-      gl_draw_aux(plabel);
-    }
 
+      double vx = vect.xpos();
+      double vy = vect.ypos();
+      double cx = vx * pix_per_mtr_x;
+      double cy = vy * pix_per_mtr_y;
+
+      if(coordInView(vx,vy)) {
+	glTranslatef(cx, cy, 0);      
+	glColor3f(labl_c.red(), labl_c.grn(), labl_c.blu());
+	gl_font(1, 10);
+	glRasterPos3f(0, 0, 0);
+	gl_draw_aux(plabel);
+      }
+    }
   }
   //-----------------------------end perhaps draw vect label
 
@@ -2102,7 +2526,7 @@ void MarineViewer::drawHexagons()
 }
 
 //-------------------------------------------------------------
-// Procedure: drawGrids
+// Procedure: drawGrids()
 
 void MarineViewer::drawGrids(const vector<XYGrid>& grids)
 {
@@ -2110,12 +2534,14 @@ void MarineViewer::drawGrids(const vector<XYGrid>& grids)
     return;
 
   unsigned int i, vsize = grids.size();
-  for(i=0; i<vsize; i++)
-    drawGrid(grids[i]);
+  for(i=0; i<vsize; i++) {
+    //if(grids[i].active())
+      drawGrid(grids[i]);
+  }
 }
 
 //-------------------------------------------------------------
-// Procedure: drawGrid
+// Procedure: drawGrid()
 
 void MarineViewer::drawGrid(const XYGrid& grid)
 {
@@ -2189,22 +2615,24 @@ void MarineViewer::drawGrid(const XYGrid& grid)
 }
 
 //-------------------------------------------------------------
-// Procedure: drawConvexGrids
+// Procedure: drawConvexGrids()
 
-void MarineViewer::drawConvexGrids(const vector<XYConvexGrid>& grids)
+void MarineViewer::drawConvexGrids(vector<XYConvexGrid> grids)
 {
   if(m_geo_settings.viewable("grid_viewable_all", true) == false)
     return;
 
   unsigned int i, vsize = grids.size();
-  for(i=0; i<vsize; i++)
-    drawConvexGrid(grids[i]);
+  for(i=0; i<vsize; i++) {
+    if(grids[i].active()) 
+      drawConvexGrid(grids[i]);
+  }
 }
 
 //-------------------------------------------------------------
-// Procedure: drawConvexGrid
+// Procedure: drawConvexGrid()
 
-void MarineViewer::drawConvexGrid(const XYConvexGrid& grid)
+void MarineViewer::drawConvexGrid(XYConvexGrid grid)
 {
   FColorMap cmap;
 
@@ -2214,6 +2642,7 @@ void MarineViewer::drawConvexGrid(const XYConvexGrid& grid)
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
+
   glOrtho(0, w(), 0, h(), -1 ,1);
 
   double tx = meters2img('x', 0);
@@ -2229,14 +2658,7 @@ void MarineViewer::drawConvexGrid(const XYConvexGrid& grid)
   glTranslatef(qx, qy, 0);
   glScalef(m_zoom, m_zoom, m_zoom);
 
-  unsigned int i;
-  double px[4];
-  double py[4];
-
   double min_eval, max_eval, range = 0;
-
-  //cout << "min_limited:" << grid.cellVarMinLimited() << endl;
-  //cout << "max_limited:" << grid.cellVarMaxLimited() << endl << endl;
 
   if(grid.cellVarMaxLimited() && grid.cellVarMinLimited()) {
     min_eval = grid.getMinLimit();
@@ -2251,21 +2673,17 @@ void MarineViewer::drawConvexGrid(const XYConvexGrid& grid)
   
   double cell_opaqueness = m_geo_settings.opaqueness("grid_opaqueness", 0.3);
   double edge_opaqueness = cell_opaqueness * 0.6;
+
+  double pix_per_mtr_x = m_back_img.get_pix_per_mtr_x();
+  double pix_per_mtr_y = m_back_img.get_pix_per_mtr_y();
+
+  grid.setEdgeCache(pix_per_mtr_x, pix_per_mtr_y);
+  vector<vector<double> > edge_cache = grid.getEdgeCache();
+  unsigned int esize = edge_cache.size();
   
-  for(i=0; i<gsize; i++) {
-    XYSquare element = grid.getElement(i);
-
-    px[0] = element.getVal(0,0) * m_back_img.get_pix_per_mtr_x();
-    py[0] = element.getVal(1,0) * m_back_img.get_pix_per_mtr_y();
-    px[1] = element.getVal(0,1) * m_back_img.get_pix_per_mtr_x();
-    py[1] = element.getVal(1,0) * m_back_img.get_pix_per_mtr_y();
-    px[2] = element.getVal(0,1) * m_back_img.get_pix_per_mtr_x();
-    py[2] = element.getVal(1,1) * m_back_img.get_pix_per_mtr_y();
-    px[3] = element.getVal(0,0) * m_back_img.get_pix_per_mtr_x();
-    py[3] = element.getVal(1,1) * m_back_img.get_pix_per_mtr_y();
-
-    // Draw the internal parts of the cells if range is nonzero.
-    if(range > 0) {
+  // Part 1 Draw Interiors
+  if(range > 0) {
+    for(unsigned int i=0; i<esize; i++) {
       double   eval = grid.getVal(i);
       double   pct  = (eval-min_eval)/(range);
       double   r    = cmap.getIRVal(pct);
@@ -2273,27 +2691,27 @@ void MarineViewer::drawConvexGrid(const XYConvexGrid& grid)
       double   b    = cmap.getIBVal(pct);
       
       glEnable(GL_BLEND);
-      //glColor4f(r,g,b,0.3);
       glColor4f(r,g,b,cell_opaqueness);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glBegin(GL_POLYGON);
       for(int j=0; j<4; j++)
-	glVertex2f(px[j], py[j]);
+	glVertex2f(edge_cache[i][j*2], edge_cache[i][j*2+1]); 
       glEnd();
       glDisable(GL_BLEND);
     }
+  }
 
-    // Begin Draw the cell edges
-    glEnable(GL_BLEND);
-    glColor4f(0.6,0.6,0.6,edge_opaqueness);
+  // Part 2 Draw edges
+  glEnable(GL_BLEND);
+  glColor4f(0.6,0.6,0.6,edge_opaqueness);
+  for(unsigned int i=0; i<esize; i++) {
+
     glBegin(GL_LINE_LOOP);
     for(int k=0; k<4; k++)
-      glVertex2f(px[k], py[k]);
+      glVertex2f(edge_cache[i][k*2], edge_cache[i][k*2+1]); 
     glEnd();
-    glDisable(GL_BLEND);
-    // End Draw the cell edges
-    
   }
+  glDisable(GL_BLEND);
 
   glFlush();
   glPopMatrix();
@@ -2313,24 +2731,17 @@ void MarineViewer::drawCircles(const map<string, XYCircle>& circles,
   
   map<string, XYCircle>::const_iterator p;
   for(p=circles.begin(); p!=circles.end(); p++)
-    if(p->second.active())
-      drawCircle(p->second, timestamp); 
+    drawCircle(p->second, timestamp); 
   
 }
 
 //-------------------------------------------------------------
 // Procedure: drawCircle
 
-void MarineViewer::drawCircle(const XYCircle& circle, double timestamp)
+void MarineViewer::drawCircle(XYCircle circle, double timestamp)
 {
-  if(timestamp != 0) {
-    double circle_duration = circle.getDuration();
-    if(circle_duration > 0) {
-      double elapsed = timestamp - circle.get_time();
-      if(elapsed > circle_duration)
-	return;
-    }
-  }
+  if(circle.expired(timestamp) || !circle.active())
+    return;
 
   ColorPack edge_c("blue");
   ColorPack labl_c("white");
@@ -2353,7 +2764,6 @@ void MarineViewer::drawCircle(const XYCircle& circle, double timestamp)
   if(!edge_c.visible() && !fill_c.visible())
     return;
 
-
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(0, w(), 0, h(), -1 ,1);
@@ -2371,6 +2781,7 @@ void MarineViewer::drawCircle(const XYCircle& circle, double timestamp)
   glTranslatef(qx, qy, 0);
   glScalef(m_zoom, m_zoom, m_zoom);
 
+  circle.setPointCache(180);
   vector<double> draw_pts = circle.getPointCache();
   double pix_per_mtr_x = m_back_img.get_pix_per_mtr_x();
   double pix_per_mtr_y = m_back_img.get_pix_per_mtr_y();
@@ -2412,20 +2823,340 @@ void MarineViewer::drawCircle(const XYCircle& circle, double timestamp)
     draw_labels = false;
 
   if(draw_labels && labl_c.visible()) {
-    glColor3f(labl_c.red(), labl_c.grn(), labl_c.blu());
-    gl_font(1, 10);
-    
-    double px = circle.getX() * m_back_img.get_pix_per_mtr_x();
-    double py = circle.get_max_y() * m_back_img.get_pix_per_mtr_y();
-
     string plabel = circle.get_msg();
     if(plabel == "")
       plabel = circle.get_label();
-
     if(plabel != "") {    
-      double offset = 3.0 * (1/m_zoom);
-      glRasterPos3f(px+offset, py+offset, 0);
-      gl_draw_aux(plabel);
+
+      double vx = circle.getX();
+      double vy = circle.get_max_y();
+
+      if(coordInView(vx,vy)) {
+	double px = vx * pix_per_mtr_x;
+	double py = vy * pix_per_mtr_y;
+	
+	glColor3f(labl_c.red(), labl_c.grn(), labl_c.blu());
+	gl_font(1, 10);
+	
+	double offset = 3.0 * (1/m_zoom);
+	glRasterPos3f(px+offset, py+offset, 0);
+	gl_draw_aux(plabel);
+      }
+    }
+  }
+
+  glFlush();
+  glPopMatrix();
+
+}
+
+//-------------------------------------------------------------
+// Procedure: drawOvals()
+
+void MarineViewer::drawOvals(const map<string, XYOval>& ovals, 
+			     double timestamp)
+{
+  // If the viewable parameter is set to false just return. In 
+  // querying the parameter the optional "true" argument means return
+  // true if nothing is known about the parameter.
+  if(!m_geo_settings.viewable("oval_viewable_all", true))
+    return;
+  
+  map<string, XYOval>::const_iterator p;
+  for(p=ovals.begin(); p!=ovals.end(); p++)
+    drawOval(p->second, timestamp); 
+  
+}
+
+//-------------------------------------------------------------
+// Procedure: drawOval()
+
+void MarineViewer::drawOval(XYOval oval, double timestamp)
+{
+  cout << "oval_spec:" << oval.get_spec() << endl;
+  if(oval.expired(timestamp) || !oval.active())
+    return;
+  cout << "Drawing oval:" << endl;
+  
+  ColorPack edge_c("blue");
+  ColorPack labl_c("white");
+  ColorPack fill_c("invisible");
+  double line_width = 1;
+  double transparency = 0.2;
+
+  if(oval.color_set("edge"))             // edge_color
+    edge_c = oval.get_color("edge");  
+  if(oval.color_set("label"))            // label_color
+    labl_c = oval.get_color("label");  
+  if(oval.color_set("fill"))             // fill_color
+    fill_c = oval.get_color("fill");
+  if(oval.transparency_set())            // transparency
+    transparency = oval.get_transparency();
+  if(oval.edge_size_set())               // edge_size
+    line_width = oval.get_edge_size();
+
+  // If neither edges or circle-fill are visible, just quit now!
+  if(!edge_c.visible() && !fill_c.visible())
+    return;
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(0, w(), 0, h(), -1 ,1);
+  
+  double tx = meters2img('x', 0);
+  double ty = meters2img('y', 0);
+  double qx = img2view('x', tx);
+  double qy = img2view('y', ty);
+
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadIdentity();
+  
+  glLineWidth(1.0);  
+  glTranslatef(qx, qy, 0);
+  glScalef(m_zoom, m_zoom, m_zoom);
+  
+  if(!oval.isSetPointCache()) {
+    oval.setBoundaryCache();
+    oval.setPointCache(15);
+  }
+
+  cout << "========================================" << endl;
+  oval.print();
+  
+  vector<double> draw_pts = oval.getPointCache();
+  double pix_per_mtr_x = m_back_img.get_pix_per_mtr_x();
+  double pix_per_mtr_y = m_back_img.get_pix_per_mtr_y();
+  for(unsigned int i=0; i<draw_pts.size(); i++) {
+    if((i%2)==0)
+      draw_pts[i] *= pix_per_mtr_x;
+    else
+      draw_pts[i] *= pix_per_mtr_y;
+  }
+  
+  if(edge_c.visible()) {
+    glLineWidth(line_width);
+    glColor3f(edge_c.red(), edge_c.grn(), edge_c.blu());
+    glBegin(GL_LINE_LOOP);
+    for(unsigned int i=0; i<draw_pts.size(); i=i+2) {
+      glVertex2f(draw_pts[i], draw_pts[i+1]);
+    }
+    glEnd();
+  }
+  
+  // If filled option is on, draw the interior of the circle
+  if(fill_c.visible()) {
+    glEnable(GL_BLEND);
+    glColor4f(fill_c.red(), fill_c.grn(), fill_c.blu(), transparency);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBegin(GL_POLYGON);
+    for(unsigned int i=0; i<draw_pts.size(); i=i+2) {
+      glVertex2f(draw_pts[i], draw_pts[i+1]);
+    }
+    glEnd();
+    glDisable(GL_BLEND);
+  }
+
+  // Draw the labels unless either the viewer has it shut off OR if 
+  // the publisher of the point requested it not to be viewed, by
+  // setting the color to be "invisible".
+  bool draw_labels = m_geo_settings.viewable("circle_viewable_labels");
+  if(!edge_c.visible() && !fill_c.visible())
+    draw_labels = false;
+
+  if(draw_labels && labl_c.visible()) {
+    string plabel = oval.get_msg();
+    if(plabel == "")
+      plabel = oval.get_label();
+    if(plabel != "") {    
+
+      double vx = oval.getX();
+      double vy = oval.get_max_y();
+
+      if(coordInView(vx,vy)) {
+	double px = vx * pix_per_mtr_x;
+	double py = vy * pix_per_mtr_y;
+	
+	glColor3f(labl_c.red(), labl_c.grn(), labl_c.blu());
+	gl_font(1, 10);
+	
+	double offset = 3.0 * (1/m_zoom);
+	glRasterPos3f(px+offset, py+offset, 0);
+	gl_draw_aux(plabel);
+      }
+    }
+  }
+
+  glFlush();
+  glPopMatrix();
+
+}
+
+//-------------------------------------------------------------
+// Procedure: drawArrows
+
+void MarineViewer::drawArrows(const map<string, XYArrow>& arrows, 
+			      double timestamp)
+{
+  // If the viewable parameter is set to false just return. In
+  // querying the parameter the optional "true" argument means return
+  // true if nothing is known about the parameter.
+  if(!m_geo_settings.viewable("arrow_viewable_all", true))
+    return;
+  
+  map<string, XYArrow>::const_iterator p;
+  for(p=arrows.begin(); p!=arrows.end(); p++)
+    drawArrow(p->second, timestamp); 
+  
+}
+
+//-------------------------------------------------------------
+// Procedure: drawArrow
+
+void MarineViewer::drawArrow(XYArrow arrow, double timestamp)
+{
+  if(arrow.expired(timestamp) || !arrow.active())
+    return;
+
+  ColorPack edge_c("blue");
+  ColorPack labl_c("white");
+  ColorPack fill_c("invisible");
+  double line_width = 1;
+  double transparency = 0.2;
+
+  if(arrow.color_set("edge"))             // edge_color
+    edge_c = arrow.get_color("edge");  
+  if(arrow.color_set("label"))            // label_color
+    labl_c = arrow.get_color("label");  
+  if(arrow.color_set("fill"))             // fill_color
+    fill_c = arrow.get_color("fill");
+  if(arrow.transparency_set())            // transparency
+    transparency = arrow.get_transparency();
+  if(arrow.edge_size_set())               // edge_size
+    line_width = arrow.get_edge_size();
+
+  // If neither edges or arrow-fill are visible, just quit now!
+  if(!edge_c.visible() && !fill_c.visible())
+    return;
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  glOrtho(0, w(), 0, h(), -1 ,1);
+  
+  double tx = meters2img('x', 0);
+  double ty = meters2img('y', 0);
+  double qx = img2view('x', tx);
+  double qy = img2view('y', ty);
+
+  glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadIdentity();
+  
+  glLineWidth(1.0);  
+  glTranslatef(qx, qy, 0);
+  glScalef(m_zoom, m_zoom, m_zoom);
+
+  double pix_per_mtr_x = m_back_img.get_pix_per_mtr_x();
+  double pix_per_mtr_y = m_back_img.get_pix_per_mtr_y();
+
+  arrow.setPointCache();
+
+  // --------------------------------------------------
+  // Part 1: draw the base
+  // --------------------------------------------------
+  vector<double> base_pts = arrow.getBaseVertices();
+  for(unsigned int i=0; i<base_pts.size(); i++) {
+    if((i%2)==0)
+      base_pts[i] *= pix_per_mtr_x;
+    else
+      base_pts[i] *= pix_per_mtr_y;
+  }
+  
+  if(edge_c.visible()) {
+    glLineWidth(line_width);
+    glColor3f(edge_c.red(), edge_c.grn(), edge_c.blu());
+    glBegin(GL_LINE_LOOP);
+    for(unsigned int i=0; i<base_pts.size(); i=i+2) {
+      glVertex2f(base_pts[i], base_pts[i+1]);
+    }
+    glEnd();
+  }
+  
+  // If filled option is on, draw the interior of the circle
+  if(fill_c.visible()) {
+    glEnable(GL_BLEND);
+    glColor4f(fill_c.red(), fill_c.grn(), fill_c.blu(), transparency);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBegin(GL_POLYGON);
+    for(unsigned int i=0; i<base_pts.size(); i=i+2) {
+      glVertex2f(base_pts[i], base_pts[i+1]);
+    }
+    glEnd();
+    glDisable(GL_BLEND);
+  }
+
+  // --------------------------------------------------
+  // Part 2: draw the head
+  // --------------------------------------------------
+  vector<double> head_pts = arrow.getHeadVertices();
+  for(unsigned int i=0; i<head_pts.size(); i++) {
+    if((i%2)==0)
+      head_pts[i] *= pix_per_mtr_x;
+    else
+      head_pts[i] *= pix_per_mtr_y;
+  }
+  
+  if(edge_c.visible()) {
+    glLineWidth(line_width);
+    glColor3f(edge_c.red(), edge_c.grn(), edge_c.blu());
+    glBegin(GL_LINE_LOOP);
+    for(unsigned int i=0; i<head_pts.size(); i=i+2) {
+      glVertex2f(head_pts[i], head_pts[i+1]);
+    }
+    glEnd();
+  }
+  
+  // If filled option is on, draw the interior of the circle
+  if(fill_c.visible()) {
+    glEnable(GL_BLEND);
+    glColor4f(fill_c.red(), fill_c.grn(), fill_c.blu(), transparency);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBegin(GL_POLYGON);
+    for(unsigned int i=0; i<head_pts.size(); i=i+2) {
+      glVertex2f(head_pts[i], head_pts[i+1]);
+    }
+    glEnd();
+    glDisable(GL_BLEND);
+  }
+
+
+  // Draw the labels unless either the viewer has it shut off OR if 
+  // the publisher of the point requested it not to be viewed, by
+  // setting the color to be "invisible".
+  bool draw_labels = m_geo_settings.viewable("arrow_viewable_labels");
+  if(!edge_c.visible() && !fill_c.visible())
+    draw_labels = false;
+
+  if(draw_labels && labl_c.visible()) {
+    string plabel = arrow.get_msg();
+    if(plabel == "")
+      plabel = arrow.get_label();
+    if(plabel != "") {    
+
+      double vx = arrow.getCenterX();
+      double vy = arrow.getMaxY();
+
+      if(coordInView(vx,vy)) {
+	double px = vx * pix_per_mtr_x;
+	double py = vy * pix_per_mtr_y;
+	
+	glColor3f(labl_c.red(), labl_c.grn(), labl_c.blu());
+	gl_font(1, 10);
+	
+	double offset = 3.0 * (1/m_zoom);
+	glRasterPos3f(px+offset, py+offset, 0);
+	gl_draw_aux(plabel);
+      }
     }
   }
 
@@ -2530,12 +3261,12 @@ void MarineViewer::drawCommsPulses(const vector<XYCommsPulse>& pulses,
   // Optional "true" arg means return true if nothing known
   if(!m_geo_settings.viewable("comms_pulse_viewable_all", true))
     draw_msgs = false;
+  
 
   bool draw_nreps = true;
   // Optional "true" arg means return true if nothing known
   if(!m_geo_settings.viewable("node_pulse_viewable_all", true))
     draw_nreps = false;
-
 
   // If neither of the two types of comms pulses, msg and nrep,
   // are enable, we can just return now.
@@ -2605,7 +3336,7 @@ void MarineViewer::drawCommsPulse(const XYCommsPulse& pulse,
 
   // Determine the fill degree [0,1]. 1 is completely opaque
   double fill_degree = pulse.get_fill(timestamp);
-
+  
   // If filled option is on, draw the interior of the triangle
   if((fill_degree > 0) && fill_c.visible()) {
     glEnable(GL_BLEND);
@@ -2646,7 +3377,7 @@ void MarineViewer::drawPoints(const map<string, XYPoint>& points)
 //-------------------------------------------------------------
 // Procedure: drawPoint
 
-void MarineViewer::drawPoint(const XYPoint& point)
+void MarineViewer::drawPoint(const XYPoint& point) 
 {
   ColorPack vert_c("red");         // default if no drawing hint
   ColorPack labl_c("aqua_marine"); // default if no drawing hint
@@ -2663,11 +3394,18 @@ void MarineViewer::drawPoint(const XYPoint& point)
   glLoadIdentity();
   glOrtho(0, w(), 0, h(), -1 ,1);
   
-  double tx = meters2img('x', 0);
-  double ty = meters2img('y', 0);
+  double tx = meters2img('x', 0, m_verbose);
+  double ty = meters2img('y', 0, m_verbose);
   double qx = img2view('x', tx);
   double qy = img2view('y', ty);
 
+  if(m_verbose) {
+    cout << "tx:" << tx << endl;
+    cout << "ty:" << ty << endl;
+    cout << " qx:" << qx << endl;
+    cout << " qy:" << qy << endl;
+  }
+  
   glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
   glLoadIdentity();
@@ -2675,8 +3413,10 @@ void MarineViewer::drawPoint(const XYPoint& point)
   glTranslatef(qx, qy, 0);
   glScalef(m_zoom, m_zoom, m_zoom);
 
-  double px  = point.get_vx() * m_back_img.get_pix_per_mtr_x();
-  double py  = point.get_vy() * m_back_img.get_pix_per_mtr_y();
+  double vx = point.get_vx();
+  double vy = point.get_vy();
+  double px = vx * m_back_img.get_pix_per_mtr_x();
+  double py = vy * m_back_img.get_pix_per_mtr_y();
 
   if(vert_c.visible()) {
     glPointSize(vertex_size);
@@ -2692,18 +3432,19 @@ void MarineViewer::drawPoint(const XYPoint& point)
   // the publisher of the point requested it not to be viewed, by
   // setting the color to be "invisible".
   bool draw_labels = m_geo_settings.viewable("point_viewable_labels");
-  if(draw_labels && labl_c.visible()) {
-    glColor3f(labl_c.red(), labl_c.grn(), labl_c.blu());
-    gl_font(1, 12);
-    
+  if(draw_labels && labl_c.visible() && coordInView(vx,vy)) {
     string plabel = point.get_msg();
     if(plabel == "")
-      plabel = point.get_label();
-
+      plabel = point.get_label();    
     if(plabel != "") {    
-      double offset = 3.0 * (1/m_zoom);
-      glRasterPos3f(px+offset, py+offset, 0);
-      gl_draw_aux(plabel);
+
+      if(coordInView(vx,vy)) {      
+	glColor3f(labl_c.red(), labl_c.grn(), labl_c.blu());
+	gl_font(1, 12);
+	double offset = 3.0 * (1/m_zoom);
+	glRasterPos3f(px+offset, py+offset, 0);
+	gl_draw_aux(plabel);
+      }
     }
   }
 
@@ -2714,9 +3455,10 @@ void MarineViewer::drawPoint(const XYPoint& point)
 
 
 //-------------------------------------------------------------
-// Procedure: drawPoints
+// Procedure: drawPoints()
 
-void MarineViewer::drawPoints(const map<string, XYPoint>& points)
+void MarineViewer::drawPoints(const map<string, XYPoint>& points,
+			      double timestamp)
 {
   // If the viewable parameter is set to false just return. In 
   // querying the parameter the optional "true" argument means return
@@ -2739,15 +3481,19 @@ void MarineViewer::drawPoints(const map<string, XYPoint>& points)
   
   glTranslatef(qx, qy, 0);
   glScalef(m_zoom, m_zoom, m_zoom);
-  
+
+  double pix_per_mtr_x = m_back_img.get_pix_per_mtr_x();
+  double pix_per_mtr_y = m_back_img.get_pix_per_mtr_y();
+
   ColorPack default_vert_color("red");
   ColorPack default_labl_color("aqua_marine");
   bool      draw_labels = m_geo_settings.viewable("point_viewable_labels");
 
   map<string, XYPoint>::const_iterator p;
   for(p=points.begin(); p!=points.end(); p++) {
-    if(p->second.active()) {
-      XYPoint point = p->second;
+    XYPoint point = p->second;
+
+    if(!point.expired(timestamp) && point.active()) {
       
       // Set defaults if no drawing hints found
       ColorPack vert_c = default_vert_color; 
@@ -2761,8 +3507,10 @@ void MarineViewer::drawPoints(const map<string, XYPoint>& points)
       if(point.vertex_size_set())
 	vertex_size = point.get_vertex_size();
 
-      double px  = point.get_vx() * m_back_img.get_pix_per_mtr_x();
-      double py  = point.get_vy() * m_back_img.get_pix_per_mtr_y();
+      double vx = point.get_vx();
+      double vy = point.get_vy();
+      double px = vx * pix_per_mtr_x;
+      double py = vy * pix_per_mtr_y;
 
       if(vert_c.visible()) {
 	glPointSize(vertex_size);
@@ -2776,7 +3524,7 @@ void MarineViewer::drawPoints(const map<string, XYPoint>& points)
       
       // Draw the labels unless either the viewer has it shut off OR if 
       // the publisher of the point set the color to "invisible".
-      if(draw_labels && labl_c.visible()) {
+      if(draw_labels && labl_c.visible() && coordInView(vx,vy)) {
 	glColor3f(labl_c.red(), labl_c.grn(), labl_c.blu());
 	gl_font(1, 10);
 	
@@ -2889,8 +3637,49 @@ void MarineViewer::gl_draw_aux(const string text)
 }
 
 
+
+//-------------------------------------------------------------
+// Procedure: setAutoZoom()
+
+void MarineViewer::setAutoZoom(double tx, double ty)
+{
+  m_targ_zoom = 1;
+  m_targ_vshift_x = tx;
+  m_targ_vshift_y = ty;
+}
+
+//-------------------------------------------------------------
+// Procedure: autoZoom()
+
+void MarineViewer::autoZoom()
+{
+  if(m_targ_zoom < 0)
+    return;
+
+  double rate = 0.08;
   
+  double cx = m_vshift_x;
+  double cy = m_vshift_y;
+  double tx = m_targ_vshift_x;
+  double ty = m_targ_vshift_y;
+  
+  double dist = hypot(cx-tx, cy-ty);
+  if(dist < 5) {
+    m_vshift_x = tx;
+    m_vshift_y = ty;
+    m_targ_zoom = -1;
+    return;
+  }
 
+  double rang = relAng(cx,cy, tx,ty);
+  
+  double mv_dist = rate * dist;
 
+  double new_cx, new_cy;
+  projectPoint(rang, mv_dist, cx,cy, new_cx,new_cy);
+
+  m_vshift_x = new_cx;
+  m_vshift_y = new_cy;
+}
 
 

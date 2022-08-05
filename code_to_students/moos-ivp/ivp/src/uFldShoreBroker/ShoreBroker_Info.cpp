@@ -68,6 +68,8 @@ void showHelpAndExit()
   blk("      Display MOOS publications and subscriptions.        ");
   mag("  --version,-v                                            ");
   blk("      Display release version of uFldShoreBroker.         ");
+  mag("  --web,-w                                                ");
+  blk("      Open browser to: https://oceanai.mit.edu/ivpman/apps/uFldShoreBroker ");
   blk("                                                          ");
   blk("Note: If argv[2] does not otherwise match a known option, ");
   blk("      then it will be interpreted as a run alias. This is ");
@@ -92,7 +94,9 @@ void showExampleConfigAndExit()
   blk("  AppTick   = 2                                                 ");
   blk("  CommsTick = 2                                                 ");
   blk("                                                                ");
-  blk("  warning_on_stale = false  (default)                           ");
+  blk("  warning_on_stale      = false (default)                       ");
+  blk("  auto_bridge_realmcast = true  (default)                       ");
+  blk("  auto_bridge_appcast   = true  (default)                       ");
   blk("                                                                ");
   blk("  bridge = src=DEPLOY_ALL, alias=DEPLOY                         ");
   blk("  bridge = src=DEPLOY_$V,  alias=DEPLOY                         ");
@@ -105,6 +109,8 @@ void showExampleConfigAndExit()
   blk("  // Note: [qbridge = FOO]  is shorthand for                    ");
   blk("  //       [bridge = src=FOO_$V,  alias=FOO] and                ");
   blk("  //       [bridge = src=FOO_ALL, alias=FOO]                    ");
+  blk("                                                                ");
+  blk("  app_logging = true  // {true or file} By default disabled     ");
   blk("}                                                               ");
   blk("                                                                ");
   exit(0);

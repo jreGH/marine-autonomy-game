@@ -42,11 +42,13 @@ public:
   void   set_source(const std::string& str) {m_source=str;}
   void   set_type(const std::string& str)   {m_type=str;}
   void   set_msg(const std::string& str)    {m_msg=str;}
+  void   set_id(const std::string& str)     {m_id=str;}
   void   set_active(bool val)               {m_active=val;}
   void   set_time(double val)               {m_time=val;m_time_set=true;}
   void   set_vertex_size(double val);
   void   set_edge_size(double val);
   void   set_transparency(double);
+  void   set_duration(double);
 
   void   set_type()   {} // deprecated
   void   set_source() {} // deprecated
@@ -71,14 +73,19 @@ public:
   double    get_edge_size() const    {return(m_edge_size);}
   bool      edge_size_set() const    {return(m_edge_size>=0);}
   double    get_transparency() const {return(m_transparency);}
+  double    get_duration() const     {return(m_duration);}
   bool      transparency_set() const {return(m_transparency_set);}
+  bool      duration_set() const     {return(m_duration_set);}
 
   std::string get_label()     const {return(m_label);}
   std::string get_msg()       const {return(m_msg);}
+  std::string get_id()        const {return(m_id);}
   std::string get_type()      const {return(m_type);}
   std::string get_source()    const {return(m_source);}
   std::string get_spec(std::string s="") const;
 
+  bool expired(double curr_time) const;
+  
   bool set_param(const std::string&, const std::string&);
 
  protected:
@@ -89,10 +96,13 @@ protected:
   std::string  m_type;
   std::string  m_source;  
   std::string  m_msg;
+  std::string  m_id;
   bool         m_active;
   double       m_time;
   bool         m_time_set;
   bool         m_transparency_set;
+  double       m_duration;
+  bool         m_duration_set;
 
   std::map<std::string, ColorPack> m_color_map;
 
@@ -101,13 +111,7 @@ protected:
   double       m_transparency;
 };
 
+bool operator== (const XYObject& one, const XYObject& two);
+bool operator< (const XYObject& one, const XYObject& two);
+
 #endif
-
-
-
-
-
-
-
-
-

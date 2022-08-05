@@ -33,8 +33,11 @@
 #include <cstdlib>
 #include "IvPBehavior.h"
 #include "MBUtils.h"
+#include "MacroUtils.h"
 #include "BuildUtils.h"
 #include "BehaviorReport.h"
+#include "NodeMessage.h"
+#include "VarDataPairUtils.h"
 
 using namespace std;
 
@@ -56,6 +59,9 @@ IvPBehavior::IvPBehavior(IvPDomain g_domain)
 
   m_last_runcheck_post = false;
   m_last_runcheck_time = 0;
+
+  m_dynamically_spawned = false;
+  m_dynamically_spawnable = false;
   
   m_duration     = -1;
   m_duration_started         =  false;
@@ -70,6 +76,23 @@ IvPBehavior::IvPBehavior(IvPDomain g_domain)
   m_duration_reset_on_transition = false;
 
   m_helm_iter = 0;
+
+  // Initialize ownship pose state variables
+  m_osx = 0;
+  m_osy = 0;
+  m_osh = 0;
+  m_osv = 0;
+
+  m_time_of_creation = 0;
+
+  m_macro_ctr = 0;
+  m_macro_ctr_01 = 0;
+  m_macro_ctr_02 = 0;
+  m_macro_ctr_03 = 0;
+  m_macro_ctr_04 = 0;
+  m_macro_ctr_05 = 0;
+  
+  m_config_posted = false;
 }
 
 //-----------------------------------------------------------
@@ -187,7 +210,7 @@ bool IvPBehavior::setParam(string g_param, string g_val)
       return(true);
     }
   }
-  else if(g_param == "spawnflag") {
+  else if((g_param == "spawnflag") || (g_param == "spawn_flag")) {
     string var = biteStringX(g_val, '=');
     string val = g_val;
     if(strContainsWhite(var) || (val == ""))
@@ -196,7 +219,9 @@ bool IvPBehavior::setParam(string g_param, string g_val)
     m_spawn_flags.push_back(pair);
     return(true);
   }
-  else if(g_param == "runflag") {
+  else if((g_param == "runxflag") || (g_param == "runx_flag"))
+    return(addVarDataPairOnString(m_runx_flags, g_val));
+  else if((g_param == "runflag") || (g_param == "run_flag")) {
     string var = biteStringX(g_val, '=');
     string val = g_val;
     if(strContainsWhite(var) || (val == ""))
@@ -205,7 +230,7 @@ bool IvPBehavior::setParam(string g_param, string g_val)
     m_run_flags.push_back(pair);
     return(true);
   }
-  else if(g_param == "activeflag") {
+  else if((g_param == "activeflag") || (g_param == "active_flag")) {
     string var = biteStringX(g_val, '=');
     string val = g_val;
     if(strContainsWhite(var) || (val == ""))
@@ -214,7 +239,7 @@ bool IvPBehavior::setParam(string g_param, string g_val)
     m_active_flags.push_back(pair);
     return(true);
   }
-  else if(g_param == "inactiveflag") {
+  else if((g_param == "inactiveflag") || (g_param == "inactive_flag")) {
     string var = biteStringX(g_val, '=');
     string val = g_val;
     if(strContainsWhite(var) || (val == ""))
@@ -223,7 +248,7 @@ bool IvPBehavior::setParam(string g_param, string g_val)
     m_inactive_flags.push_back(pair);
     return(true);
   }
-  else if(g_param == "idleflag") {
+  else if((g_param == "idleflag") || (g_param == "idle_flag")) {
     string var = biteStringX(g_val, '=');
     string val = g_val;
     if(strContainsWhite(var) || (val == ""))
@@ -232,13 +257,22 @@ bool IvPBehavior::setParam(string g_param, string g_val)
     m_idle_flags.push_back(pair);
     return(true);
   }
-  else if(g_param == "endflag") {
+  else if((g_param == "endflag") || (g_param == "end_flag")) {
     string var = biteStringX(g_val, '=');
     string val = g_val;
     if(strContainsWhite(var) || (val == ""))
       return(false);
     VarDataPair pair(var, val, "auto");
     m_end_flags.push_back(pair);
+    return(true);
+  }
+  else if((g_param == "configflag") || (g_param == "config_flag")) {
+    string var = biteStringX(g_val, '=');
+    string val = g_val;
+    if(strContainsWhite(var) || (val == ""))
+      return(false);
+    VarDataPair pair(var, val, "auto");
+    m_config_flags.push_back(pair);
     return(true);
   }
   else if((g_param == "no_starve") || (g_param == "nostarve")) {
@@ -355,15 +389,29 @@ string IvPBehavior::isRunnable()
 }
   
 //-----------------------------------------------------------
-// Procedure: setInfoBuffer
+// Procedure: setInfoBuffer()
 
 void IvPBehavior::setInfoBuffer(const InfoBuffer *ib)
 {
   m_info_buffer = ib;
+  m_time_of_creation = getBufferCurrTime();
 }
 
 //-----------------------------------------------------------
-// Procedure: postMessage
+// Procedure: postMessage()
+//     Notes: Convenience function. If string value is non-empty
+//            then post as a string and ignore the double value
+
+void IvPBehavior::postMessage(string var, string sval, double dval, string key)
+{
+  if(sval != "")
+    postMessage(var, sval, key);
+  else
+    postMessage(var, dval, key);
+}
+
+//-----------------------------------------------------------
+// Procedure: postMessage()
 //     Notes: If the key is set to be "repeatable" then in effect 
 //            there is no key is associated with this variable-value 
 //            pair and it will NOT be filtered.
@@ -388,6 +436,189 @@ void IvPBehavior::postMessage(string var, string sdata, string key)
   }
 
   m_messages.push_back(pair);
+}
+
+//-----------------------------------------------------------
+// Procedure: postXMessage()
+//     Notes: Convenience function. If string value is non-empty
+//            then post as a string and ignore the double value
+
+void IvPBehavior::postXMessage(string var, string sdata,
+			       double ddata, string key)
+{  if(sdata != "")
+    postOffboardMessage("all", var, sdata, key);
+  else
+    postOffboardMessage("all", var, ddata, key);
+}
+
+//-----------------------------------------------------------
+// Procedure: postXMessage()
+//     Notes: Convenience function
+
+void IvPBehavior::postXMessage(string var, string sdata, string key)
+{
+  postOffboardMessage("all", var, sdata, key);
+}
+
+//-----------------------------------------------------------
+// Procedure: postXMessage()
+//     Notes: Convenience function
+
+void IvPBehavior::postXMessage(string var, double ddata, string key)
+{
+  postOffboardMessage("all", var, ddata, key);
+}
+
+//-----------------------------------------------------------
+// Procedure: postXMessage()
+//     Notes: Convenience function
+
+void IvPBehavior::postXMessage(string var, bool bdata, string key)
+{
+  postOffboardMessage("all", var, bdata, key);
+}
+
+//-----------------------------------------------------------
+// Procedure: postGMessage()
+//     Notes: Convenience function. If string value is non-empty
+//            then post as a string and ignore the double value
+
+void IvPBehavior::postGMessage(string var, string sdata,
+			       double ddata, string key)
+{  if(sdata != "")
+    postOffboardMessage("group", var, sdata, key);
+  else
+    postOffboardMessage("group", var, ddata, key);
+}
+
+//-----------------------------------------------------------
+// Procedure: postGMessage()
+//     Notes: Convenience function
+
+void IvPBehavior::postGMessage(string var, string sdata, string key)
+{
+  postOffboardMessage("group", var, sdata, key);
+}
+
+//-----------------------------------------------------------
+// Procedure: postGMessage()
+//     Notes: Convenience function
+
+void IvPBehavior::postGMessage(string var, double ddata, string key)
+{
+  postOffboardMessage("group", var, ddata, key);
+}
+
+//-----------------------------------------------------------
+// Procedure: postGMessage()
+//     Notes: Convenience function
+
+void IvPBehavior::postGMessage(string var, bool bdata, string key)
+{
+  postOffboardMessage("group", var, bdata, key);
+}
+
+//-----------------------------------------------------------
+// Procedure: postOffboardMessage()
+//     Notes: Possible destination patterns:
+//            dest = "all"         (send to all other vehicles)
+//            dest = "group"       (send to other vehicles in owngroup)
+//            dest = "group=red"   (send to other vehicles in group "red")
+//            dest = "abe"         (send to abe)
+
+void IvPBehavior::postOffboardMessage(string dest, string var,
+				      double ddata, string key)
+{
+  VarDataPair pair(var, ddata);
+  postOffboardMessage(dest, pair, key);
+}
+  
+
+//-----------------------------------------------------------
+// Procedure: postOffboardMessage()
+//     Notes: Possible destination patterns:
+//            dest = "all"         (send to all other vehicles)
+//            dest = "group"       (send to other vehicles in owngroup)
+//            dest = "group=red"   (send to other vehicles in group "red")
+//            dest = "abe"         (send to abe)
+
+void IvPBehavior::postOffboardMessage(string dest, string var,
+				      string sdata, string key)
+{
+  VarDataPair pair(var, sdata);
+  postOffboardMessage(dest, pair, key);
+}
+
+//-----------------------------------------------------------
+// Procedure: postOffboardMessage()
+//     Notes: Convenience function
+
+void IvPBehavior::postOffboardMessage(string dest, string var,
+				      bool bdata, string key)
+{
+  VarDataPair pair(var, boolToString(bdata));
+  postOffboardMessage(dest, pair, key);
+}
+
+//-----------------------------------------------------------
+// Procedure: postOffboardMessage()
+//     Notes: Possible destination patterns:
+//            dest = "all"         (send to all other vehicles)
+//            dest = "group"       (send to other vehicles in owngroup)
+//            dest = "group=red"   (send to other vehicles in group "red")
+//            dest = "abe"         (send to abe)
+
+void IvPBehavior::postOffboardMessage(string dest, VarDataPair pair,
+				      string key)
+{
+  // Part 1: create core parts of message except for destination
+  string var_name = pair.get_var();
+
+  NodeMessage node_message;
+  node_message.setSourceNode(m_us_name);
+  node_message.setSourceApp("pHelmIvP");
+  node_message.setSourceBehavior(m_descriptor);
+  node_message.setVarName(var_name);
+  if(pair.is_string())
+    node_message.setStringVal(pair.get_sdata());
+  else
+    node_message.setDoubleVal(pair.get_ddata());
+
+  // Part 2: Aid in setting destination, supporting some patterns
+  if(dest == "group") {
+    string owngroup = getOwnGroup();
+    node_message.setDestGroup(owngroup);
+    node_message.setDestNode("all");
+  }
+  else if(strBegins(dest, "group=")) {
+    biteStringX(dest, '=');
+    node_message.setDestGroup(dest);
+    node_message.setDestNode("all");
+  }
+  else
+    node_message.setDestNode(dest);
+
+  
+  // Part 3: Create the outgoing message and post it.
+  string msg_all = node_message.getSpec();
+  VarDataPair post_pair("NODE_MESSAGE_LOCAL", msg_all);
+  
+  if(tolower(key) != "repeatable") {
+    key = (m_descriptor + var_name + key);
+    post_pair.set_key(key);
+  }
+  m_messages.push_back(post_pair);
+}
+
+//-----------------------------------------------------------
+// Procedure: getOwnGroup()
+
+string IvPBehavior::getOwnGroup()
+{
+  string buffer_var = toupper(m_us_name) + "_NAV_GROUP";
+  string group = getBufferStringVal(buffer_var);
+
+  return(group);
 }
 
 //-----------------------------------------------------------
@@ -474,7 +705,7 @@ void IvPBehavior::postRepeatableMessage(string var, double ddata)
 
 void IvPBehavior::setComplete()
 {
-  postFlags("endflags");
+  postFlags("endflags", true);
   // Removed by mikerb jun2213 to prevent double posting
   // postFlags("inactiveflags");  
   if(!m_perpetual)
@@ -495,6 +726,28 @@ void IvPBehavior::postEMessage(string g_emsg)
 }
 
 //-----------------------------------------------------------
+// Procedure: postEventMessage()
+
+void IvPBehavior::postEventMessage(string g_emsg)
+{
+  if(m_descriptor != "")
+    g_emsg = (m_descriptor + ": " + g_emsg);
+
+  postMessage("BHV_EVENT", g_emsg);
+}
+
+//-----------------------------------------------------------
+// Procedure: postRepeatableEventMessage()
+
+void IvPBehavior::postRepeatableEventMessage(string g_emsg)
+{
+  if(m_descriptor != "")
+    g_emsg = (m_descriptor + ": " + g_emsg);
+
+  postMessage("BHV_EVENT", g_emsg, "repeatable");
+}
+
+//-----------------------------------------------------------
 // Procedure: postBadConfig
 
 void IvPBehavior::postBadConfig(string message)
@@ -507,7 +760,8 @@ void IvPBehavior::postBadConfig(string message)
 
 
 //-----------------------------------------------------------
-// Procedure: postWMessage
+// Procedure: postWMessage()
+//      Note: An empty message is simply ignored!
 
 void IvPBehavior::postWMessage(string g_msg)
 {
@@ -522,6 +776,7 @@ void IvPBehavior::postWMessage(string g_msg)
 
 //-----------------------------------------------------------
 // Procedure: postRetractWMessage
+//      Note: An empty message is simply ignored!
 
 void IvPBehavior::postRetractWMessage(string g_msg)
 {
@@ -620,6 +875,8 @@ bool IvPBehavior::checkForDurationReset()
   bool reset_triggered = false;
   //if(m_duration_reset_val == "")
   //  reset_triggered = true;
+  if((ok_s || ok_d) && (m_duration_reset_val == ""))
+    reset_triggered = true;
   if(ok_s && (m_duration_reset_val == s_result))
     reset_triggered = true;
   if(ok_d && (atof(m_duration_reset_val.c_str()) == d_result))
@@ -728,7 +985,7 @@ bool IvPBehavior::checkNoStarve()
 
 
 //-----------------------------------------------------------
-// Procedure: checkUpdates
+// Procedure: checkUpdates()
 
 // (1) We want to be efficient and avoid applying an update string 
 //     if it hasn't change since the last application - in case some
@@ -763,10 +1020,12 @@ bool IvPBehavior::checkUpdates()
     update_result += ",var=" + m_update_var;
     update_result += ",time=" + doubleToString(getBufferLocalTime(),2);
 
-    // Added Mar 7th 2014, allow successive dupl updates with word toggle in it.
+    // Added Mar 7th 2014, allow successive dupl updates with word
+    // toggle in it.
     if(strContains(tolower(new_update_str), "toggle") ||
+       strContains(tolower(new_update_str), "engage") ||
        ((new_update_str != "") && (new_update_str != m_prev_update_str))) {
-    
+      
       vector<string> uvector = parseString(new_update_str, '#');
       unsigned int j, usize = uvector.size();
       
@@ -780,8 +1039,18 @@ bool IvPBehavior::checkUpdates()
 	string pair  = uvector[j];
 	string param = biteStringX(pair, '=');
 	string value = pair;
-	if((param=="name") && (value!=m_descriptor))
-	  name_mismatch = true;
+	// Match if exact match, or bhv name ends with given name val
+	if(param == "name") {
+	  // If dyn spawned update name need only match end of bhv name
+	  if(isDynamicallySpawned()) {
+	    string bhv_basename = getSpawnBaseName();
+	    if(m_descriptor != (bhv_basename + value))
+	      name_mismatch = true;
+	  }
+	  // If note dyn spawned update name must exactly match bhv name
+	  if(!isDynamicallySpawned() && (value != m_descriptor))
+	    name_mismatch = true;
+	}
       }
 
       if(name_mismatch)
@@ -794,9 +1063,10 @@ bool IvPBehavior::checkUpdates()
 	  string param = biteStringX(pair, '=');
 	  string value = pair;
 	  bool  result = true;
-	  // Aug 28, 2015, Don't try to update "name" parameter. We don't want to
-	  // since "name" should only be set at creation time. We want to totally
-	  // ignore it since we dont want it flagged as an unhandled update.
+	  // Aug 28, 2015, Don't try to update "name" parameter. We
+	  // don't want to since "name" should only be set at creation
+	  // time. We want to totally ignore it since we dont want it
+	  // flagged as an unhandled update.
 	  if(param != "name") { 
 	    result = setParam(param, value);
 	    if(!result)
@@ -970,57 +1240,145 @@ void IvPBehavior::updateStateDurations(string bhv_state)
 
 void IvPBehavior::postFlags(const string& str, bool repeatable)
 {
-  vector<VarDataPair> flags;
   if(str == "runflags")
-    flags = m_run_flags;
-  else if(str == "endflags")
-    flags = m_end_flags;
+    postFlags(m_run_flags, repeatable);
+  else if(str == "runxflags")
+    postFlags(m_runx_flags, repeatable);
   else if(str == "idleflags")
-    flags = m_idle_flags;
+    postFlags(m_idle_flags, repeatable);
   else if(str == "activeflags")
-    flags = m_active_flags;
+    postFlags(m_active_flags, repeatable);
   else if(str == "inactiveflags")
-    flags = m_inactive_flags;
-  else if(str == "spawnflags")
-    flags = m_spawn_flags;
-  
-  // The endflags are treated as a special case in that they are 
-  // posted as "repeatable" - that is they will be posted to the 
-  // MOOSDB regardless of whether the "outgoing" cache of postings
-  // maintained by the helm indicates that the posting is the same
-  // as the previous posting to that MOOS variable. 
-  bool endflags = (str == "endflags");
+    postFlags(m_inactive_flags, repeatable);
 
-  unsigned int i, vsize = flags.size();
-  for(i=0; i<vsize; i++) {
+  else if(str == "endflags")
+    postFlags(m_end_flags, repeatable);
+  else if(str == "spawnflags")
+    postFlags(m_spawn_flags, repeatable);
+  else if(str == "configflags")
+    postFlags(m_config_flags, repeatable);
+}
+
+//-----------------------------------------------------------
+// Procedure: postFlags()
+//     Notes: The repeat argument indicates that the posting should
+//            be made as postRepeatable. This means the helm's
+//            duplication filter will let it through absolutely.
+
+void IvPBehavior::postFlags(const vector<VarDataPair>& flags, bool repeatable)
+{
+  for(unsigned int i=0; i<flags.size(); i++) 
+    postFlag(flags[i], repeatable);
+
+#if 0
+  string key;
+  if(repeatable)
+    key = "repeatable";
+  
+  for(unsigned int i=0; i<flags.size(); i++) {
     string var = flags[i].get_var();
-    
-    if(flags[i].is_string()) {
+
+    if(flags[i].is_solo_macro()) {
       string sdata = flags[i].get_sdata();
-      sdata = findReplace(sdata, "$[OWNSHIP]", m_us_name);
-      sdata = findReplace(sdata, "$[BHVNAME]", m_descriptor);
-      sdata = findReplace(sdata, "$[BHVTYPE]", m_behavior_type);
-      sdata = findReplace(sdata, "$[CONTACT]", m_contact);
-      if(endflags || repeatable) 
-	postRepeatableMessage(var, sdata);
-      else
-	postMessage(var, sdata);
+      sdata = expandMacros(sdata);
+
+      if(isNumber(sdata)) {
+	double ddata = atof(sdata.c_str());
+	postMessage(var, ddata, key);
+      }
+      else 
+	postMessage(var, sdata, key);
     }
+
+
+    // Handle String postings
+    else if(flags[i].is_string()) {
+      string sdata = flags[i].get_sdata();
+      sdata = expandMacros(sdata);
+      postMessage(var, sdata, key);
+    }
+    // Handle Double postings
     else {
       double ddata = flags[i].get_ddata();
-      if(endflags || repeatable)
-	postRepeatableMessage(var, ddata);
-      else
-	postMessage(var, ddata);
+      postMessage(var, ddata, key);
     }	
   }    
+#endif
+}
+
+
+//-----------------------------------------------------------
+// Procedure: postFlag()
+//     Notes: The repeat argument indicates that the posting should
+//            be made as postRepeatable. This means the helm's
+//            duplication filter will let it through absolutely.
+
+void IvPBehavior::postFlag(const VarDataPair& flag, bool repeatable)
+{
+  // Part 1: If flag is tagged as repeatable, create a key used for
+  // engaging with the helm duplication filter. 
+  string key;
+  if(repeatable)
+    key = "repeatable";
+  
+  // Part 2: Get the variable name and initialize the sdata/ddata
+  // fields. A non-empty-string sdata will mean this is a string posting
+  string var = flag.get_var();
+  string sdata;
+  double ddata = 0;
+
+  // Part 3: Detect if the posting is a stand-alone macro. If it is, and
+  // it expands to a numerical value, post it as a number not a string
+  if(flag.is_solo_macro()) {
+    string tmp_sdata = flag.get_sdata();
+    tmp_sdata = expandMacros(tmp_sdata);
+    if(isNumber(tmp_sdata))
+      ddata = atof(tmp_sdata.c_str());
+    else 
+      sdata = tmp_sdata;
+  }
+  else if(flag.is_string()) {
+    sdata = flag.get_sdata();
+    sdata = expandMacros(sdata);
+  }
+  else
+    ddata = flag.get_ddata();
+
+  // Part 4: Determine the destination of the post. By default if no
+  // destination is given, the post is just made locally to ownship as
+  // was always the case since the earliest versions.
+  string dest_tag = flag.get_dest_tag();
+  
+  // Part 4A: Determine if post is made to local (ownship) MOOSDB
+  if((dest_tag == "") || (dest_tag == "all+") || (dest_tag == "group+"))
+    postMessage(var, sdata, ddata, key);
+
+  // Part 4B: Determine if we post is made to ownship group
+  if((dest_tag == "group") || (dest_tag == "group+"))
+    postGMessage(var, sdata, ddata, key);
+
+  // Part 4C: Determine if we post is made to everyone
+  if((dest_tag == "all") || (dest_tag == "all+"))
+    postXMessage(var, sdata, ddata, key);
+}
+
+
+//-----------------------------------------------------------
+// Procedure: getBehaviorAge()
+
+double IvPBehavior::getBehaviorAge() const
+{
+  if(!m_info_buffer)
+    return(0);
+  
+  return(getBufferCurrTime() - getBehaviorTOC());
 }
 
 
 //-----------------------------------------------------------
 // Procedure: getBufferCurrTime()
 
-double IvPBehavior::getBufferCurrTime()
+double IvPBehavior::getBufferCurrTime() const
 {
   if(!m_info_buffer)
     return(0);
@@ -1031,7 +1389,7 @@ double IvPBehavior::getBufferCurrTime()
 //-----------------------------------------------------------
 // Procedure: getBufferLocalTime()
 
-double IvPBehavior::getBufferLocalTime()
+double IvPBehavior::getBufferLocalTime() const
 {
   if(!m_info_buffer)
     return(0);
@@ -1048,7 +1406,7 @@ double IvPBehavior::getBufferLocalTime()
 //            N otherwise the time since last updated.
 //      Note: If updated on the current helm iteration, will be zero.
 
-double IvPBehavior::getBufferTimeVal(string varname)
+double IvPBehavior::getBufferTimeVal(string varname) const
 {
   if(!m_info_buffer)
     return(0);
@@ -1056,13 +1414,39 @@ double IvPBehavior::getBufferTimeVal(string varname)
 }
 
 //-----------------------------------------------------------
+// Procedure: getBufferVarUpdated()
+//   Purpose: Return true if var is known and has been updated
+//            on the current helm iteration.
+
+bool IvPBehavior::getBufferVarUpdated(string varname) const
+{
+  if(!m_info_buffer)
+    return(false);
+  if(!m_info_buffer->isKnown(varname))
+    return(false);
+  double elapsed = m_info_buffer->tQuery(varname);
+  if(elapsed == 0)
+    return(true);
+  return(false);
+}
+
+//-----------------------------------------------------------
 // Procedure: getBufferMsgTimeVal()
 
-double IvPBehavior::getBufferMsgTimeVal(string varname)
+double IvPBehavior::getBufferMsgTimeVal(string varname) const
 {
   if(!m_info_buffer)
     return(0);
   return(m_info_buffer->mtQuery(varname));
+}
+
+//-----------------------------------------------------------
+// Procedure: getBufferDoubleVal()
+
+double IvPBehavior::getBufferDoubleVal(string varname)
+{
+  bool ok_not_used = true;
+  return(getBufferDoubleVal(varname, ok_not_used));
 }
 
 //-----------------------------------------------------------
@@ -1084,9 +1468,20 @@ double IvPBehavior::getBufferDoubleVal(string varname, bool& ok)
       ok = true;
     }
   }
-  if((!ok) && !vectorContains(m_info_vars_no_warning, varname)) 
+  if((!ok) && !vectorContains(m_info_vars_no_warning, varname))     
     postWMessage(varname + " dbl info not found in helm info_buffer");
   return(value);
+}
+
+//-----------------------------------------------------------
+// Procedure: getBufferDoubleValX()
+//   Purpose: A convenience function to return Boolean result
+
+bool IvPBehavior::getBufferDoubleValX(string varname, double& dval)
+{
+  bool ok;
+  dval = getBufferDoubleVal(varname, ok);
+  return(ok);
 }
 
 //-----------------------------------------------------------
@@ -1113,6 +1508,15 @@ string IvPBehavior::getBufferStringVal(string varname, bool& ok)
   return(value);
 }
 
+//-----------------------------------------------------------
+// Procedure: getBufferStringValX()
+
+bool IvPBehavior::getBufferStringValX(string varname, string& sval)
+{
+  bool ok;
+  sval = getBufferStringVal(varname, ok);
+  return(ok);
+}
 
 //-----------------------------------------------------------
 // Procedure: getBufferStringVal()
@@ -1185,6 +1589,10 @@ vector<string> IvPBehavior::getStateSpaceVars()
   for(i=0; i<vsize; i++)
     rvector.push_back(m_run_flags[i].get_var());
   
+  vsize = m_runx_flags.size();
+  for(i=0; i<vsize; i++)
+    rvector.push_back(m_runx_flags[i].get_var());
+  
   vsize = m_idle_flags.size();
   for(i=0; i<vsize; i++)
     rvector.push_back(m_idle_flags[i].get_var());
@@ -1202,4 +1610,58 @@ vector<string> IvPBehavior::getStateSpaceVars()
     rvector.push_back(m_inactive_flags[i].get_var());
   
   return(rvector);
+}
+
+//-----------------------------------------------------------
+// Procedure: expandMacros()
+
+string IvPBehavior::expandMacros(string sdata)
+{
+  sdata = macroExpand(sdata, "OWNSHIP", m_us_name);
+  sdata = macroExpand(sdata, "BHVNAME", m_descriptor);
+  sdata = macroExpand(sdata, "BHVTYPE", m_behavior_type);
+  sdata = macroExpand(sdata, "PWT", m_priority_wt);
+
+  sdata = macroExpand(sdata, "CONTACT", m_contact);
+  sdata = macroExpand(sdata, "UTC", getBufferCurrTime());
+    
+  sdata = macroExpand(sdata, "OSX", m_osx);
+  sdata = macroExpand(sdata, "OSY", m_osy);
+  sdata = macroExpand(sdata, "OSH", m_osh);
+  sdata = macroExpand(sdata, "OSV", m_osv);
+
+  if(strContains(sdata, "HASH")) {
+    sdata = macroHashExpand(sdata, "HASH");
+    sdata = macroHashExpand(sdata, "HASH2");
+    sdata = macroHashExpand(sdata, "HASH3");
+    sdata = macroHashExpand(sdata, "HASH4");
+    sdata = macroHashExpand(sdata, "HASH5");
+    sdata = macroHashExpand(sdata, "HASH6");
+    sdata = macroHashExpand(sdata, "HASH7");
+    sdata = macroHashExpand(sdata, "HASH8");
+    sdata = macroHashExpand(sdata, "HASH9");
+  }
+  
+  sdata = expandCtrMacro(sdata, "CTR", m_macro_ctr);
+  sdata = expandCtrMacro(sdata, "CTR1", m_macro_ctr_01);
+  sdata = expandCtrMacro(sdata, "CTR2", m_macro_ctr_02);
+  sdata = expandCtrMacro(sdata, "CTR3", m_macro_ctr_03);
+  sdata = expandCtrMacro(sdata, "CTR4", m_macro_ctr_04);
+  sdata = expandCtrMacro(sdata, "CTR5", m_macro_ctr_05);
+  
+  return(sdata);
+}
+
+
+//-----------------------------------------------------------
+// Procedure: expandCtrMacro()
+
+string IvPBehavior::expandCtrMacro(string sdata, string macro, unsigned int& ctr)
+{
+  string full_macro = "$[" + macro + "]";
+  if(strContains(sdata, full_macro)) {
+    ctr++;
+    sdata = macroExpand(sdata, macro, ctr);
+  }    
+  return(sdata);
 }

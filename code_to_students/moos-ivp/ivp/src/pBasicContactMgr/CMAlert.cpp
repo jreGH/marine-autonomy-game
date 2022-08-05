@@ -37,7 +37,7 @@ CMAlert::CMAlert()
 }
 
 //---------------------------------------------------------------
-// Procedure: setAlertRange
+// Procedure: setAlertRange()
 //      Note: We ensure that m_range_far is always greater than or
 //            equal to m_range. 
 
@@ -53,7 +53,7 @@ bool CMAlert::setAlertRange(double dval)
 }
 
 //---------------------------------------------------------------
-// Procedure: setAlertRangeFar
+// Procedure: setAlertRangeFar()
 //      Note: We ensure that m_range_far is always greater than or
 //            equal to m_range. 
 
@@ -69,7 +69,7 @@ bool CMAlert::setAlertRangeFar(double dval)
 }
 
 //---------------------------------------------------------------
-// Procedure: setAlertRangeColor
+// Procedure: setAlertRangeColor()
 
 bool CMAlert::setAlertRangeColor(string str)
 {
@@ -80,7 +80,7 @@ bool CMAlert::setAlertRangeColor(string str)
 }
 
 //---------------------------------------------------------------
-// Procedure: setAlertRangeFarColor
+// Procedure: setAlertRangeFarColor()
 
 bool CMAlert::setAlertRangeFarColor(string str)
 {
@@ -91,7 +91,7 @@ bool CMAlert::setAlertRangeFarColor(string str)
 }
 
 //---------------------------------------------------------------
-// Procedure: setAlertRegion
+// Procedure: setAlertRegion()
 
 bool CMAlert::setAlertRegion(string str)
 {
@@ -104,29 +104,31 @@ bool CMAlert::setAlertRegion(string str)
 }
 
 //---------------------------------------------------------------
-// Procedure: addAlertOnFlag
+// Procedure: addAlertOnFlag()
+//   Example: CONTACT_INFO=name=$[VNAME] # contact=$[VNAME]
 
 bool CMAlert::addAlertOnFlag(string str)
 {
   string lft = biteStringX(str, '=');
   string rgt = str;
-
+  
   if((lft == "") || (rgt == ""))
     return(false);
-
+  
   VarDataPair pair(lft, rgt, "auto");
   m_on_flags.push_back(pair);
+  
   return(true);    
 }
 
 //---------------------------------------------------------------
-// Procedure: addAlertOffFlag
+// Procedure: addAlertOffFlag()
 
 bool CMAlert::addAlertOffFlag(string str)
 {
   string lft = biteStringX(str, '=');
   string rgt = str;
-
+  
   if((lft == "") || (rgt == ""))
     return(false);
   
@@ -140,21 +142,19 @@ bool CMAlert::addAlertOffFlag(string str)
 //            If match types are configured with this alert, then
 //            a contact, if it has a type, its type must be one of
 //            these match types.
-//  Examples: "kayak", "mokai,kayak,uuv"
+//  Examples: "kayak", "mokai,kayak,uuv"  "mokai:kayak:uuv"
 
 bool CMAlert::addMatchType(string str)
 {
-  bool all_ok = true;
+  str = findReplace(str, ':', ',');
   
-  vector<string> svector = parseString(str, ':');
+  vector<string> svector = parseString(str, ',');
   for(unsigned int i=0; i<svector.size(); i++) {
     string match_type = stripBlankEnds(svector[i]);
     if(!vectorContains(m_match_type, match_type))
       m_match_type.push_back(match_type);
-    else
-      all_ok = false;
-  }
-  return(all_ok);    
+   }
+  return(true);
 }
 
 //---------------------------------------------------------------
@@ -162,21 +162,20 @@ bool CMAlert::addMatchType(string str)
 //            If ignore types are configured with this alert, then
 //            a contact, if it has a type, its type must NOT be 
 //            one of these ignore types.
-//  Examples: "kayak", "mokai,kayak,uuv"
+//  Examples: "kayak", "mokai,kayak,uuv", "mokai:kayak:uuv"
 
 bool CMAlert::addIgnoreType(string str)
 {
-  bool all_ok = true;
-  
+  str = findReplace(str, ':', ',');
+
   vector<string> svector = parseString(str, ':');
   for(unsigned int i=0; i<svector.size(); i++) {
     string ignore_type = stripBlankEnds(svector[i]);
     if(!vectorContains(m_ignore_type, ignore_type))
       m_ignore_type.push_back(ignore_type);
-    else
-      all_ok = false;
   }
-  return(all_ok);    
+
+  return(true);    
 }
 
 //---------------------------------------------------------------
@@ -187,17 +186,15 @@ bool CMAlert::addIgnoreType(string str)
 
 bool CMAlert::addMatchGroup(string str)
 {
-  bool all_ok = true;
+  str = findReplace(str, ':', ',');
   
   vector<string> svector = parseString(str, ':');
   for(unsigned int i=0; i<svector.size(); i++) {
     string match_group = stripBlankEnds(svector[i]);
     if(!vectorContains(m_match_group, match_group))
       m_match_group.push_back(match_group);
-    else
-      all_ok = false;
   }
-  return(all_ok);    
+  return(true);
 }
 
 //---------------------------------------------------------------
@@ -208,17 +205,15 @@ bool CMAlert::addMatchGroup(string str)
 
 bool CMAlert::addIgnoreGroup(string str)
 {
-  bool all_ok = true;
+  str = findReplace(str, ':', ',');
   
   vector<string> svector = parseString(str, ':');
   for(unsigned int i=0; i<svector.size(); i++) {
     string ignore_group = stripBlankEnds(svector[i]);
     if(!vectorContains(m_ignore_group, ignore_group))
       m_ignore_group.push_back(ignore_group);
-    else
-      all_ok = false;
   }
-  return(all_ok);    
+  return(true);
 }
 
 //---------------------------------------------------------------

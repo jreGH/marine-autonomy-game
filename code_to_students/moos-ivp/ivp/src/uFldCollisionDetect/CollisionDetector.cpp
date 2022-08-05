@@ -51,14 +51,15 @@ CollisionDetector::CollisionDetector()
   m_conditions_ok = true;
 
   m_post_closest_range = false;
+  m_post_closest_range_ever = false;
 
   m_report_all_encounters = false;
   
-  m_info_buffer   = new InfoBuffer;
+  m_info_buffer = new InfoBuffer;
 }
 
 //---------------------------------------------------------
-// Procedure: OnNewMail
+// Procedure: OnNewMail()
 
 bool CollisionDetector::OnNewMail(MOOSMSG_LIST &NewMail)
 {
@@ -72,6 +73,8 @@ bool CollisionDetector::OnNewMail(MOOSMSG_LIST &NewMail)
 
     if(key == "NODE_REPORT") 
       handleMailNodeReport(sval);
+    if(key == "UCD_RESET") 
+      m_cpa_monitor.resetClosestRange();
     else 
       updateInfoBuffer(msg);
   }
@@ -79,7 +82,7 @@ bool CollisionDetector::OnNewMail(MOOSMSG_LIST &NewMail)
 }
 
 //---------------------------------------------------------
-// Procedure: OnConnectToServer
+// Procedure: OnConnectToServer()
 
 bool CollisionDetector::OnConnectToServer()
 {
@@ -101,6 +104,12 @@ bool CollisionDetector::Iterate()
     double closest_range = m_cpa_monitor.getClosestRange();
     if(closest_range > 0)
       Notify("UCD_CLOSEST_RANGE", closest_range);
+  }
+  
+  if(m_post_closest_range_ever) {
+    double closest_range_ever = m_cpa_monitor.getClosestRangeEver();
+    if(closest_range_ever > 0)
+      Notify("UCD_CLOSEST_RANGE_EVER", closest_range_ever);
   }
   
   m_conditions_ok = checkConditions();
@@ -150,6 +159,7 @@ void CollisionDetector::handleCPAEvent(CPAEvent event)
     m_map_vname_collisions[v1]++;
     m_map_vname_collisions[v2]++;
     postFlags(m_collision_flags, event);
+    Notify("COLLISION_TOTAL", m_total_collisions);
   }
   else if(cpa <= m_near_miss_dist) {
     rank = "near_miss";
@@ -157,7 +167,12 @@ void CollisionDetector::handleCPAEvent(CPAEvent event)
     m_map_vname_near_misses[v1]++;
     m_map_vname_near_misses[v2]++;
     postFlags(m_near_miss_flags, event);
+    Notify("NEAR_MISS_TOTAL", m_total_near_misses);
   }
+  
+  string event_str = "Encounter: " + v1 + " and " + v2 + ":";
+  event_str += "rank=" + rank + ", cpa=" + cpas;
+  reportEvent(event_str);
   
   // Perhaps done if clear encounter and minimal reporting
   if((rank == "clear") && !m_report_all_encounters)
@@ -275,8 +290,14 @@ bool CollisionDetector::OnStartUp()
       handled = handleConfigFlag("encounter", value);
     else if(param == "post_closest_range") 
       handled = setBooleanOnString(m_post_closest_range, value);
+    else if(param == "post_closest_range_ever") 
+      handled = setBooleanOnString(m_post_closest_range_ever, value);
     else if(param == "report_all_encounters") 
       handled = setBooleanOnString(m_report_all_encounters, value);
+    else if(param == "ignore_group") 
+      handled = m_cpa_monitor.addIgnoreGroup(value);
+    else if(param == "reject_group") 
+      handled = m_cpa_monitor.addRejectGroup(value);
     else if(param == "condition") {
       LogicCondition new_condition;
       handled = new_condition.setCondition(value);
@@ -304,6 +325,10 @@ bool CollisionDetector::OnStartUp()
   m_param_summary += ", near_miss_range=" + doubleToStringX(m_near_miss_dist);
   m_param_summary += ", encounter_range=" + doubleToStringX(m_encounter_dist);
   Notify("COLLISION_DETECT_PARAMS", m_param_summary);
+
+  Notify("ENCOUNTER_TOTAL", (double)0);
+  Notify("NEAR_MISS_TOTAL", (double)0);
+  Notify("COLLISION_TOTAL", (double)0);
   
   registerVariables();	
   return(true);
@@ -316,7 +341,8 @@ void CollisionDetector::registerVariables()
 {
   AppCastingMOOSApp::RegisterVariables();
   Register("NODE_REPORT", 0);
-
+  Register("UCD_RESET", 0);
+  
   //=======================================================
   // Register for variables used in the logic conditions
   //=======================================================
@@ -360,7 +386,53 @@ bool CollisionDetector::handleConfigFlag(string flag_type, string str)
 
 
 //------------------------------------------------------------
-// Procedure: postFlags
+// Procedure: expandMacroCD()
+//   Purpose: Examine the string and expand macros of the type
+//            $[vname@range]. The vname could be an known vehicle
+//            name, or just V1 or V2 involved in an encounter.
+//  Examples: "foo=$[nelson@40], bar=$[V2@50]"
+//            "$[abe,20]
+//      Note: The numerical component specifies a range. The macro
+//            will expand to an unsigned int string, indicating
+//            the number of contacts presently within that range,
+//            the Contact Density (CD) of the moment.
+
+string CollisionDetector::expandMacroCD(string orig, string vname1,
+					string vname2)
+{
+  string result = orig;
+
+  vector<string> svector = parseString(orig, '$');
+  for(unsigned int i=0; i<svector.size(); i++) {
+    string str = svector[i];
+    if(strBegins(str, "[") && strContains(str, "]")) {
+      biteString(str, '[');
+      rbiteString(str, ']');
+      string macro = "$[" + str + "]";
+      vector<string> jvector = parseString(str, '@');
+      if(jvector.size() == 2) {
+	string vname = jvector[0];
+	string range = jvector[1];
+	if(isNumber(range)) {
+	  double drng = atof(range.c_str());
+	  if(drng >= 0) {
+	    if((vname == "V1") || (vname == "v1"))
+	      vname = vname1;
+	    else if((vname == "V2") || (vname == "v2"))
+	      vname = vname2;
+	    unsigned int cd = m_cpa_monitor.getContactDensity(vname, drng);
+	    string cd_str = uintToString(cd);
+	    result = findReplace(result, macro, cd_str);
+	  }
+	}
+      }
+    }
+  }
+  return(result);
+}
+
+//------------------------------------------------------------
+// Procedure: postFlags()
 
 void CollisionDetector::postFlags(const vector<VarDataPair>& flags,
 				  const CPAEvent& event)
@@ -389,8 +461,13 @@ void CollisionDetector::postFlags(const vector<VarDataPair>& flags,
       double cpa_dbl = event.getCPA();
       string cpa_str = doubleToStringX(cpa_dbl, 4);
 
-      // If the string is just $CPA interpret as a double posting
-      if(sval == "$CPA")
+      sval = expandMacroCD(sval, vname1, vname2);
+      if(isNumber(sval)) {
+	double dval = atof(sval.c_str());
+	Notify(moosvar, dval);
+      }
+      // If the string is just $CPA or $IDX interpret as a double posting
+      else if(sval == "$CPA")
 	Notify(moosvar, cpa_dbl);
       else if(sval == "$IDX") 
 	Notify(moosvar, m_total_encounters);
@@ -406,6 +483,8 @@ void CollisionDetector::postFlags(const vector<VarDataPair>& flags,
     }
   }
 }
+
+
 
 
 //-----------------------------------------------------------
@@ -505,6 +584,8 @@ void CollisionDetector::handleMailNodeReport(string sval)
 //         encounter_dist:
 //         collision_dist:
 //         near_miss_dist:
+//          ignore_groups:
+//          reject_groups:
 //     range_pulse_render:
 //   range_pulse_duration:
 //      range_pulse_range:
@@ -535,32 +616,47 @@ bool CollisionDetector::buildReport()
   string pulse_ren_str = boolToString(m_pulse_render);
   string pulse_dur_str = doubleToString(m_pulse_duration,2);
   string pulse_rng_str = doubleToString(m_pulse_range,2);
+  string ignore_grps_str = m_cpa_monitor.getIgnoreGroups();
+  string reject_grps_str = m_cpa_monitor.getRejectGroups();
+  string post_cr_str  = boolToString(m_post_closest_range);
+  string post_cre_str = boolToString(m_post_closest_range_ever);
   
-  m_msgs << "Configuration:                               \n";
-  m_msgs << "============================================ \n";
-  m_msgs << "       encounter_dist: " << encounter_str << endl;
-  m_msgs << "       collision_dist: " << coll_dist_str << endl;
-  m_msgs << "       near_miss_dist: " << near_miss_str << endl;
-  m_msgs << "   range_pulse_render: " << pulse_ren_str << endl;
-  m_msgs << " range_pulse_duration: " << pulse_dur_str << endl;
-  m_msgs << "    range_pulse_range: " << pulse_rng_str << endl << endl;
+  m_msgs << "Configuration:                               " << endl;
+  m_msgs << "============================================ " << endl;
+  m_msgs << "         encounter_dist: " << encounter_str << endl;
+  m_msgs << "         collision_dist: " << coll_dist_str << endl;
+  m_msgs << "         near_miss_dist: " << near_miss_str << endl;
+  m_msgs << "          ignore_groups: " << ignore_grps_str << endl;
+  m_msgs << "          reject_groups: " << reject_grps_str << endl;
+  m_msgs << "     range_pulse_render: " << pulse_ren_str << endl;
+  m_msgs << "   range_pulse_duration: " << pulse_dur_str << endl;
+  m_msgs << "      range_pulse_range: " << pulse_rng_str << endl;
+  m_msgs << "     post_closest_range: " << post_cr_str << endl;
+  m_msgs << "post_closest_range_ever: " << post_cre_str << endl << endl;
   
   string conditions_ok_str  = boolToString(m_conditions_ok);
   string tot_encounters_str = uintToString(m_total_encounters);
   string tot_near_miss_str = uintToString(m_total_near_misses);
   string tot_collision_str = uintToString(m_total_collisions);
-  
-  m_msgs << "============================================ \n";
-  m_msgs << "State Overall:                               \n";
-  m_msgs << "============================================ \n";
-  m_msgs << "             Active: " << conditions_ok_str  << endl;
-  m_msgs << "   Total Encounters: " << tot_encounters_str << endl;
-  m_msgs << "  Total Near Misses: " << tot_near_miss_str  << endl;
-  m_msgs << "   Total Collisions: " << tot_collision_str  << endl << endl;
 
-  m_msgs << "============================================ \n";
-  m_msgs << "State By Vehicle:                            \n";
-  m_msgs << "============================================ \n";
+  double closest_range = m_cpa_monitor.getClosestRange();
+  double closest_range_ever = m_cpa_monitor.getClosestRangeEver();
+  string cr_str  = doubleToStringX(closest_range,2);
+  string cre_str = doubleToStringX(closest_range_ever,2);
+  
+  m_msgs << "============================================" << endl;
+  m_msgs << "State Overall:                              " << endl;
+  m_msgs << "============================================" << endl;
+  m_msgs << "             Active: " << conditions_ok_str   << endl;
+  m_msgs << "      Closest Range: " << cr_str              << endl;
+  m_msgs << " Closest Range Ever: " << cre_str             << endl;
+  m_msgs << "   Total Encounters: " << tot_encounters_str  << endl;
+  m_msgs << "  Total Near Misses: " << tot_near_miss_str   << endl;
+  m_msgs << "   Total Collisions: " << tot_collision_str   << endl << endl;
+
+  m_msgs << "============================================" << endl;
+  m_msgs << "State By Vehicle:                           " << endl;
+  m_msgs << "============================================" << endl;
 
   ACTable actab(4);
 
@@ -583,7 +679,3 @@ bool CollisionDetector::buildReport()
   m_msgs << actab.getFormattedString();
   return(true);
 }
-
-
-
-

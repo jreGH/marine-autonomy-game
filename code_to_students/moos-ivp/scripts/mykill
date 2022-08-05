@@ -24,7 +24,9 @@ killall -9 iActuationRobotX iVelodyne pFeatureTracker       \
         iGPS_KFAC iActuationRobot pDeadManPost              \
         ddConsoleApp pTaskManager iM200 iActuationKFAC
 
-killall -9 pLocalizePinger turnview
+killall -9 pLocalizePinger turnview pContactMgrV20 
+
+killall -9 uFldFlagManager uFldTagManager
 
 killall -9 MOOSDB iRemote MOOSRemote iGPS iGPSMonitor pNav  \
         pHelm pHelmIvP pMarineViewer iMarineSim uSimMarine  \
@@ -67,7 +69,7 @@ killall -9 pCBF pBTracker pTrackMonitor uTimerScript pDTSP         \
 killall -9 pFleetControl uFldScope uFldContactRangeSensor         \
         uFldPathCheck uFldNodeComms pSearchGrid pHostInfo      \
         uFldShoreBroker uFldNodeBroker uFldBeaconRangeSensor   \
-        uFldHazardSensor uFldMessageHandler pGenPath           \
+        uFldHazardSensor uFldMessageHandler pGenPath pGenPath2 \
         pPointAssign uFldHazardMetric pHandleSensorData        \
         uFldCTDSensor pFrontGridRender uPlotViewer uMAC        \
         pShare uFldGenericSensor uFldHazardMgr pGradeFrontEstimate pFrontEstimate
@@ -76,7 +78,8 @@ killall -9 pParticle uFldContactRangeSensorHP pUUVPath         \
         pWifiCheck uFldMessageSourcer pRangeSensorHandler      \
         pHunterPrey camera_example camera_example_server       \
         camera_example_viewer iHuxley uFldCollisionDetect iSay \
-        uLoadWatch pPolePath sedit pEvalLoiter uMemWatch
+        uLoadWatch pPolePath sedit pEvalLoiter uMemWatch       \
+        uSimHeron uSockComms
 
 killall -9 uSpeechRec uDialogManager
 

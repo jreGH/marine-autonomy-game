@@ -38,7 +38,9 @@
 #include "GUI_IPF.h"
 #include "GUI_HelmScope.h"
 #include "GUI_VarScope.h"
+#include "GUI_AppLogScope.h"
 #include "GUI_Encounters.h"
+#include "GUI_TaskDiary.h"
 #include "ALogDataBroker.h"
 
 class REPLAY_GUI : public MarineVehiGUI {
@@ -52,6 +54,8 @@ class REPLAY_GUI : public MarineVehiGUI {
   void   setDataBroker(ALogDataBroker);
   void   setLogPlotMenus();
   void   setVarHistMenus();
+  void   setAppLogMenus();
+  void   setTaskDiaryMenus();
   void   setBehaviorVarMap(std::map<std::string, std::string>);
   void   initLogPlotChoiceA(std::string vname, std::string varname);
   void   initLogPlotChoiceB(std::string vname, std::string varname);
@@ -75,6 +79,9 @@ class REPLAY_GUI : public MarineVehiGUI {
 
   void   resizeWidgetsShape();
 
+  void   setGrepStr1(std::string s) {m_grep1=s;}
+  void   setGrepStr2(std::string s) {m_grep2=s;}
+  
  protected:
   void   augmentMenu();
   
@@ -115,6 +122,12 @@ class REPLAY_GUI : public MarineVehiGUI {
   inline void cb_VarHist_i(int);
   static void cb_VarHist(Fl_Widget*, int);
 
+  inline void cb_AppLog_i(int);
+  static void cb_AppLog(Fl_Widget*, int);
+
+  inline void cb_TaskDiary_i();
+  static void cb_TaskDiary(Fl_Widget*);
+
   inline void cb_Encounter_i(int);
   static void cb_Encounter(Fl_Widget*, int);
 
@@ -146,10 +159,12 @@ class REPLAY_GUI : public MarineVehiGUI {
   NavPlotViewer *np_viewer;
   LogPlotViewer *lp_viewer;
   
-  std::list<GUI_IPF*>        m_sub_guis;
-  std::list<GUI_HelmScope*>  m_sub_guis_h;
-  std::list<GUI_VarScope*>   m_sub_guis_v;
-  std::list<GUI_Encounters*> m_sub_guis_e;
+  std::list<GUI_IPF*>         m_sub_guis;
+  std::list<GUI_HelmScope*>   m_sub_guis_h;
+  std::list<GUI_VarScope*>    m_sub_guis_v;
+  std::list<GUI_Encounters*>  m_sub_guis_e;
+  std::list<GUI_AppLogScope*> m_sub_guis_a;
+  std::list<GUI_TaskDiary*>   m_sub_guis_t;
 
  protected:
   ALogDataBroker m_dbroker;
@@ -191,6 +206,8 @@ class REPLAY_GUI : public MarineVehiGUI {
   std::list<double> m_warp_gaps;
   double            m_replay_warp_actual;
 
+  std::string m_grep1;
+  std::string m_grep2;
 };
 #endif
 

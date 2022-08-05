@@ -168,6 +168,7 @@ bool BasicContactMgr::OnStartUp()
 {
   AppCastingMOOSApp::OnStartUp();
 
+  // PID published to support uMemWatch or similar oversight
   Notify("PBASICCONTACTMGR_PID", getpid());
 
   m_ownship = m_host_community;
@@ -194,6 +195,12 @@ bool BasicContactMgr::OnStartUp()
 	reportConfigWarning("Failed alert config: " + value);
     }
 
+
+    else if(param == "ignore_group") {
+      bool handled = handleConfigIgnoreGroup(value);
+      if(!handled)
+	reportConfigWarning("Unhandled ignore_group: " + value);
+    }
 
     else if(param == "decay") {
       string left  = biteStringX(value, ',');
@@ -413,6 +420,10 @@ void BasicContactMgr::handleMailNodeReport(string report)
 {
   NodeRecord new_node_record = string2NodeRecord(report, true);
 
+  string group = tolower(new_node_record.getGroup());
+  if(vectorContains(m_ignore_groups, group))
+    return;
+
   // Part 1: Decide if we want to override X/Y with Lat/Lon based on 
   // user configuration and state of the node record.
   bool override_xy_with_latlon = true;
@@ -629,6 +640,25 @@ void BasicContactMgr::handleMailAlertRequest(string value)
 }
 
 //---------------------------------------------------------
+// Procedure: handleConfigIgnoreGroup
+//      Note: The ignore_group can also be set in the individual
+//            alert registration, but this is applied at the
+//            global level, right with a node report is received 
+
+
+bool BasicContactMgr::handleConfigIgnoreGroup(string grp_str)
+{
+  // All group names are treated case insensitive
+  grp_str = tolower(grp_str);
+  
+  if(vectorContains(m_ignore_groups, grp_str))
+    return(false);
+
+  m_ignore_groups.push_back(grp_str);
+  return(true);
+}
+
+//---------------------------------------------------------
 // Procedure: handleConfigAlert
 
 bool BasicContactMgr::handleConfigAlert(string alert_str)
@@ -649,6 +679,8 @@ bool BasicContactMgr::handleConfigAlert(string alert_str)
   if(m_map_alerts.count(alert_id) == 0) {
     m_map_alerts[alert_id].setAlertRange(m_default_alert_rng);
     m_map_alerts[alert_id].setAlertRangeFar(m_default_alert_rng_cpa);
+    m_map_alerts[alert_id].setAlertRangeColor(m_default_alert_rng_color);
+    m_map_alerts[alert_id].setAlertRangeFarColor(m_default_alert_rng_cpa_color);
   }
   
   string var, pattern;
@@ -672,9 +704,9 @@ bool BasicContactMgr::handleConfigAlert(string alert_str)
       pattern = right;
       ok = true;
     }
-    else if((left == "on_flag")) 
+    else if((left == "on_flag") || (left == "onflag")) 
       ok = m_map_alerts[alert_id].addAlertOnFlag(right);
-    else if((left == "off_flag"))
+    else if((left == "off_flag") || (left == "offflag"))
       ok = m_map_alerts[alert_id].addAlertOffFlag(right);
     else if(left == "region")
       ok = m_map_alerts[alert_id].setAlertRegion(right);
@@ -1236,12 +1268,16 @@ void BasicContactMgr::postRadii(bool active)
     double alert_range = getAlertRange(alert_id);
     string alert_range_color = getAlertRangeColor(alert_id);
 
+    if(!active || (alert_range_color == "invisible") ||
+       (alert_range_color == "empty") || (alert_range_color == ""))
+      active = false;
+    
     XYCircle circle(m_nav_x, m_nav_y, alert_range);
     circle.set_label(alert_id + "_in");
     circle.set_color("edge", alert_range_color);
     circle.set_vertex_size(0);
     circle.set_edge_size(1);
-    circle.set_active(true);
+    circle.set_active(active);
     string s1 = circle.get_spec();
     Notify("VIEW_CIRCLE", s1);
 
@@ -1249,12 +1285,18 @@ void BasicContactMgr::postRadii(bool active)
     if(alert_range_cpa > alert_range) {
 
       string alert_range_cpa_color = getAlertRangeCPAColor(alert_id);
+
+      if(!active || (alert_range_cpa_color == "invisible") ||
+	 (alert_range_cpa_color == "empty") ||
+	 (alert_range_cpa_color == ""))
+	active = false;
+
       XYCircle circ(m_nav_x, m_nav_y, alert_range_cpa);
       circ.set_label(alert_id + "_out");
       circ.set_color("edge", alert_range_cpa_color);
       circ.set_vertex_size(0);
       circ.set_edge_size(1);
-      circ.set_active(true);
+      circ.set_active(active);
       string s2 = circ.get_spec();
 
       Notify("VIEW_CIRCLE", s2);
@@ -1636,6 +1678,7 @@ bool BasicContactMgr::buildReport()
 	val = doubleToStringX(pair.get_ddata(), 3);
       m_msgs << "  ON_FLAG = " << var << "=" << val << endl;
     }
+
     vector<VarDataPair> xpairs = getAlertOffFlags(alert_id);
     for(unsigned int i=0; i<xpairs.size(); i++) {
       VarDataPair pair = xpairs[i];
