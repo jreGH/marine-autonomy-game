@@ -157,14 +157,24 @@ mode and runs the chase behavior; otherwise it loiters.
 
 ### Key behaviors you can drive
 
-| Behavior | Condition variable | Updates variable | What it does |
-|---|---|---|---|
-| `BHV_CutRange` | `MODE==CHASING` | `CHASE_UPDATES` | Closes range to a named contact |
-| `BHV_Loiter` | `MODE==LOITERING` | `LOITER_UPDATES` | Circles a polygon |
-| `BHV_Waypoint` | user-defined | `WPT_UPDATE` | Follows a list of waypoints |
-| `BHV_StationKeep` | user-defined | — | Holds a fixed point |
-| `BHV_AvoidCollision` | always active | — | Safety — avoids contacts |
-| `BHV_OpRegion` | always active | — | Safety — stays inside arena |
+The generated `.bhv` file uses a three-way mode hierarchy for horizontal motion
+plus `BHV_ConstantDepth` and `BHV_PeriodicSurface` for depth in serious missions.
+
+| Variable to set | Mode entered | Behavior active |
+|-----------------|--------------|-----------------|
+| `CLOSE=true` | `Chasing` | `BHV_CutRange` — closes on named contact |
+| `GO_TO=true` | `GoingTo` | `BHV_Waypoint` — follows waypoint list |
+| neither | `Patrolling` | `BHV_Loiter` — circles patrol polygon |
+| `DEPLOY=false` | `Inactive` | nothing |
+
+Always-active safety behaviors:
+
+| Behavior | Purpose |
+|----------|---------|
+| `BHV_OpRegion` | Hard arena boundary — stays inside polygon |
+| `BHV_AvoidCollision` | Soft collision avoidance |
+| `BHV_ConstantDepth` | *(GPS-denied only)* Holds search depth |
+| `BHV_PeriodicSurface` | *(GPS-denied only)* Forces surface for GPS fix |
 
 To dynamically update a behavior parameter at runtime, publish to its
 `updates` variable:
@@ -174,7 +184,10 @@ To dynamically update a behavior parameter at runtime, publish to its
 Notify("LOITER_UPDATES", "center_assign=x=-50,y=-200");
 
 // Change waypoint list mid-mission
-Notify("WPT_UPDATE", "points=-50,-100:-80,-150:-20,-180");
+Notify("WPT_UPDATE", "points=-50,-100:-80,-150:-20,-180,speed=1.5");
+
+// Override depth (GPS-denied only)
+Notify("DEPTH_UPDATES", "depth=20.0");
 ```
 
 ---
@@ -256,6 +269,22 @@ bool Challenge::Iterate() {
   deep can break line-of-sight if you add comms range limits later.
 - **Group filter**: Always check `contact.group() == "npc"` before acting
   on a contact — you do not want to chase the sharks.
+- **GPS-denied depth**: While `BHV_PeriodicSurface` is active (vehicle ascending
+  or at surface), horizontal behaviors are suspended.  Your loop keeps running —
+  just wait for `api.at_surface` to go False before resuming waypoint commands.
+- **Inspection clustering**: `pInfrastructureSensor` posts noisy detections at
+  4 Hz.  Accumulate ~5 hits within 15 m before reporting an anomaly to avoid
+  false positives.
+
+---
+
+## Example Scripts
+
+| Script | Mission type | What it demonstrates |
+|--------|-------------|----------------------|
+| `student/examples/chase_nearest.py` | Game | Priority-based NPC targeting; `api.chase()` / `api.loiter()` |
+| `student/examples/pipeline_survey.py` | Inspection | Subscribing to `INFRASTRUCTURE_DETECT`; detection clustering; `ANOMALY_REPORT` |
+| `student/examples/beacon_nav.py` | GPS-denied | Trilateration from beacon ranges; `GPSDeniedVehicle` subclass; surface-event detection |
 
 ---
 
@@ -396,4 +425,65 @@ while api.running:
     api.sleep(0.25)
 
 api.stop()
+```
+
+---
+
+## Extending VehicleAPI for Serious Missions
+
+`VehicleAPI` subscribes to the standard navigation variables on startup.
+For serious missions you need additional subscriptions.  The cleanest way
+is to subclass and override `_on_connect`:
+
+```python
+from api import VehicleAPI
+
+class InspectionVehicle(VehicleAPI):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._detections = []    # INFRASTRUCTURE_DETECT messages
+
+    def _on_connect(self):
+        super()._on_connect()
+        self._comms.register("INFRASTRUCTURE_DETECT", 0)
+        return True
+
+    def _on_new_mail(self, messages):
+        super()._on_new_mail(messages)
+        with self._lock:
+            for msg in messages:
+                if msg.key() == "INFRASTRUCTURE_DETECT":
+                    self._detections.append(msg.string())
+        return True
+```
+
+The GPS-denied example (`beacon_nav.py`) uses this pattern as `GPSDeniedVehicle`,
+adding `BEACON_RANGE_REPORT` and `VEHICLE_AT_SURFACE` subscriptions.
+
+### Inspection mission additions
+
+```python
+# After receiving INFRASTRUCTURE_DETECT messages and clustering them,
+# report a confirmed anomaly:
+api.notify("ANOMALY_REPORT_JELLYFISH",
+           "pipeline=cable_01,x=-101.2,y=-179.5,"
+           "type=anomaly,anomaly_type=damage,count=7")
+```
+
+`pInspectionScorer` on the shoreside receives this, matches it against
+ground truth within 15 m, and awards points (or deducts for a false alarm).
+
+### GPS-denied mission additions
+
+```python
+# Extra state properties available on GPSDeniedVehicle:
+api.at_surface          # bool — True while BHV_PeriodicSurface has control
+api.beacon_ranges       # dict — {"beacon_01": 42.3, ...}
+api.acoustic_position   # (x, y) tuple — smoothed trilateration estimate
+
+# Called in the loop to update the acoustic estimate:
+pos = api.update_acoustic_position()
+
+# Set depth (overrides BHV_ConstantDepth default):
+api.notify("DEPTH_UPDATES", "depth=20.0")
 ```
