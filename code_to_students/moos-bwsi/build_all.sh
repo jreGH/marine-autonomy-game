@@ -26,5 +26,13 @@ echo "=== Building pChallenge_shoreside ==="
 make -C "${SCRIPT_DIR}/behaviors/pChallenge_shoreside"
 
 echo ""
+echo "=== Building pInfrastructureSensor ==="
+make -C "${SCRIPT_DIR}/behaviors/pInfrastructureSensor"
+
+echo ""
+echo "=== Building pInspectionScorer ==="
+make -C "${SCRIPT_DIR}/behaviors/pInspectionScorer"
+
+echo ""
 echo "=== Build complete ==="
 echo "Binaries installed to: ${HOME}/moos-bwsi/behaviors/bin"

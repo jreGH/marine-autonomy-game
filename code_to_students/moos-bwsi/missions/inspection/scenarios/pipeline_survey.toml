@@ -1,0 +1,109 @@
+# BWSI AUVC — Pipeline Inspection scenario
+#
+# Teams survey an undersea telecommunications cable to locate damage
+# anomalies.  Vehicles must fly a corridor over the cable, log detections
+# from pInfrastructureSensor, and report anomaly positions to shoreside.
+#
+# Launch with:
+#   ./launch_inspection.sh --scenario pipeline_survey
+
+[scenario]
+name        = "Pipeline Survey"
+description = "Survey an undersea cable corridor to locate damage anomalies."
+tiff_file   = "forrest19.tif"
+
+[origin]
+lat =  43.825300
+lon = -70.330400
+
+# Arena is larger than the game scenario to accommodate the cable route.
+[arena]
+vertices = [
+  [-400, -500],
+  [ 400, -500],
+  [ 400,    0],
+  [-400,    0],
+]
+
+# Scoring: passed to pInspectionScorer (to be implemented)
+[scoring]
+coverage_score   = 1000   # points for surveying >= 80% of cable length
+anomaly_score    = 500    # points per correctly reported anomaly
+false_alarm_penalty = 100 # points deducted per false-alarm report
+length_min       = 30     # mission duration (minutes)
+
+# -----------------------------------------------------------------------
+# Infrastructure geometry
+# -----------------------------------------------------------------------
+
+# A sinuous telecommunications cable running NW→SE across the arena.
+# Points are local XY metres; depth is the cable's nominal depth.
+[[pipelines]]
+label  = "cable_01"
+depth  = 30.0
+points = [
+  [-300, -80],
+  [-200,-130],
+  [-100,-180],
+  [   0,-220],
+  [ 100,-200],
+  [ 200,-160],
+  [ 300,-120],
+]
+
+# Anomalies along cable_01 — these are the survey objectives.
+[[anomalies]]
+pipeline = "cable_01"
+x        = -100.0
+y        = -180.0
+type     = "damage"        # severed outer insulation
+
+[[anomalies]]
+pipeline = "cable_01"
+x        =   60.0
+y        = -210.0
+type     = "corrosion"     # electrolytic corrosion at connector joint
+
+[[anomalies]]
+pipeline = "cable_01"
+x        =  220.0
+y        = -155.0
+type     = "obstruction"   # fishing gear entanglement
+
+# -----------------------------------------------------------------------
+# Sensor model (passed to pInfrastructureSensor)
+# -----------------------------------------------------------------------
+[sensor]
+detect_range  = 30.0   # max sensor range (m)
+detect_cone   = 60.0   # half-angle of forward detection cone (deg)
+noise_sigma   = 3.0    # std-dev of position noise on detections (m)
+p_false_alarm = 0.02   # false alarm probability per vehicle per second
+reveal_pipe   = false  # set true to progressively reveal cable in viewer
+
+# -----------------------------------------------------------------------
+# Player teams
+# -----------------------------------------------------------------------
+
+[[teams]]
+name  = "alpha"
+color = "dodger_blue"
+
+  [[teams.vehicles]]
+  name          = "jellyfish"
+  student_mode  = "python"
+  start_x       =  -50.0
+  start_y       = -100.0
+  start_heading =  180
+  max_speed     =    4.0
+
+[[teams]]
+name  = "bravo"
+color = "orange"
+
+  [[teams.vehicles]]
+  name          = "squid"
+  student_mode  = "python"
+  start_x       =   50.0
+  start_y       = -100.0
+  start_heading =  180
+  max_speed     =    4.0

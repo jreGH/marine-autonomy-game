@@ -1,0 +1,110 @@
+# BWSI AUVC — GPS-Denied Navigation scenario
+#
+# Vehicles dive below the surface, losing GPS, and must navigate a
+# search box using acoustic beacon ranging + dead reckoning.  They
+# surface periodically to re-acquire GPS and correct their estimate.
+#
+# Scoring:
+#   - Coverage fraction of the search box: up to coverage_score points
+#   - Successful surface GPS re-acquisitions: gps_fix_score each
+#   - Navigation error at surface (RMS): displayed in the viewer
+#
+# Launch with:
+#   ./launch_gps_denied.sh --scenario beacon_nav
+
+[scenario]
+name        = "GPS-Denied Navigation"
+description = "Navigate a search box without GPS using acoustic beacons."
+tiff_file   = "forrest19.tif"
+
+[origin]
+lat =  43.825300
+lon = -70.330400
+
+[arena]
+vertices = [
+  [-300, -450],
+  [ 300, -450],
+  [ 300,    0],
+  [-300,    0],
+]
+
+# The search box teams must cover while GPS-denied.
+[search_box]
+vertices = [
+  [-200, -150],
+  [ 200, -150],
+  [ 200, -400],
+  [-200, -400],
+]
+
+# Scoring
+[scoring]
+length_min         = 25
+coverage_score     = 1000    # points for ≥80% of search box covered
+coverage_threshold = 0.8
+gps_fix_score      = 50      # points per successful surface GPS fix
+
+# -----------------------------------------------------------------------
+# Acoustic beacons — positions are given to students pre-mission.
+# uFldBeaconRangeSensor uses these as ground truth.
+# -----------------------------------------------------------------------
+[[beacons]]
+label  = "beacon_01"
+x      = -180.0
+y      = -180.0
+
+[[beacons]]
+label  = "beacon_02"
+x      =  180.0
+y      = -180.0
+
+[[beacons]]
+label  = "beacon_03"
+x      =    0.0
+y      = -390.0
+
+# -----------------------------------------------------------------------
+# Acoustic sensor model
+# -----------------------------------------------------------------------
+[acoustic]
+push_dist         = 120.0   # beacon broadcasts within this range
+pull_dist         = 130.0   # vehicle stops receiving beyond this range
+freq              = 0.2     # ping rate (Hz) — one range every 5 s
+noise_magnitude   = 2.0     # ±2 m range noise (uniform)
+
+# -----------------------------------------------------------------------
+# Dive / surface parameters (substituted into vehicle.bhv.template)
+# -----------------------------------------------------------------------
+[dive]
+search_depth   = 15.0   # operational depth while GPS-denied (m)
+surface_period = 60.0   # surface every N seconds to get GPS fix
+surface_time   = 20.0   # maximum seconds to spend at surface
+
+# -----------------------------------------------------------------------
+# Teams
+# -----------------------------------------------------------------------
+
+[[teams]]
+name  = "alpha"
+color = "dodger_blue"
+
+  [[teams.vehicles]]
+  name          = "jellyfish"
+  student_mode  = "python"
+  start_x       = -50.0
+  start_y       = -120.0
+  start_heading =  180
+  max_speed     =    3.0
+
+[[teams]]
+name  = "bravo"
+color = "orange"
+
+  [[teams.vehicles]]
+  name          = "squid"
+  student_mode  = "python"
+  start_x       =  50.0
+  start_y       = -120.0
+  start_heading =  180
+  max_speed     =    3.0

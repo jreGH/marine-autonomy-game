@@ -1,24 +1,21 @@
 #!/bin/bash -e
-# launch_game.sh — BWSI AUVC top-level game launcher
+# launch_inspection.sh — BWSI AUVC infrastructure inspection launcher
 #
 # Usage:
-#   ./launch_game.sh [OPTIONS]
+#   ./launch_inspection.sh [OPTIONS]
 #
 # Options:
-#   -s | --scenario <name>   Scenario name (default: scavenger_hunt)
-#                            Must match a file in scenarios/<name>.yaml
+#   -s | --scenario <name>   Scenario name (default: pipeline_survey)
+#                            Must match scenarios/<name>.toml
 #   -w | --warp <n>          Time warp factor (default: 1)
 #   -c | --clean             Delete previous run directory before generating
 #   -h | --help              Show this message
 
-SCENARIO="scavenger_hunt"
+SCENARIO="pipeline_survey"
 WARP=1
 CLEAN="no"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-#------------------------------------------------------------
-# Argument parsing
-#------------------------------------------------------------
 SHORT=s:,w:,c,h
 LONG=scenario:,warp:,clean,help
 OPTS=$(getopt --options $SHORT --longoptions $LONG -- "$@")
@@ -27,11 +24,11 @@ eval set -- "$OPTS"
 
 while true; do
   case "$1" in
-    -s | --scenario ) SCENARIO=$2;  shift 2 ;;
-    -w | --warp )     WARP=$2;      shift 2 ;;
-    -c | --clean )    CLEAN="yes";  shift   ;;
+    -s | --scenario ) SCENARIO=$2; shift 2 ;;
+    -w | --warp )     WARP=$2;     shift 2 ;;
+    -c | --clean )    CLEAN="yes"; shift   ;;
     -h | --help )
-      echo "Usage: ./launch_game.sh [--scenario NAME] [--warp N] [--clean]"
+      echo "Usage: ./launch_inspection.sh [--scenario NAME] [--warp N] [--clean]"
       echo ""
       echo "Available scenarios:"
       ls "${SCRIPT_DIR}/scenarios/" | sed 's/\.toml//' | sed 's/^/  /'
@@ -41,9 +38,6 @@ while true; do
   esac
 done
 
-#------------------------------------------------------------
-# Paths
-#------------------------------------------------------------
 SCENARIO_FILE="${SCRIPT_DIR}/scenarios/${SCENARIO}.toml"
 RUN_DIR="${SCRIPT_DIR}/run/${SCENARIO}"
 
@@ -54,22 +48,16 @@ if [ ! -f "$SCENARIO_FILE" ]; then
   exit 1
 fi
 
-#------------------------------------------------------------
-# (Re-)generate mission files
-#------------------------------------------------------------
 if [ "$CLEAN" = "yes" ] && [ -d "$RUN_DIR" ]; then
   echo "Cleaning previous run directory: $RUN_DIR"
   rm -rf "$RUN_DIR"
 fi
 
 echo "Generating mission files for scenario: $SCENARIO"
-python3 "${SCRIPT_DIR}/gen_mission.py" \
+python3 "${SCRIPT_DIR}/gen_inspection.py" \
   --scenario "$SCENARIO_FILE" \
   --outdir   "$RUN_DIR"
 
-#------------------------------------------------------------
-# Pre-mission briefing
-#------------------------------------------------------------
 echo ""
 echo "Generating mission briefing..."
 python3 "${SCRIPT_DIR}/../../briefing/gen_briefing.py" \
@@ -78,9 +66,6 @@ python3 "${SCRIPT_DIR}/../../briefing/gen_briefing.py" \
   --no-show  2>/dev/null \
   || echo "  (briefing graphic skipped — pip install matplotlib to enable)"
 
-#------------------------------------------------------------
-# Launch
-#------------------------------------------------------------
 echo ""
 echo "Launching with TIME_WARP=$WARP"
 echo "  Run directory: $RUN_DIR"
