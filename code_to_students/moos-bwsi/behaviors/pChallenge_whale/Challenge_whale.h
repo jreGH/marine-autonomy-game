@@ -1,49 +1,61 @@
 /************************************************************/
-/*    NAME:                                               */
-/*    ORGN: MIT                                             */
-/*    FILE: Challenge_whale.h                                          */
-/*    DATE:                                                 */
+/*    FILE: Challenge_whale.h                               */
+/*    ORGN: BWSI AUVC                                       */
+/*                                                          */
+/*    NPC whale: patrols and flees from surface vehicles    */
+/*    (contacts with depth < surface_depth_threshold).      */
+/*    Tagged when a surface vehicle comes within            */
+/*    min_chase_dist.  Deep vehicles (AUVs) are ignored.   */
+/*                                                          */
+/*    Config params (all optional, defaults shown):         */
+/*      name                   = whale                      */
+/*      min_chase_dist         = 5.0   // tag range (m)    */
+/*      max_chase_dist         = 40.0  // flee range (m)   */
+/*      surface_depth_threshold = 5.0  // depth < this → surface vehicle */
+/*                                                          */
+/*    Publishes:                                             */
+/*      ESCAPE     = true/false                             */
+/*      PATROL     = true/false                             */
+/*      AVOID_UPDATES = "contact=<name>"                    */
+/*      WHALE_TAGGED  = "SRC=...,TYPE=...,GROUP=...,WHALE=..."*/
+/*      TAGGED_BY  = <vehicle name>                         */
+/*      TAGGED     = true                                   */
 /************************************************************/
-
-#ifndef Challenge_whale_HEADER
-#define Challenge_whale_HEADER
+#pragma once
 
 #include "MOOS/libMOOS/MOOSLib.h"
-#include<queue>
+#include "MOOS/libMOOS/Thirdparty/AppCasting/AppCastingMOOSApp.h"
+#include "ContactTracker.h"
+#include <string>
 
-class Challenge_whale : public CMOOSApp
-{
- public:
-   Challenge_whale();
-   ~Challenge_whale();
+class Challenge_whale : public AppCastingMOOSApp {
+public:
+  Challenge_whale();
+  ~Challenge_whale() {}
 
- protected: // Standard MOOSApp functions to overload  
-   bool OnNewMail(MOOSMSG_LIST &NewMail);
-   bool Iterate();
-   bool OnConnectToServer();
-   bool OnStartUp();
+protected:
+  bool OnNewMail(MOOSMSG_LIST& NewMail);
+  bool Iterate();
+  bool OnConnectToServer();
+  bool OnStartUp();
+  bool buildReport();
 
- protected:
-   void RegisterVariables();
+  void RegisterVariables();
 
- private: // Configuration variables
+private:
+  // Configuration
   std::string _myName;
-  double _minChaseDist;
-  double _maxChaseDist;
+  double _minChaseDist;          // tag range (m)
+  double _maxChaseDist;          // flee trigger range (m)
+  double _surfaceDepthThreshold; // contacts shallower than this are "surface"
 
- private: // State variables
+  // Own-vehicle navigation state
   double _navX;
   double _navY;
   double _navDepth;
-  double _navSpeed;
-  double _navHeading;
 
-  int _emptyCount;
+  // Contact management
+  ContactTracker _tracker;
+
   bool _isTagged;
-
-  std::queue<std::string> _nodeReports;
-  std::list<std::map<std::string, std::string> > _contactList;
-  std::list<std::map<std::string, std::string> > _contactsCollected;
 };
-
-#endif 

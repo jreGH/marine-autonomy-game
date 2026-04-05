@@ -1,297 +1,186 @@
 /************************************************************/
-/*    NAME:                                               */
-/*    ORGN: MIT                                             */
-/*    FILE: Challenge_shark.cpp                                        */
-/*    DATE:                                                 */
+/*    FILE: Challenge_shark.cpp                             */
+/*    ORGN: BWSI AUVC                                       */
 /************************************************************/
-
-#include <iterator>
-#include "MBUtils.h"
 #include "Challenge_shark.h"
+#include "MBUtils.h"
+#include <sstream>
 
 using namespace std;
 
-//-----------------------------------------
-// Utility functions
-std::map<std::string, std::string> ReadNodeReport(std::string report) {
-  std::map<std::string, std::string> thisMap;
-
-  std::string key, val;
-  std::istringstream iss(report);
-
-  while (std::getline(std::getline(iss, key, '=') >> std::ws, val, ','))
-    thisMap[key] = val;
-
-  return thisMap;
-
-}
-
-bool SameContact(std::map<std::string, std::string> A, std::map<std::string, std::string> B) {
-  return ( (A["NAME"].compare(B["NAME"])==0) && (A["TYPE"].compare(B["TYPE"])==0));
-}
-//---------------------------------------------------------
-// Constructor
-
 Challenge_shark::Challenge_shark()
-{
-  _emptyCount = 0;
-  _chaseStart = std::numeric_limits<double>::max();
-  _recoveryTime = std::numeric_limits<double>::max();
-  _recovering = false;
-  _chasing = false;
-}
+  : _myName("shark"),
+    _minChaseDist(5.0),
+    _maxChaseDist(50.0),
+    _chaseTimeout(30.0),
+    _recoveryTimeout(120.0),
+    _navX(0), _navY(0), _navDepth(0),
+    _state(PATROLLING),
+    _chaseStartTime(0),
+    _recoveryStartTime(0)
+{}
 
-//---------------------------------------------------------
-// Destructor
+bool Challenge_shark::OnNewMail(MOOSMSG_LIST& NewMail) {
+  AppCastingMOOSApp::OnNewMail(NewMail);
 
-Challenge_shark::~Challenge_shark()
-{
-}
-
-//---------------------------------------------------------
-// Procedure: OnNewMail
-
-bool Challenge_shark::OnNewMail(MOOSMSG_LIST &NewMail)
-{
-  MOOSMSG_LIST::iterator p;
-   
-  for(p=NewMail.begin(); p!=NewMail.end(); p++) {
-    CMOOSMsg &msg = *p;
-
-    //--------------------------------------------
-    //BWSI added code
-    std::string key = msg.GetKey();
-
-    if (key.compare("NAV_X")==0) {
-      _navX = msg.GetDouble();
+  bool gotReport = false;
+  for (CMOOSMsg& msg : NewMail) {
+    const string& key = msg.GetKey();
+    if      (key == "NAV_X")           _navX     = msg.GetDouble();
+    else if (key == "NAV_Y")           _navY     = msg.GetDouble();
+    else if (key == "NAV_DEPTH")       _navDepth = msg.GetDouble();
+    else if (key == "NODE_REPORT" || key == "NODE_REPORT_LOCAL") {
+      _tracker.processReport(msg.GetString());
+      gotReport = true;
     }
-    else if (key.compare("NAV_Y")==0) {
-      _navY = msg.GetDouble();
-    }
-    else if (key.compare("NAV_DEPTH")==0) {
-      _navDepth = msg.GetDouble();
-    }
-    else if (key.compare("NAV_HEADING")==0) {
-      _navHeading = msg.GetDouble();
-    }
-    else if (key.compare("NAV_SPEED")==0) {
-      _navSpeed = msg.GetDouble();
-    }
-    else if (key.find("NODE_REPORT")!=std::string::npos) {
-      _nodeReports.push(msg.GetString());
-    }
-    else {
-      std::cerr << "Unknown message type: " << key << std::endl;
-    }
-    //
-    //-----------------------------------------
-
-#if 0 // Keep these around just for template
-    string key   = msg.GetKey();
-    string comm  = msg.GetCommunity();
-    double dval  = msg.GetDouble();
-    string sval  = msg.GetString(); 
-    string msrc  = msg.GetSource();
-    double mtime = msg.GetTime();
-    bool   mdbl  = msg.IsDouble();
-    bool   mstr  = msg.IsString();
-#endif
-   }
-	
-   return(true);
-}
-
-//---------------------------------------------------------
-// Procedure: OnConnectToServer
-
-bool Challenge_shark::OnConnectToServer()
-{
-   RegisterVariables();
-   return(true);
-}
-
-//---------------------------------------------------------
-// Procedure: Iterate()
-//            happens AppTick times per second
-
-bool Challenge_shark::Iterate()
-{
-  //--------------------------------------------------
-  //BWSI added code
-  if (_nodeReports.empty()) {
-    _emptyCount++;
-  }
-  else {
-    _emptyCount = 0;
   }
 
-  if (_emptyCount > 25) {
-    // make sure we're loitering
+  if (gotReport)
+    _tracker.tickReceived();
+  else
+    _tracker.tickEmpty();
+
+  return true;
+}
+
+bool Challenge_shark::OnConnectToServer() {
+  RegisterVariables();
+  return true;
+}
+
+bool Challenge_shark::Iterate() {
+  AppCastingMOOSApp::Iterate();
+
+  const double now = MOOSTime();
+
+  // State transitions triggered by timers
+  if (_state == CHASING && (now - _chaseStartTime) > _chaseTimeout) {
+    _state = RECOVERING;
+    _recoveryStartTime = now;
+    _chaseTarget = "";
     Notify("CHASE", "false");
     Notify("PATROL", "true");
-    Notify("CHASE_UPDATES","contact=NOBODY");
+    Notify("CHASE_UPDATES", "contact=NOBODY");
+    Notify("CONSTANT_DEPTH_UPDATES", 20.0);
+  }
+  if (_state == RECOVERING && (now - _recoveryStartTime) > _recoveryTimeout) {
+    _state = PATROLLING;
+  }
+
+  // If we've had no contacts for many iterations, ensure we are patrolling
+  if (_tracker.emptyCount() > 25 && _state == CHASING) {
+    _state = PATROLLING;
+    _chaseTarget = "";
+    Notify("CHASE", "false");
+    Notify("PATROL", "true");
+    Notify("CHASE_UPDATES", "contact=NOBODY");
     Notify("CONSTANT_DEPTH_UPDATES", 20.0);
   }
 
-  // Process the node reports that have come in since the last call to Iterate()
-  while (!_nodeReports.empty()) {
-    std::string report = _nodeReports.front();
+  // Evaluate contacts
+  for (const NodeReport& contact : _tracker.contacts()) {
+    // NPCs don't bite each other
+    if (contact.group() == "npc")
+      continue;
+    // Don't re-engage a vehicle we already bit this chase cycle
+    if (_tracker.isCollected(contact))
+      continue;
+    // Don't chase while recovering
+    if (_state == RECOVERING)
+      continue;
 
-    // convert the report into a "dictionary"
-    std::map<std::string, std::string> thisContact = ReadNodeReport(report);
-    
-    // check if this contact is in our list
-    bool isNew = true;
-    for (std::map<std::string, std::string>& contact : _contactList) {
-      if (SameContact(contact, thisContact)) {
-        // We already have a record of this contact, so update it
-        //std::cout << "Known contact " << contact["NAME"] << ", updating..." << std::endl;
-        for (std::map<std::string,std::string>::iterator it=contact.begin(); it!=contact.end();it++) {
-          contact[it->first] = thisContact[it->first];
-        }
-        isNew = false;
-        break;
-      } 
+    const double dist2D  = contact.distanceTo2D(_navX, _navY);
+    const double range3D = contact.rangeTo3D(_navX, _navY, _navDepth);
+
+    if (range3D < _minChaseDist) {
+      // Bite!
+      ostringstream bite;
+      bite << "SRC="   << contact.name()
+           << ",TYPE=" << contact.type()
+           << ",GROUP="<< contact.group()
+           << ",SHARK=" << _myName;
+      Notify("SHARK_BITE", bite.str());
+      _tracker.markCollected(contact);
+
+      _state = PATROLLING;
+      _chaseTarget = "";
+      Notify("CHASE", "false");
+      Notify("PATROL", "true");
+      Notify("CHASE_UPDATES", "contact=NOBODY");
+      Notify("CONSTANT_DEPTH_UPDATES", 20.0);
     }
-    // if it was not on our list, then add it
-    if (isNew)
-      _contactList.push_back(thisContact);
-
-    // remove the report from the queue  
-    _nodeReports.pop();
-  }
-
-  // give up on our chase if needed
-  double time_now = MOOSTime();
-  std::cout << "DT = " << time_now-_chaseStart << std::endl;
-  if ((time_now - _chaseStart) > 30) {
-    _recovering = true;
-    _recoveryTime = time_now;
-    _chaseStart = std::numeric_limits<double>::max();
-    _chasing = false;
-      
-    // call off the chase
-    Notify("CHASE", "false");
-    Notify("PATROL", "true");
-    Notify("CHASE_UPDATES","contact=NOBODY");
-    Notify("CONSTANT_DEPTH_UPDATES", 20.0);
-  }
-
-  // if we're not recovered, don't chase again
-  if ((time_now - _recoveryTime) > 120) {
-    _recovering = false;
-    _recoveryTime = std::numeric_limits<double>::max();
-  }
-
-  // loop through our contact list and decide what to do
-  for (std::map<std::string, std::string> contact : _contactList) {
-    double distance = sqrt(pow(std::stof(contact["X"]) - _navX, 2) + 
-                            pow(std::stof(contact["Y"])-_navY,2));
-
-    double closing_range = sqrt(pow(distance,2) + pow(std::stof(contact["DEP"])-_navDepth,2));
-    //std::cout << "Dist = " << distance << " to " << contact["NAME"] << std::endl;
-
-    // check if this is a contact we have already pursued
-    bool isCollected = false;
-    for (std::map<std::string, std::string> completed : _contactsCollected) {
-      if (SameContact(contact, completed)) {
-        isCollected = true;
-        break;
+    else if (dist2D > _maxChaseDist) {
+      if (_state == CHASING && _chaseTarget == contact.name()) {
+        _state = PATROLLING;
+        _chaseTarget = "";
+        Notify("CHASE", "false");
+        Notify("PATROL", "true");
+        Notify("CHASE_UPDATES", "contact=NOBODY");
+        Notify("CONSTANT_DEPTH_UPDATES", 20.0);
       }
     }
-
-    // don't care about fellow non-players or already pursued contacts
-    if ((isCollected) || (contact["GROUP"].compare("npc")==0) || (_recovering)) {
-      continue;
-    }
-
-    if (closing_range < _minChaseDist) {
-      // bit this target, don't need to chase again
-      std::string msg = "SRC=" + contact["NAME"] + ",TYPE=" + contact["TYPE"] + ",GROUP=" + contact["GROUP"]+",SHARK=" + _myName;
-      Notify("SHARK_BITE", msg);
-
-      // call off the chase
-      Notify("CHASE", "false");
-      Notify("PATROL", "true");
-      Notify("CHASE_UPDATES","NOBODY");
-      Notify("CONSTANT_DEPTH_UPDATES", 20.0);
-      _contactsCollected.push_back(contact);
-    }
-    else if (distance > _maxChaseDist) {
-      // call off the chase
-      Notify("CHASE", "false");
-      Notify("PATROL", "true");
-      Notify("CHASE_UPDATES","NOBODY");
-      Notify("CONSTANT_DEPTH_UPDATES", 20.0);
-    }
-    else if ((!_chasing) && (distance < _maxChaseDist)) {
-      // start the chase
-      //std::cout << "Dist = " << distance << ", chasing " << contact["NAME"] << std::endl;
-      std::ostringstream message;
-      message << "contact = " << contact["NAME"];
-      Notify("CHASE_UPDATES", message.str());
+    else if (_state == PATROLLING && dist2D < _maxChaseDist) {
+      // Start chase
+      _state = CHASING;
+      _chaseTarget = contact.name();
+      _chaseStartTime = now;
+      Notify("CHASE_UPDATES", "contact=" + contact.name());
       Notify("CHASE", "true");
       Notify("PATROL", "false");
-
-      // also match the depth
-      Notify("CONSTANT_DEPTH_UPDATES", std::stod(contact["DEP"]));
-
-      _chasing = true;
-      _chaseStart = time_now;
+      Notify("CONSTANT_DEPTH_UPDATES", contact.depth());
     }
   }
-  //
-  //---------------------------------------------------
 
-  return(true);
+  AppCastingMOOSApp::PostReport();
+  return true;
 }
 
-//---------------------------------------------------------
-// Procedure: OnStartUp()
-//            happens before connection is open
+bool Challenge_shark::OnStartUp() {
+  AppCastingMOOSApp::OnStartUp();
 
-bool Challenge_shark::OnStartUp()
-{
   list<string> sParams;
   m_MissionReader.EnableVerbatimQuoting(false);
-  if(m_MissionReader.GetConfiguration(GetAppName(), sParams)) {
-    list<string>::iterator p;
-    for(p=sParams.begin(); p!=sParams.end(); p++) {
-      string line  = *p;
+  if (m_MissionReader.GetConfiguration(GetAppName(), sParams)) {
+    for (string& line : sParams) {
       string param = tolower(biteStringX(line, '='));
       string value = line;
-      
-      if(param == "max_chase_distance") {
-        _maxChaseDist = std::stof(value);
-      }
-      else if(param == "min_chase_distance") {
-        _minChaseDist = std::stof(value);
-      }
-      else if(param == "name") {
-        _myName = value;
-      }
+      if      (param == "name")             _myName          = value;
+      else if (param == "min_chase_dist")   _minChaseDist    = stod(value);
+      else if (param == "max_chase_dist")   _maxChaseDist    = stod(value);
+      else if (param == "chase_timeout")    _chaseTimeout    = stod(value);
+      else if (param == "recovery_timeout") _recoveryTimeout = stod(value);
     }
   }
-  
-  RegisterVariables();	
-  return(true);
+
+  RegisterVariables();
+  return true;
 }
 
-//---------------------------------------------------------
-// Procedure: RegisterVariables
-
-void Challenge_shark::RegisterVariables()
-{
-  //--------------------------
-  // BWSI added code
-  Register("NAV_X", 0);
-  Register("NAV_Y", 0);
-  Register("NAV_DEPTH", 0);
-  Register("NAV_HEADING", 0);
-  Register("NAV_SPEED", 0);
-
-  Register("NODE_REPORT", 0);
-  // BWSI added code
-  //--------------------------
+void Challenge_shark::RegisterVariables() {
+  AppCastingMOOSApp::RegisterVariables();
+  Register("NAV_X",             0);
+  Register("NAV_Y",             0);
+  Register("NAV_DEPTH",         0);
+  Register("NODE_REPORT",       0);
+  Register("NODE_REPORT_LOCAL", 0);
 }
 
+bool Challenge_shark::buildReport() {
+  string stateStr;
+  switch (_state) {
+    case PATROLLING: stateStr = "PATROLLING"; break;
+    case CHASING:    stateStr = "CHASING";    break;
+    case RECOVERING: stateStr = "RECOVERING"; break;
+  }
+  m_msgs << "State       : " << stateStr << "\n";
+  if (_state == CHASING)
+    m_msgs << "Target      : " << _chaseTarget << "\n"
+           << "Chase time  : " << (MOOSTime() - _chaseStartTime) << " / "
+           << _chaseTimeout << " s\n";
+  if (_state == RECOVERING)
+    m_msgs << "Recovery    : " << (MOOSTime() - _recoveryStartTime) << " / "
+           << _recoveryTimeout << " s\n";
+  m_msgs << "Contacts    : " << _tracker.contacts().size() << "\n";
+  m_msgs << "Empty iters : " << _tracker.emptyCount() << "\n";
+  return true;
+}

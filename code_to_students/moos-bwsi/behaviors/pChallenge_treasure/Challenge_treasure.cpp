@@ -1,259 +1,148 @@
 /************************************************************/
-/*    NAME:                                               */
-/*    ORGN: MIT                                             */
-/*    FILE: Challenge_treasure.cpp                                        */
-/*    DATE:                                                 */
+/*    FILE: Challenge_treasure.cpp                          */
+/*    ORGN: BWSI AUVC                                       */
 /************************************************************/
-
-#include <iterator>
-#include "MBUtils.h"
 #include "Challenge_treasure.h"
+#include "MBUtils.h"
+#include <cmath>
+#include <sstream>
 
 using namespace std;
 
-//-----------------------------------------
-// Utility functions
-std::map<std::string, std::string> ReadNodeReport(std::string report) {
-  std::map<std::string, std::string> thisMap;
-
-  std::string key, val;
-  std::istringstream iss(report);
-
-  while (std::getline(std::getline(iss, key, '=') >> std::ws, val, ','))
-    thisMap[key] = val;
-
-  return thisMap;
-
-}
-
-bool SameContact(std::map<std::string, std::string> A, std::map<std::string, std::string> B) {
-  return ( (A["NAME"].compare(B["NAME"])==0) && (A["TYPE"].compare(B["TYPE"])==0));
-}
-//---------------------------------------------------------
-// Constructor
-
 Challenge_treasure::Challenge_treasure()
-{
-  _isPickedUp = false;
-  _isCollected = false;
-}
+  : _myName("treasure"),
+    _minChaseDist(5.0),
+    _boundaryRadius(1500.0),
+    _navX(0), _navY(0), _navDepth(0),
+    _isPickedUp(false),
+    _isCollected(false)
+{}
 
-//---------------------------------------------------------
-// Destructor
+bool Challenge_treasure::OnNewMail(MOOSMSG_LIST& NewMail) {
+  AppCastingMOOSApp::OnNewMail(NewMail);
 
-Challenge_treasure::~Challenge_treasure()
-{
-}
-
-//---------------------------------------------------------
-// Procedure: OnNewMail
-
-bool Challenge_treasure::OnNewMail(MOOSMSG_LIST &NewMail)
-{
-  MOOSMSG_LIST::iterator p;
-   
-  for(p=NewMail.begin(); p!=NewMail.end(); p++) {
-    CMOOSMsg &msg = *p;
-
-    //--------------------------------------------
-    //BWSI added code
-    std::string key = msg.GetKey();
-
-    if (key.compare("NAV_X")==0) {
-      _navX = msg.GetDouble();
+  bool gotReport = false;
+  for (CMOOSMsg& msg : NewMail) {
+    const string& key = msg.GetKey();
+    if      (key == "NAV_X")     _navX     = msg.GetDouble();
+    else if (key == "NAV_Y")     _navY     = msg.GetDouble();
+    else if (key == "NAV_DEPTH") _navDepth = msg.GetDouble();
+    else if (key == "NODE_REPORT" || key == "NODE_REPORT_LOCAL") {
+      _tracker.processReport(msg.GetString());
+      gotReport = true;
     }
-    else if (key.compare("NAV_Y")==0) {
-      _navY = msg.GetDouble();
-    }
-    else if (key.compare("NAV_DEPTH")==0) {
-      _navDepth = msg.GetDouble();
-    }
-    else if (key.compare("NAV_HEADING")==0) {
-      _navHeading = msg.GetDouble();
-    }
-    else if (key.compare("NAV_SPEED")==0) {
-      _navSpeed = msg.GetDouble();
-    }
-    else if (key.compare("NODE_REPORT")==0) {
-      _nodeReports.push(msg.GetString());
-    }
-    else {
-      std::cerr << "Unknown message type: " << key << std::endl;
-    }
-    //
-    //-----------------------------------------
-
-#if 0 // Keep these around just for template
-    string key   = msg.GetKey();
-    string comm  = msg.GetCommunity();
-    double dval  = msg.GetDouble();
-    string sval  = msg.GetString(); 
-    string msrc  = msg.GetSource();
-    double mtime = msg.GetTime();
-    bool   mdbl  = msg.IsDouble();
-    bool   mstr  = msg.IsString();
-#endif
-   }
-	
-   return(true);
-}
-
-//---------------------------------------------------------
-// Procedure: OnConnectToServer
-
-bool Challenge_treasure::OnConnectToServer()
-{
-   RegisterVariables();
-   return(true);
-}
-
-//---------------------------------------------------------
-// Procedure: Iterate()
-//            happens AppTick times per second
-
-bool Challenge_treasure::Iterate()
-{
-  //--------------------------------------------------
-  //BWSI added code
-  // Process the node reports that have come in since the last call to Iterate()
-  while (!_nodeReports.empty()) {
-    std::string report = _nodeReports.front();
-    std::cout << "Reading node report ... " << std::endl;
-
-    // convert the report into a "dictionary"
-    std::map<std::string, std::string> thisContact = ReadNodeReport(report);
-    
-    // check if this contact is in our list
-    bool isNew = true;
-    for (std::map<std::string, std::string>& contact : _contactList) {
-      if (SameContact(contact, thisContact)) {
-        // We already have a record of this contact, so update it
-        //std::cout << "Known contact " << contact["NAME"] << ", updating..." << std::endl;
-        for (std::map<std::string,std::string>::iterator it=contact.begin(); it!=contact.end();it++) {
-          contact[it->first] = thisContact[it->first];
-        }
-        isNew = false;
-        break;
-      } 
-    }
-    // if it was not on our list, then add it
-    if (isNew)
-      _contactList.push_back(thisContact);
-
-    std::cout << "contact list is " << _contactList.size() << " long" << std::endl;
-
-    // remove the report from the queue  
-    _nodeReports.pop();
   }
 
-  // loop through our contact list and decide what to do
-  for (std::map<std::string, std::string> contact : _contactList) {
-    double distance = sqrt(pow(std::stof(contact["X"]) - _navX, 2) + pow(std::stof(contact["Y"])-_navY,2));
-    double pickup_range = sqrt(pow(distance,2) + pow(std::stod(contact["DEP"])-_navDepth,2));
-    std::cout << "Dist = " << distance << " to " << contact["NAME"] << std::endl;
-    std::cout << "Range = " << pickup_range << " to " << contact["NAME"] << std::endl;
-    
-    if (pickup_range < 2*_minChaseDist) {
-      // if it's been picked up already, it's either continuing or being stolen!
-      if (_isPickedUp) {
-        bool steal = true;
-        for (std::map<std::string, std::string> coll : _contactsCollected ) {
-          if (SameContact(coll, contact)) {
-            steal = false;
-            // continuing
-            break;
-          }
-        }
+  if (gotReport) _tracker.tickReceived();
+  else           _tracker.tickEmpty();
 
-        // Stolen by new vehicle!
-        if (steal) {
-          std::string msg = "contact = " + contact["NAME"];
-          Notify("FOLLOW_UPDATES", msg);
-          msg = contact["NAME"] + "," + contact["TYPE"] + "," + contact["GROUP"];
-          Notify("STOLEN_BY", msg);
-          _contactsCollected.push_back(contact);
-        }
-      }
-      else {
-        // first time treasure picked up
+  return true;
+}
+
+bool Challenge_treasure::OnConnectToServer() {
+  RegisterVariables();
+  return true;
+}
+
+bool Challenge_treasure::Iterate() {
+  AppCastingMOOSApp::Iterate();
+
+  if (_isCollected) {
+    AppCastingMOOSApp::PostReport();
+    return true;
+  }
+
+  // Check whether the treasure has been carried out of the arena
+  const double distFromOrigin = std::sqrt(_navX * _navX + _navY * _navY);
+  if (_isPickedUp && distFromOrigin > _boundaryRadius) {
+    // Find who is carrying us (the most-recently added carrier in collected list)
+    const NodeReport& carrier = _tracker.contacts().front(); // best we can do
+    ostringstream evt;
+    evt << "SRC="    << carrier.name()
+        << ",TYPE="  << carrier.type()
+        << ",GROUP=" << carrier.group()
+        << ",TREASURE=" << _myName;
+    Notify("TREASURE_RECOVERED", evt.str());
+    Notify("DEPLOY", "false");
+    Notify("FOLLOW", "false");
+    Notify("WAIT",   "true");
+    _isCollected = true;
+    AppCastingMOOSApp::PostReport();
+    return true;
+  }
+
+  for (const NodeReport& contact : _tracker.contacts()) {
+    const double range3D = contact.rangeTo3D(_navX, _navY, _navDepth);
+
+    if (range3D < (2.0 * _minChaseDist)) {
+      if (!_tracker.isCollected(contact)) {
+        // First vehicle to reach us: pick-up event
+        ostringstream evt;
+        evt << "SRC="    << contact.name()
+            << ",TYPE="  << contact.type()
+            << ",GROUP=" << contact.group()
+            << ",TREASURE=" << _myName;
+        Notify("TREASURE_FOUND", evt.str());
+        Notify("FOLLOW",         "true");
+        Notify("WAIT",           "false");
+        Notify("FOLLOW_UPDATES", "contact=" + contact.name());
+        _carrierName = contact.name();
+        _tracker.markCollected(contact);
         _isPickedUp = true;
-        // start following the UUV
-        Notify("FOLLOW", "true");
-        Notify("WAIT", "false");
-        std::string msg = "contact = " + contact["NAME"];
-        Notify("FOLLOW_UPDATES", msg);
-      
-        msg = "SRC=" + contact["NAME"] + ",TYPE=" + contact["TYPE"] + ",GROUP=" + contact["GROUP"]+",TREASURE=" + _myName;
-        Notify("TREASURE_FOUND", msg);
-        
-        _contactsCollected.push_back(contact);
+      }
+      else if (_isPickedUp && contact.name() != _carrierName) {
+        // A different vehicle has come into range — treasure is being stolen
+        Notify("FOLLOW_UPDATES", "contact=" + contact.name());
+        ostringstream stolen;
+        stolen << contact.name() << "," << contact.type() << "," << contact.group();
+        Notify("STOLEN_BY", stolen.str());
+        _tracker.markCollected(contact);
+        _carrierName = contact.name();
       }
     }
-
-    // outside of min range we don't care.
-
-    // see if we've been carried to the boundary
-    double maxR = 1500;
-    if ( (fabs(_navX)>maxR) || (fabs(_navY)>maxR) ) {
-      _isCollected = true;
-
-      std::string msg = "SRC=" + contact["NAME"] + ",TYPE=" + contact["TYPE"] + ",GROUP=" + contact["GROUP"]+",TREASURE=" + _myName;
-      
-      Notify("TREASURE_RECOVERED", msg);
-      Notify("DEPLOY", "false");
-      Notify("FOLLOW", "false");
-      Notify("WAIT", "true");
-    }
   }
-  //
-  //---------------------------------------------------
 
-  return(true);
+  AppCastingMOOSApp::PostReport();
+  return true;
 }
 
-//---------------------------------------------------------
-// Procedure: OnStartUp()
-//            happens before connection is open
+bool Challenge_treasure::OnStartUp() {
+  AppCastingMOOSApp::OnStartUp();
 
-bool Challenge_treasure::OnStartUp()
-{
   list<string> sParams;
   m_MissionReader.EnableVerbatimQuoting(false);
-  if(m_MissionReader.GetConfiguration(GetAppName(), sParams)) {
-    list<string>::iterator p;
-    for(p=sParams.begin(); p!=sParams.end(); p++) {
-      string line  = *p;
+  if (m_MissionReader.GetConfiguration(GetAppName(), sParams)) {
+    for (string& line : sParams) {
       string param = tolower(biteStringX(line, '='));
       string value = line;
-      
-      if(param == "max_chase_distance") {
-        _maxChaseDist = std::stof(value);
-      }
-      else if(param == "min_chase_distance") {
-        _minChaseDist = std::stof(value);
-      }
+      if      (param == "name")            _myName         = value;
+      else if (param == "min_chase_dist")  _minChaseDist   = stod(value);
+      else if (param == "boundary_radius") _boundaryRadius = stod(value);
     }
   }
-  
-  RegisterVariables();	
-  return(true);
+
+  RegisterVariables();
+  return true;
 }
 
-//---------------------------------------------------------
-// Procedure: RegisterVariables
-
-void Challenge_treasure::RegisterVariables()
-{
-  //--------------------------
-  // BWSI added code
-  Register("NAV_X", 0);
-  Register("NAV_Y", 0);
-  Register("NAV_DEPTH", 0);
-  Register("NAV_HEADING", 0);
-  Register("NAV_SPEED", 0);
-
-  Register("NODE_REPORT", 0);
-  // BWSI added code
-  //--------------------------
+void Challenge_treasure::RegisterVariables() {
+  AppCastingMOOSApp::RegisterVariables();
+  Register("NAV_X",             0);
+  Register("NAV_Y",             0);
+  Register("NAV_DEPTH",         0);
+  Register("NODE_REPORT",       0);
+  Register("NODE_REPORT_LOCAL", 0);
 }
 
+bool Challenge_treasure::buildReport() {
+  string stateStr = "WAITING";
+  if      (_isCollected) stateStr = "COLLECTED";
+  else if (_isPickedUp)  stateStr = "FOLLOWING " + _carrierName;
+
+  m_msgs << "State           : " << stateStr       << "\n";
+  m_msgs << "Pickup range    : " << (2.0 * _minChaseDist) << " m (3-D)\n";
+  m_msgs << "Boundary radius : " << _boundaryRadius << " m from origin\n";
+  m_msgs << "Dist from origin: "
+         << std::sqrt(_navX * _navX + _navY * _navY) << " m\n";
+  return true;
+}

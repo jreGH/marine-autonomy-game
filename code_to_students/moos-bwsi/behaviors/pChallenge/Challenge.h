@@ -1,46 +1,49 @@
 /************************************************************/
-/*    NAME:                                               */
-/*    ORGN: MIT                                             */
-/*    FILE: Challenge.h                                          */
-/*    DATE:                                                 */
+/*    FILE: Challenge.h                                     */
+/*    ORGN: BWSI AUVC                                       */
+/*                                                          */
+/*    Student vehicle logic.  This process reads its own    */
+/*    navigation state and NODE_REPORTs from other vehicles */
+/*    and decides whether to chase a contact or loiter.     */
+/*                                                          */
+/*    Config params (all optional, defaults shown):         */
+/*      min_chase_dist = 5.0   // "caught" range (m, 2-D)  */
+/*      max_chase_dist = 50.0  // detection range (m, 2-D) */
+/*                                                          */
+/*    Publishes:                                            */
+/*      CLOSE         = true/false                          */
+/*      LOITER        = true/false                          */
+/*      CHASE_UPDATES = "contact=<name>"                    */
 /************************************************************/
-
-#ifndef Challenge_HEADER
-#define Challenge_HEADER
+#pragma once
 
 #include "MOOS/libMOOS/MOOSLib.h"
-#include<queue>
+#include "ContactTracker.h"
+#include <string>
 
-class Challenge : public CMOOSApp
-{
- public:
-   Challenge();
-   ~Challenge();
+class Challenge : public CMOOSApp {
+public:
+  Challenge();
+  ~Challenge() {}
 
- protected: // Standard MOOSApp functions to overload  
-   bool OnNewMail(MOOSMSG_LIST &NewMail);
-   bool Iterate();
-   bool OnConnectToServer();
-   bool OnStartUp();
+protected:
+  bool OnNewMail(MOOSMSG_LIST& NewMail);
+  bool Iterate();
+  bool OnConnectToServer();
+  bool OnStartUp();
 
- protected:
-   void RegisterVariables();
+  void RegisterVariables();
 
- private: // Configuration variables
-
- private: // State variables
-  double _navX;
-  double _navY;
-  double _navDepth;
-  double _navSpeed;
-  double _navHeading;
-
+private:
+  // Configuration
   double _minChaseDist;
   double _maxChaseDist;
 
-  std::queue<std::string> _nodeReports;
-  std::list<std::map<std::string, std::string> > _contactList;
-  std::list<std::map<std::string, std::string> > _contactsCollected;
-};
+  // Own-vehicle navigation state
+  double _navX;
+  double _navY;
+  double _navDepth;
 
-#endif 
+  // Contact management
+  ContactTracker _tracker;
+};

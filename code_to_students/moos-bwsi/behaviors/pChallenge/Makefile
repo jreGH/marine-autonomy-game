@@ -11,16 +11,22 @@ MOOSUTIL_INCLUDE=${HOME}/moos-ivp/MOOS/MOOSCore/Core/libMOOS/Utils/include
 MOOSCOMM_INCLUDE=${HOME}/moos-ivp/MOOS/MOOSCore/Core/libMOOS/Comms/include
 GETPOT_INCLUDE=${HOME}/moos-ivp/MOOS/MOOSCore/Core/libMOOS/Thirdparty/getpot/include/
 POCOBITS_INCLUDE=${HOME}/moos-ivp/MOOS/MOOSCore/Core/libMOOS/Thirdparty/PocoBits/include
-LIBS=-lMOOS -lmbutil -lpthread -lm
+BWSI_LIBDIR=${HOME}/moos-bwsi/lib
+BWSI_INCLUDE=${HOME}/moos-bwsi/lib/include
 
+LIBS=-lBWSI -lMOOS -lmbutil -lpthread -lm
 
 SRC=${NAME}.cpp ${NAME}_Info.cpp main.cpp
 INCL=${NAME}.h
 
-all: clean default install 
+all: clean default install
 
 default: ${SRC}
-	g++ -Wall -o p${NAME} ${SRC} -I${MOOS_INCLUDE} -I${MOOSCORE_INCLUDE} -I${MOOSUTIL_INCLUDE} -I${MOOSCOMM_INCLUDE} -I${GETPOT_INCLUDE} -I${POCOBITS_INCLUDE} -I${MOOSAPP_INCLUDE} -L${MOOS_LIBDIR} -L${MOOSCORE_LIBDIR} ${LIBS}
+	g++ -Wall -std=c++11 -o p${NAME} ${SRC} \
+	  -I${MOOS_INCLUDE} -I${MOOSCORE_INCLUDE} -I${MOOSUTIL_INCLUDE} \
+	  -I${MOOSCOMM_INCLUDE} -I${GETPOT_INCLUDE} -I${POCOBITS_INCLUDE} \
+	  -I${MOOSAPP_INCLUDE} -I${BWSI_INCLUDE} \
+	  -L${MOOS_LIBDIR} -L${MOOSCORE_LIBDIR} -L${BWSI_LIBDIR} ${LIBS}
 
 install:
 	mkdir -p ${INSTALL_DIR}
@@ -29,5 +35,3 @@ install:
 clean:
 	rm -f *.o
 	rm -f ${INSTALL_DIR}/p${NAME}
-
-

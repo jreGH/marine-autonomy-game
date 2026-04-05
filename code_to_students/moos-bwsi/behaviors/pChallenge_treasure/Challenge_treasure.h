@@ -1,49 +1,65 @@
 /************************************************************/
-/*    NAME:                                               */
-/*    ORGN: MIT                                             */
-/*    FILE: Challenge_treasure.h                                          */
-/*    DATE:                                                 */
+/*    FILE: Challenge_treasure.h                            */
+/*    ORGN: BWSI AUVC                                       */
+/*                                                          */
+/*    NPC treasure: waits at its starting position until    */
+/*    a player vehicle comes within pickup range.  Once     */
+/*    picked up it follows the carrier (via BHV_Trail).     */
+/*    When the carrier reaches the collection boundary it   */
+/*    publishes TREASURE_RECOVERED and deactivates itself.  */
+/*                                                          */
+/*    Config params (all optional, defaults shown):         */
+/*      name            = treasure                          */
+/*      min_chase_dist  = 5.0    // pickup range (m, 3-D)  */
+/*      boundary_radius = 1500.0 // distance from origin that */
+/*                               // signals collection (m)  */
+/*                                                          */
+/*    Publishes:                                             */
+/*      FOLLOW           = true/false                       */
+/*      WAIT             = true/false                       */
+/*      FOLLOW_UPDATES   = "contact=<name>"                 */
+/*      STOLEN_BY        = "<name>,<type>,<group>"          */
+/*      TREASURE_FOUND   = "SRC=...,TYPE=...,GROUP=...,TREASURE=..."*/
+/*      TREASURE_RECOVERED = same format                    */
+/*      DEPLOY           = false  (on collection)           */
 /************************************************************/
-
-#ifndef Challenge_treasure_HEADER
-#define Challenge_treasure_HEADER
+#pragma once
 
 #include "MOOS/libMOOS/MOOSLib.h"
-#include<queue>
+#include "MOOS/libMOOS/Thirdparty/AppCasting/AppCastingMOOSApp.h"
+#include "ContactTracker.h"
+#include <string>
 
-class Challenge_treasure : public CMOOSApp
-{
- public:
-   Challenge_treasure();
-   ~Challenge_treasure();
+class Challenge_treasure : public AppCastingMOOSApp {
+public:
+  Challenge_treasure();
+  ~Challenge_treasure() {}
 
- protected: // Standard MOOSApp functions to overload  
-   bool OnNewMail(MOOSMSG_LIST &NewMail);
-   bool Iterate();
-   bool OnConnectToServer();
-   bool OnStartUp();
+protected:
+  bool OnNewMail(MOOSMSG_LIST& NewMail);
+  bool Iterate();
+  bool OnConnectToServer();
+  bool OnStartUp();
+  bool buildReport();
 
- protected:
-   void RegisterVariables();
+  void RegisterVariables();
 
- private: // Configuration variables
+private:
+  // Configuration
   std::string _myName;
-  double _minChaseDist;
-  double _maxChaseDist;
+  double _minChaseDist;    // pickup range (3-D, m)
+  double _boundaryRadius;  // distance from origin that triggers collection
 
- private: // State variables
+  // Own-vehicle navigation state
   double _navX;
   double _navY;
   double _navDepth;
-  double _navSpeed;
-  double _navHeading;
 
+  // Contact management
+  ContactTracker _tracker;
+
+  // State
   bool _isPickedUp;
   bool _isCollected;
-
-  std::queue<std::string> _nodeReports;
-  std::list<std::map<std::string, std::string> > _contactList;
-  std::list<std::map<std::string, std::string> > _contactsCollected;
+  std::string _carrierName; // name of the vehicle currently carrying us
 };
-
-#endif 
