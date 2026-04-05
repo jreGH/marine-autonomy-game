@@ -1,0 +1,108 @@
+# BWSI AUVC — Scavenger Hunt scenario
+# Edit this file to change the game configuration, then run:
+#   ./launch_game.sh --scenario scavenger_hunt
+
+[scenario]
+name        = "Scavenger Hunt"
+description = "Teams race to tag whales, photograph fish, collect treasure, and survive NPC sharks."
+tiff_file   = "forrest19.tif"   # background map for pMarineViewer
+
+[origin]
+lat =  43.825300   # Forest Lake, ME  (MOOS-IvP default test site)
+lon = -70.330400
+
+# Arena boundary polygon (local XY metres, origin above).
+# BHV_OpRegion enforces this as a hard safety boundary on every vehicle.
+[arena]
+vertices = [
+  [-200, -300],
+  [ 200, -300],
+  [ 200,    0],
+  [-200,    0],
+]
+
+# Scoring parameters passed to pChallenge_shoreside
+[game]
+length_min    = 20
+whale_score   = 300
+fish_score    = 100
+pickup_score  = 200
+collect_score = 500
+bite_timeout  = 60   # seconds in the penalty box after a shark bite
+
+# -----------------------------------------------------------------------
+# Player teams.  Each vehicle gets its own MOOS community.
+# Ports: shoreside=9100; vehicles start at 9000 and increment by 1.
+# -----------------------------------------------------------------------
+[[teams]]
+name  = "alpha"
+color = "dodger_blue"
+
+  [[teams.vehicles]]
+  name          = "jellyfish"
+  type          = "AUV"
+  start_x       =   0.0
+  start_y       = -175.0
+  start_heading = 180
+  max_speed     = 4.0
+
+[[teams]]
+name  = "bravo"
+color = "orange"
+
+  [[teams.vehicles]]
+  name          = "squid"
+  type          = "AUV"
+  start_x       =  60.0
+  start_y       = -175.0
+  start_heading = 180
+  max_speed     = 4.0
+
+# -----------------------------------------------------------------------
+# NPC entities.  Each runs in its own MOOS community.
+# Ports for NPCs start at 9200 and increment by 1.
+# -----------------------------------------------------------------------
+[[npcs]]
+type          = "shark"
+name          = "jaws"
+start_x       =   0.0
+start_y       = -160.0
+start_heading = 90
+patrol_polygon   = "-60,-120:60,-120:60,-220:-60,-220"
+patrol_speed     = 2.0
+min_chase_dist   = 5.0
+max_chase_dist   = 50.0
+chase_timeout    = 30.0
+recovery_timeout = 120.0
+
+[[npcs]]
+type          = "fish"
+name          = "nemo"
+start_x       =  -80.0
+start_y       = -130.0
+start_heading = 0
+patrol_polygon = "-120,-90:-40,-90:-40,-170:-120,-170"
+patrol_speed   = 1.5
+min_chase_dist = 5.0
+max_chase_dist = 40.0
+
+[[npcs]]
+type          = "whale"
+name          = "moby"
+start_x       =  20.0
+start_y       = -230.0
+start_heading = 270
+patrol_polygon           = "-30,-200:80,-200:80,-280:-30,-280"
+patrol_speed             = 1.8
+min_chase_dist           = 5.0
+max_chase_dist           = 40.0
+surface_depth_threshold  = 5.0
+
+[[npcs]]
+type            = "treasure"
+name            = "chest_01"
+start_x         = -40.0
+start_y         = -200.0
+start_heading   = 0
+min_chase_dist  = 5.0
+boundary_radius = 1500.0
