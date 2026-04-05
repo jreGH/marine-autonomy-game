@@ -315,22 +315,43 @@ def generate(scenario_path, outdir):
             patrol = default_patrol_polygon(
                 vehicle["start_x"], vehicle["start_y"], radius=30)
 
+            # student_mode = "python" omits pChallenge so students drive via
+            # VehicleAPI.py instead of the C++ app.
+            python_mode = (vehicle.get("student_mode", "cpp").lower() == "python")
+            if python_mode:
+                pchallenge_run_line  = ""
+                pchallenge_cfg_block = ""
+            else:
+                pchallenge_run_line  = "  Run = pChallenge          @ NewConsole = false\n"
+                pchallenge_cfg_block = (
+                    "//------------------------------------------\n"
+                    "ProcessConfig = pChallenge\n"
+                    "{\n"
+                    "  AppTick   = 4\n"
+                    "  CommsTick = 4\n\n"
+                    "  min_chase_dist = 5.0\n"
+                    "  max_chase_dist = 50.0\n"
+                    "}"
+                )
+
             v_vals = dict(
-                VEHICLE_NAME       = vname,
-                VEHICLE_NAME_UPPER = vupper,
-                TEAM_NAME          = team["name"],
-                VEHICLE_COLOR      = team["color"],
-                SERVER_PORT        = port,
-                SHARE_LISTEN_PORT  = share_port,
-                SHORESIDE_PORT     = SHORESIDE_PORT,
-                LAT_ORIGIN         = origin["lat"],
-                LON_ORIGIN         = origin["lon"],
-                START_X            = vehicle["start_x"],
-                START_Y            = vehicle["start_y"],
-                START_HEADING      = vehicle.get("start_heading", 180),
-                MAX_SPEED          = vehicle.get("max_speed", 4.0),
-                ARENA_POLYGON      = arena_polygon,
-                PATROL_POLYGON     = patrol,
+                VEHICLE_NAME           = vname,
+                VEHICLE_NAME_UPPER     = vupper,
+                TEAM_NAME              = team["name"],
+                VEHICLE_COLOR          = team["color"],
+                SERVER_PORT            = port,
+                SHARE_LISTEN_PORT      = share_port,
+                SHORESIDE_PORT         = SHORESIDE_PORT,
+                LAT_ORIGIN             = origin["lat"],
+                LON_ORIGIN             = origin["lon"],
+                START_X                = vehicle["start_x"],
+                START_Y                = vehicle["start_y"],
+                START_HEADING          = vehicle.get("start_heading", 180),
+                MAX_SPEED              = vehicle.get("max_speed", 4.0),
+                ARENA_POLYGON          = arena_polygon,
+                PATROL_POLYGON         = patrol,
+                PCHALLENGE_RUN_LINE    = pchallenge_run_line,
+                PCHALLENGE_CONFIG_BLOCK = pchallenge_cfg_block,
             )
             write_file(os.path.join(outdir, f"{vname}.moos"),
                        Template(vehicle_tmpl).safe_substitute(v_vals))
@@ -341,6 +362,12 @@ def generate(scenario_path, outdir):
             launch_lines.append(f"echo 'Starting vehicle: {vname} (team {tname})'")
             launch_lines.append(f"pAntler {vname}.moos --MOOSTimeWarp=$WARP >& /dev/null &")
             launch_lines.append("sleep 0.5")
+            if python_mode:
+                launch_lines.append(
+                    f"echo '  NOTE: {vname} is in Python mode — "
+                    f"run: python student/examples/chase_nearest.py "
+                    f"--vehicle {vname} --port {port}'"
+                )
 
             v_port += 1
 

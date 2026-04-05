@@ -4,14 +4,30 @@ This guide explains how to program your vehicle's autonomy for the BWSI
 AUVC challenge.  You do not need to understand all of MOOS-IvP to
 compete — this document covers everything your code needs to know.
 
+## Two programming tracks
+
+| Track | Entry point | Language |
+|-------|-------------|----------|
+| **Python** (recommended for beginners) | `student/api/VehicleAPI.py` | Python 3 + pymoos |
+| **C++** (recommended for full control) | `behaviors/pChallenge/Challenge.cpp` | C++ / MOOS-IvP |
+
+Both tracks publish and subscribe to the same MOOS variables, so you can
+start in Python and switch to C++ later without changing the scenario or
+behavior files.
+
 ---
 
 ## How the Game Works
 
 The simulation runs several MOOS *communities* — one per vehicle plus a
 shoreside referee.  Each community has a database (MOOSDB) that processes
-publish and subscribe to.  Your code lives in **`pChallenge`**, which runs
-inside your vehicle's community.
+publish and subscribe to.
+
+- **C++ track**: your code lives in **`pChallenge`**, which runs inside your
+  vehicle's community and is started by `pAntler`.
+- **Python track**: your script connects directly to the vehicle's MOOSDB as
+  an external process.  Set `student_mode = "python"` in the scenario TOML
+  and `pChallenge` is omitted from the generated `.moos` file.
 
 ```
 Your vehicle community
@@ -240,3 +256,144 @@ bool Challenge::Iterate() {
   deep can break line-of-sight if you add comms range limits later.
 - **Group filter**: Always check `contact.group() == "npc"` before acting
   on a contact — you do not want to chase the sharks.
+
+---
+
+## Python API Reference
+
+> Requires pymoos (installed alongside MOOS-IvP).
+
+### Setup
+
+In your scenario TOML, set `student_mode = "python"` on the vehicle:
+
+```toml
+[[teams.vehicles]]
+name         = "jellyfish"
+student_mode = "python"   # omits pChallenge from generated .moos
+start_x      = 0.0
+start_y      = -175.0
+```
+
+Then run your script after launching the mission:
+
+```bash
+./launch_game.sh --scenario scavenger_hunt
+# in another terminal:
+python student/examples/chase_nearest.py --vehicle jellyfish --port 9000
+```
+
+### VehicleAPI
+
+```python
+from api import VehicleAPI
+
+api = VehicleAPI(
+    vehicle_name = "jellyfish",
+    server_port  = 9000,         # from scenario port assignment
+    server_host  = "localhost",
+    start_x      = 0.0,          # used by api.return_to_base()
+    start_y      = -175.0,
+)
+api.start()          # blocks until MOOSDB connection established
+```
+
+### Own state
+
+```python
+api.x          # float — own X position (m)
+api.y          # float — own Y position (m)
+api.depth      # float — own depth (m, positive downward)
+api.heading    # float — own heading (deg, 0=north, clockwise)
+api.speed      # float — own speed (m/s)
+api.deployed   # bool  — True when DEPLOY=true (mission active)
+api.running    # bool  — True while connected AND deployed
+api.position   # (x, y) tuple
+```
+
+### Contacts
+
+```python
+contacts = api.contacts()              # all known contacts
+players  = [c for c in contacts if c.group != "npc"]
+npcs     = [c for c in contacts if c.group == "npc"]
+sharks   = [c for c in contacts if c.type.lower() == "shark"]
+
+c = api.get_contact("moby")           # Contact or None
+
+# Contact fields
+c.name     # str   — e.g. "moby"
+c.type     # str   — e.g. "AUV", "whale", "fish", "treasure"
+c.group    # str   — e.g. "alpha", "npc"
+c.x        # float
+c.y        # float
+c.depth    # float
+c.heading  # float
+c.speed    # float
+
+c.distance_2d(api.x, api.y)          # horizontal range (m)
+c.range_3d(api.x, api.y, api.depth)  # slant range (m)
+
+# Collected-contact bookkeeping (local only — not visible to referee)
+api.mark_collected(c)
+api.is_collected(c)                    # bool
+api.uncollected_contacts()             # list filtered by mark_collected
+```
+
+### Motion commands
+
+```python
+api.chase("moby")                      # close range on named contact
+api.loiter()                           # resume default patrol polygon
+api.loiter_at(-50, -200, radius=20)    # loiter around a specific point
+api.go_to(-80, -130)                   # drive to a waypoint
+api.go_to(-80, -130, speed=2.0)        # with custom speed
+api.go_to_sequence([(-50,-100),(-80,-150),(-20,-180)])  # follow a route
+api.go_to_sequence(..., repeat=True)   # cycle indefinitely
+api.return_to_base()                   # go_to(start_x, start_y)
+api.set_base(-60, -200)                # change return point
+api.halt()                             # cancel all active commands
+```
+
+### Low-level access
+
+```python
+api.notify("MY_VAR", "some_string")   # publish a string variable
+api.notify("MY_VAR", 3.14)            # publish a double variable
+api.sleep(0.25)                        # time.sleep() wrapper
+api.stop()                             # disconnect from MOOS
+```
+
+### Minimal mission template
+
+```python
+from api import VehicleAPI
+
+api = VehicleAPI("jellyfish", server_port=9000)
+api.start()
+
+while not api.deployed:          # wait for instructor to hit DEPLOY
+    api.sleep(0.1)
+
+while api.running:
+    # --- write your logic here ---
+    npcs = [c for c in api.contacts()
+            if c.group == "npc"
+            and c.type.lower() != "shark"
+            and not api.is_collected(c)]
+
+    if npcs:
+        target = min(npcs, key=lambda c: c.distance_2d(api.x, api.y))
+        dist   = target.distance_2d(api.x, api.y)
+        if dist < 7.0:
+            api.mark_collected(target)
+            api.loiter()
+        else:
+            api.chase(target.name)
+    else:
+        api.loiter()
+
+    api.sleep(0.25)
+
+api.stop()
+```

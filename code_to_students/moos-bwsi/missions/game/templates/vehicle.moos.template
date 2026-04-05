@@ -20,8 +20,7 @@ ProcessConfig = ANTLER
   Run = pMarinePID          @ NewConsole = false
   Run = pHelmIvP            @ NewConsole = false
   Run = pNodeReporter       @ NewConsole = false
-  Run = pChallenge          @ NewConsole = false
-  Run = uFldNodeBroker      @ NewConsole = false
+${PCHALLENGE_RUN_LINE}  Run = uFldNodeBroker      @ NewConsole = false
   Run = pShare              @ NewConsole = false
   Run = uProcessWatch       @ NewConsole = false
 }
@@ -107,15 +106,7 @@ ProcessConfig = pNodeReporter
 }
 
 //------------------------------------------
-ProcessConfig = pChallenge
-{
-  AppTick   = 4
-  CommsTick = 4
-
-  min_chase_dist = 5.0
-  max_chase_dist = 50.0
-}
-
+${PCHALLENGE_CONFIG_BLOCK}
 //------------------------------------------
 // uFldNodeBroker: tells the shoreside this vehicle exists.
 // The shoreside's uFldShoreBroker will configure pShare automatically.
