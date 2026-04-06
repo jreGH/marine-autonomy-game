@@ -1,0 +1,119 @@
+# BWSI AUVC — Mine Countermeasures (MCM) scenario
+#
+# Teams conduct an area search for sea mines.  Vehicles fly a systematic
+# lawnmower survey, request sensor detections from uFldHazardSensor, classify
+# contacts, and report confirmed hazards to shoreside for scoring.
+#
+# Launch with:
+#   python3 missions/mcm/gen_mcm.py --scenario missions/mcm/scenarios/mcm_example.toml
+#   cd missions/mcm/run/mcm_example && ./launch_all_local.sh 4
+
+[scenario]
+name        = "MCM Example"
+description = "Area search for sea mines in a constrained littoral zone."
+tiff_file   = "MIT_SP.tif"
+
+[origin]
+lat =  43.825300
+lon = -70.330400
+
+# Search area: 400 m wide × 300 m deep
+[arena]
+vertices = [
+  [-200, -300],
+  [ 200, -300],
+  [ 200,    0],
+  [-200,    0],
+]
+
+# -----------------------------------------------------------------------
+# Mine field (ground truth — not revealed to students)
+# -----------------------------------------------------------------------
+# type = "hazard" → live mine that should be reported
+# type = "benign" → rock/wreck that should be ignored
+
+[[mines]]
+label = "m01"
+x     =  -80.0
+y     = -150.0
+type  = "hazard"
+
+[[mines]]
+label = "m02"
+x     =   50.0
+y     =  -80.0
+type  = "hazard"
+
+[[mines]]
+label = "m03"
+x     =  120.0
+y     = -220.0
+type  = "hazard"
+
+[[mines]]
+label = "m04"
+x     =  -30.0
+y     =  -60.0
+type  = "benign"
+
+[[mines]]
+label = "m05"
+x     =  160.0
+y     = -180.0
+type  = "benign"
+
+# -----------------------------------------------------------------------
+# Sensor model (passed to uFldHazardSensor)
+# -----------------------------------------------------------------------
+[sensor]
+sensor_pd      = 0.85    # probability of detection per sensor pass
+sensor_pfa     = 0.04    # probability of false alarm per sensor pass
+sensor_width   = 25.0    # swath half-width (m) — physical detection range
+sensor_exp     = 6.0     # exponential taper of detection probability vs. range
+classify_pd    = 0.75    # probability of correct classification
+classify_time  = 10.0    # seconds required to classify a contact
+
+# -----------------------------------------------------------------------
+# Scoring
+# -----------------------------------------------------------------------
+[scoring]
+penalty_missed_hazard = 150   # points lost per unreported hazard
+penalty_false_alarm   = 75    # points lost per benign reported as hazard
+max_time              = 900   # mission time limit (seconds)
+penalty_max_time_over = 200   # fixed penalty for exceeding max_time
+penalty_max_time_rate = 0.45  # points lost per second over max_time
+
+# -----------------------------------------------------------------------
+# Survey parameters
+# -----------------------------------------------------------------------
+[survey]
+lane_width   = 25.0    # distance between lawnmower lanes (should match sensor_width)
+survey_speed = 2.5     # survey transit speed (m/s)
+
+# -----------------------------------------------------------------------
+# Player teams
+# -----------------------------------------------------------------------
+
+[[teams]]
+name  = "alpha"
+color = "dodger_blue"
+
+  [[teams.vehicles]]
+  name          = "jellyfish"
+  student_mode  = "python"
+  start_x       = -150.0
+  start_y       =   -20.0
+  start_heading =   180
+  max_speed     =     4.0
+
+[[teams]]
+name  = "bravo"
+color = "orange"
+
+  [[teams.vehicles]]
+  name          = "squid"
+  student_mode  = "python"
+  start_x       =  150.0
+  start_y       =  -20.0
+  start_heading =  180
+  max_speed     =    4.0

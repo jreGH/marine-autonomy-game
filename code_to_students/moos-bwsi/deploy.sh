@@ -8,6 +8,7 @@
 #   ./deploy.sh --scenario missions/game/scenarios/scavenger_hunt.toml [--warp 4]
 #   ./deploy.sh --scenario missions/inspection/scenarios/pipeline_survey.toml
 #   ./deploy.sh --scenario missions/gps_denied/scenarios/beacon_nav.toml --warp 2
+#   ./deploy.sh --scenario missions/mcm/scenarios/mcm_example.toml --warp 4
 #
 # Requirements:
 #   - Python 3.11+ (or 3.8+ with tomli) for the gen scripts
@@ -69,9 +70,11 @@ elif [[ "$SCENARIO" == */inspection/* ]]; then
     GEN="$SCRIPT_DIR/missions/inspection/gen_inspection.py"
 elif [[ "$SCENARIO" == */gps_denied/* ]]; then
     GEN="$SCRIPT_DIR/missions/gps_denied/gen_gps_denied.py"
+elif [[ "$SCENARIO" == */mcm/* ]]; then
+    GEN="$SCRIPT_DIR/missions/mcm/gen_mcm.py"
 else
     echo "ERROR: Cannot determine mission type from path: $SCENARIO"
-    echo "       Path must contain /game/, /inspection/, or /gps_denied/"
+    echo "       Path must contain /game/, /inspection/, /gps_denied/, or /mcm/"
     exit 1
 fi
 

@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BWSI — Mission Builder</title>
+
+  <!-- Leaflet.js -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Leaflet.draw — interactive geometry drawing -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: monospace; background: #111; color: #eee;
+           display: flex; flex-direction: column; height: 100vh; }
+
+    header { background: #1a1a2e; padding: 8px 16px; display: flex;
+             align-items: center; gap: 16px; border-bottom: 1px solid #333; }
+    header h1 { font-size: 1.05rem; color: #7fc8f8; white-space: nowrap; }
+
+    #origin-form { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; }
+    #origin-form input { background: #0d1117; border: 1px solid #555; color: #eee;
+                         padding: 3px 6px; border-radius: 3px; width: 110px; font-family: monospace; }
+    #origin-form select { background: #0d1117; border: 1px solid #555; color: #eee;
+                          padding: 3px 4px; border-radius: 3px; font-family: monospace; }
+    button { padding: 5px 14px; border: none; border-radius: 4px; cursor: pointer;
+             font-family: monospace; font-size: 0.8rem; }
+    .btn-primary  { background: #1a5a8e; color: #aadcff; }
+    .btn-success  { background: #1a7a2e; color: #7fffaa; }
+    .btn-danger   { background: #7a1a1a; color: #ffaaaa; }
+    .btn-primary:hover { background: #2270ae; }
+    .btn-success:hover { background: #22aa44; }
+    .btn-danger:hover  { background: #aa2222; }
+
+    main { display: flex; flex: 1; overflow: hidden; }
+
+    #map { flex: 1; background: #0d1117; }
+
+    #sidebar { width: 300px; min-width: 280px; background: #16213e;
+               overflow-y: auto; padding: 12px; border-left: 1px solid #333;
+               display: flex; flex-direction: column; gap: 10px; }
+
+    .section-card { background: #1a2a3e; border-radius: 6px; padding: 10px;
+                    border-left: 3px solid #7fc8f8; }
+    .section-card h3 { font-size: 0.8rem; color: #7fc8f8; margin-bottom: 8px;
+                       text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .form-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px;
+                font-size: 0.75rem; }
+    .form-row label { width: 120px; color: #99aacc; flex-shrink: 0; }
+    .form-row input, .form-row select {
+      flex: 1; background: #0d1117; border: 1px solid #445;
+      color: #eee; padding: 3px 5px; border-radius: 3px; font-family: monospace;
+      font-size: 0.75rem;
+    }
+
+    #mode-bar { background: #1a1a2e; padding: 6px 12px; display: flex;
+                gap: 8px; align-items: center; border-bottom: 1px solid #333;
+                font-size: 0.78rem; }
+    #mode-bar .mode-label { color: #99aacc; margin-right: 4px; }
+    .mode-btn { padding: 3px 12px; }
+    .mode-btn.active { outline: 2px solid #7fc8f8; }
+
+    #status-bar { background: #111; padding: 4px 12px; font-size: 0.72rem;
+                  color: #556; border-top: 1px solid #222; }
+
+    #items-list { font-size: 0.72rem; max-height: 180px; overflow-y: auto; }
+    .item-row { display: flex; justify-content: space-between; align-items: center;
+                padding: 3px 0; border-bottom: 1px solid #223; }
+    .item-row:last-child { border-bottom: none; }
+    .item-del { color: #ff6666; cursor: pointer; font-size: 0.85rem; padding: 0 3px; }
+    .item-del:hover { color: #ff0000; }
+
+    .tag { padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; }
+    .tag-hazard  { background: #5a1a1a; color: #ff8888; }
+    .tag-benign  { background: #1a3a1a; color: #88ff88; }
+    .tag-pipeline { background: #1a2a5a; color: #88aaff; }
+    .tag-anomaly { background: #5a4a1a; color: #ffdd88; }
+    .tag-arena   { background: #2a1a5a; color: #cc88ff; }
+
+    #xy-tooltip { position: absolute; bottom: 30px; left: 12px;
+                  background: rgba(0,0,0,0.7); padding: 3px 8px; border-radius: 3px;
+                  font-size: 0.72rem; color: #aaa; pointer-events: none; z-index: 1000; }
+
+    #vehicles-section textarea {
+      width: 100%; background: #0d1117; border: 1px solid #445;
+      color: #eee; padding: 5px; border-radius: 3px; font-family: monospace;
+      font-size: 0.72rem; resize: vertical;
+    }
+
+    #export-errors { color: #ff8888; font-size: 0.72rem; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>BWSI Mission Builder</h1>
+  <div id="origin-form">
+    <label style="color:#99aacc;font-size:0.78rem">Origin:</label>
+    <input id="inp-lat" placeholder="lat  43.8253" value="43.8253">
+    <input id="inp-lon" placeholder="lon -70.3304" value="-70.3304">
+    <select id="inp-tile-src">
+      <option value="osm">OSM</option>
+      <option value="esri_satellite">ESRI Satellite</option>
+      <option value="carto_light">CartoDB Light</option>
+      <option value="noaa_chart">NOAA Chart</option>
+    </select>
+    <button class="btn-primary" onclick="loadMap()">Load Map</button>
+  </div>
+</header>
+
+<div id="mode-bar">
+  <span class="mode-label">Draw:</span>
+  <button class="mode-btn active" id="btn-mode-arena"   onclick="setMode('arena')">Arena</button>
+  <button class="mode-btn"        id="btn-mode-pipeline" onclick="setMode('pipeline')">Pipeline</button>
+  <button class="mode-btn"        id="btn-mode-anomaly"  onclick="setMode('anomaly')">Anomaly</button>
+  <button class="mode-btn"        id="btn-mode-mine"     onclick="setMode('mine')">Mine</button>
+  <button class="mode-btn"        id="btn-mode-vehicle"  onclick="setMode('vehicle')">Vehicle</button>
+  <span id="mode-hint" style="color:#556;margin-left:8px;font-size:0.72rem"></span>
+</div>
+
+<main>
+  <div id="map">
+    <div id="xy-tooltip">hover the map to see XY coordinates</div>
+  </div>
+
+  <div id="sidebar">
+
+    <!-- Mission type + name -->
+    <div class="section-card">
+      <h3>Mission</h3>
+      <div class="form-row">
+        <label>Type</label>
+        <select id="sc-type" onchange="onMissionTypeChange()">
+          <option value="mcm">MCM (mine countermeasures)</option>
+          <option value="inspection">Pipeline Inspection</option>
+          <option value="game">Game (scavenger hunt)</option>
+          <option value="gps_denied">GPS-Denied</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Name</label>
+        <input id="sc-name" value="My Mission">
+      </div>
+      <div class="form-row">
+        <label>Description</label>
+        <input id="sc-desc" value="">
+      </div>
+      <div class="form-row">
+        <label>Map file</label>
+        <input id="sc-tiff" value="MIT_SP.tif">
+      </div>
+    </div>
+
+    <!-- Geometry items list -->
+    <div class="section-card">
+      <h3>Geometry</h3>
+      <div id="items-list">No items yet. Draw on the map.</div>
+    </div>
+
+    <!-- Sensor model -->
+    <div class="section-card" id="sensor-section">
+      <h3>Sensor</h3>
+      <div id="sensor-fields"><!-- filled by onMissionTypeChange --></div>
+    </div>
+
+    <!-- Scoring -->
+    <div class="section-card">
+      <h3>Scoring</h3>
+      <div id="scoring-fields"><!-- filled by onMissionTypeChange --></div>
+    </div>
+
+    <!-- Teams / vehicles -->
+    <div class="section-card" id="vehicles-section">
+      <h3>Vehicles (click map in Vehicle mode to place)</h3>
+      <div id="vehicle-list">No vehicles placed.</div>
+    </div>
+
+    <!-- Export -->
+    <div class="section-card">
+      <h3>Export</h3>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn-success" onclick="exportToml()">Download TOML</button>
+        <button class="btn-primary" onclick="validateScenario()">Validate</button>
+        <button class="btn-danger"  onclick="clearAll()">Clear All</button>
+      </div>
+      <div id="export-errors"></div>
+    </div>
+
+  </div>
+</main>
+
+<div id="status-bar">Ready. Enter origin lat/lon and click "Load Map".</div>
+
+<script>
+// ============================================================
+// Global state
+// ============================================================
+const state = {
+  originLat: 43.8253,
+  originLon: -70.3304,
+  items: [],           // all drawn geometry
+  vehicles: [],        // placed vehicles
+  drawMode: 'arena',   // current draw mode
+  arenaSet: false,
+  nextVehicleId: 1,
+};
+
+// ============================================================
+// Leaflet map setup (geographic coordinates — tiles are geo)
+// ============================================================
+const map = L.map('map', { center: [43.8253, -70.3304], zoom: 15 });
+
+// Default tile layer (replaced when user loads a custom map)
+const osmLayer = L.tileLayer(
+  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  { attribution: '© OSM' }
+).addTo(map);
+
+let customLayer = null;
+const drawnItems = new L.FeatureGroup().addTo(map);
+
+// Leaflet.draw controls — shown per mode
+const drawControls = {};
+let activeDrawControl = null;
+
+// Markers for vehicles
+const vehicleMarkers = {};
+
+// XY tooltip
+map.on('mousemove', e => {
+  const [x, y] = latlonToXY(e.latlng.lat, e.latlng.lng);
+  document.getElementById('xy-tooltip').textContent =
+    `lat=${e.latlng.lat.toFixed(5)} lon=${e.latlng.lng.toFixed(5)}  →  x=${x.toFixed(0)}m y=${y.toFixed(0)}m`;
+});
+
+// ============================================================
+// Coordinate conversion (client-side flat-earth, mirrors server)
+// ============================================================
+const R_EARTH = 6_371_000;
+
+function latlonToXY(lat, lon) {
+  const dlat = (lat - state.originLat) * Math.PI / 180;
+  const dlon = (lon - state.originLon) * Math.PI / 180;
+  const x = dlon * R_EARTH * Math.cos(state.originLat * Math.PI / 180);
+  const y = dlat * R_EARTH;
+  return [x, y];
+}
+
+function xyToLatlon(x, y) {
+  const dlat = y / R_EARTH;
+  const dlon = x / (R_EARTH * Math.cos(state.originLat * Math.PI / 180));
+  return [state.originLat + dlat * 180 / Math.PI,
+          state.originLon + dlon * 180 / Math.PI];
+}
+
+// ============================================================
+// Map loading
+// ============================================================
+async function loadMap() {
+  const lat = parseFloat(document.getElementById('inp-lat').value);
+  const lon = parseFloat(document.getElementById('inp-lon').value);
+  const src = document.getElementById('inp-tile-src').value;
+
+  if (isNaN(lat) || isNaN(lon)) {
+    setStatus('Invalid origin coordinates.'); return;
+  }
+
+  state.originLat = lat;
+  state.originLon = lon;
+  map.setView([lat, lon], 15);
+
+  // Place origin marker
+  L.circleMarker([lat, lon], { radius: 6, color: '#ffff00', fillColor: '#ffff00',
+    fillOpacity: 0.8 }).addTo(map)
+    .bindTooltip('Origin (0,0)', { permanent: false });
+
+  if (src === 'osm') {
+    setStatus('Using OpenStreetMap tiles (already loaded).');
+    return;
+  }
+
+  setStatus('Downloading map tiles...');
+  try {
+    const res = await fetch('/api/download_map', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ origin_lat: lat, origin_lon: lon,
+                             radius_m: 700, zoom: 16, tile_source: src }),
+    });
+    const data = await res.json();
+    if (!data.ok) { setStatus('Map download failed: ' + data.error); return; }
+
+    if (customLayer) map.removeLayer(customLayer);
+    // Show the stitched PNG as an image overlay using its NW/SE bounds
+    // (for simplicity, use a 1400m × 1400m bbox centred on origin)
+    const [nwLat, nwLon] = xyToLatlon(-700, 700);
+    const [seLat, seLon] = xyToLatlon( 700, -700);
+    customLayer = L.imageOverlay(
+      data.tile_url + '?t=' + Date.now(),
+      [[nwLat, nwLon], [seLat, seLon]],
+      { opacity: 0.85 }
+    ).addTo(map);
+
+    setStatus(`Map loaded: ${data.tile_count} tiles, ~${data.pixel_size_m.toFixed(1)}m/px`);
+  } catch (e) {
+    setStatus('Map download error: ' + e.message);
+  }
+}
+
+// ============================================================
+// Draw modes
+// ============================================================
+const MODE_HINTS = {
+  arena:    'Click corners to draw the operation area polygon. Double-click to finish.',
+  pipeline: 'Click to place pipeline waypoints. Double-click to finish the polyline.',
+  anomaly:  'Click to mark an anomaly (damage / corrosion).',
+  mine:     'Click to place a mine. Right-click = hazard, left-click = benign.',
+  vehicle:  'Click to place a vehicle start position.',
+};
+
+function setMode(mode) {
+  state.drawMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-mode-' + mode).classList.add('active');
+  document.getElementById('mode-hint').textContent = MODE_HINTS[mode] || '';
+}
+
+// Listen for clicks on the map (used for point-type items)
+map.on('click', onMapClick);
+map.on('contextmenu', e => {
+  if (state.drawMode === 'mine') {
+    e.originalEvent.preventDefault();
+    placeMine(e.latlng, 'hazard');
+  }
+});
+
+function onMapClick(e) {
+  switch (state.drawMode) {
+    case 'mine':    placeMine(e.latlng, 'benign');  break;
+    case 'anomaly': placeAnomaly(e.latlng);         break;
+    case 'vehicle': placeVehicle(e.latlng);         break;
+    default: break; // arena / pipeline handled by Leaflet.draw
+  }
+}
+
+// Activate Leaflet.draw for polygon / polyline modes
+let drawHandler = null;
+
+map.on('draw:created', onDrawCreated);
+
+function activateDraw(type) {
+  if (drawHandler) { drawHandler.disable(); drawHandler = null; }
+  if (type === 'polygon') {
+    drawHandler = new L.Draw.Polygon(map, {
+      shapeOptions: { color: '#cc88ff', fillOpacity: 0.1 }
+    });
+  } else if (type === 'polyline') {
+    drawHandler = new L.Draw.Polyline(map, {
+      shapeOptions: { color: '#88aaff', weight: 3 }
+    });
+  }
+  if (drawHandler) drawHandler.enable();
+}
+
+// Re-activate draw tool when mode changes
+const _origSetMode = setMode;
+window.setMode = function(mode) {
+  _origSetMode(mode);
+  if (drawHandler) { drawHandler.disable(); drawHandler = null; }
+  if (mode === 'arena')    activateDraw('polygon');
+  if (mode === 'pipeline') activateDraw('polyline');
+};
+
+function onDrawCreated(e) {
+  const layer = e.layer;
+  drawnItems.addLayer(layer);
+
+  if (state.drawMode === 'arena') {
+    const latlngs = layer.getLatLngs()[0];
+    const vertices = latlngs.map(ll => {
+      const [x, y] = latlonToXY(ll.lat, ll.lng);
+      return [Math.round(x), Math.round(y)];
+    });
+    addItem({ kind: 'arena', vertices, label: 'arena', _layer: layer });
+    state.arenaSet = true;
+    activateDraw('polygon'); // re-arm for additional drawings
+  } else if (state.drawMode === 'pipeline') {
+    const latlngs = layer.getLatLngs();
+    const points = latlngs.map(ll => {
+      const [x, y] = latlonToXY(ll.lat, ll.lng);
+      return [Math.round(x), Math.round(y)];
+    });
+    const label = 'pipeline_' + (state.items.filter(i => i.kind === 'pipeline').length + 1);
+    addItem({ kind: 'pipeline', points, label, depth: 10.0, _layer: layer });
+    activateDraw('polyline'); // re-arm
+  }
+
+  refreshGeomList();
+}
+
+// ============================================================
+// Point items (mines, anomalies, vehicles)
+// ============================================================
+function placeMine(latlng, type) {
+  const [x, y] = latlonToXY(latlng.lat, latlng.lng);
+  const idx = state.items.filter(i => i.kind === 'mine').length + 1;
+  const label = 'm' + String(idx).padStart(2, '0');
+  const col = type === 'hazard' ? '#ff4444' : '#44ff44';
+  const marker = L.circleMarker(latlng, {
+    radius: 7, color: col, fillColor: col, fillOpacity: 0.8
+  }).addTo(map).bindTooltip(
+    `${label} (${type})<br>x=${x.toFixed(0)}m y=${y.toFixed(0)}m`,
+    { permanent: false }
+  );
+  addItem({ kind: 'mine', label, x: Math.round(x*10)/10, y: Math.round(y*10)/10,
+            type, _marker: marker });
+  refreshGeomList();
+}
+
+function placeAnomaly(latlng) {
+  const [x, y] = latlonToXY(latlng.lat, latlng.lng);
+  const pipeline = prompt('Anomaly on pipeline (label):', 'cable_01') || 'cable_01';
+  const type     = prompt('Anomaly type (damage/corrosion/obstruction):', 'damage') || 'damage';
+  const marker = L.circleMarker(latlng, {
+    radius: 6, color: '#ffdd44', fillColor: '#ffdd44', fillOpacity: 0.8
+  }).addTo(map).bindTooltip(
+    `anomaly (${type})<br>x=${x.toFixed(0)}m y=${y.toFixed(0)}m`, { permanent: false }
+  );
+  addItem({ kind: 'anomaly', pipeline, x: Math.round(x*10)/10, y: Math.round(y*10)/10,
+            type, _marker: marker });
+  refreshGeomList();
+}
+
+function placeVehicle(latlng) {
+  const [x, y] = latlonToXY(latlng.lat, latlng.lng);
+  const name    = prompt('Vehicle name:', 'vehicle_' + state.nextVehicleId) || 'v' + state.nextVehicleId;
+  const team    = prompt('Team name:', 'alpha') || 'alpha';
+  const heading = parseInt(prompt('Start heading (deg, 0=N):', '180') || '180');
+
+  state.nextVehicleId++;
+
+  const marker = L.marker(latlng, {
+    icon: L.divIcon({
+      html: `<div style="background:#7fc8f8;width:12px;height:12px;border-radius:50%;
+             border:2px solid #000;transform:rotate(${heading}deg)"></div>`,
+      iconSize: [12, 12], iconAnchor: [6, 6],
+    })
+  }).addTo(map).bindTooltip(
+    `${name} (${team})<br>x=${x.toFixed(0)}m y=${y.toFixed(0)}m`, { permanent: false }
+  );
+
+  vehicleMarkers[name] = marker;
+  state.vehicles.push({ name, team, start_x: Math.round(x*10)/10,
+                        start_y: Math.round(y*10)/10, start_heading: heading,
+                        max_speed: 4.0, student_mode: 'python' });
+  refreshVehicleList();
+}
+
+// ============================================================
+// State helpers
+// ============================================================
+function addItem(item) {
+  state.items.push(item);
+}
+
+function removeItem(idx) {
+  const item = state.items[idx];
+  if (item._layer) drawnItems.removeLayer(item._layer);
+  if (item._marker) map.removeLayer(item._marker);
+  state.items.splice(idx, 1);
+  refreshGeomList();
+}
+
+function removeVehicle(idx) {
+  const v = state.vehicles[idx];
+  if (vehicleMarkers[v.name]) {
+    map.removeLayer(vehicleMarkers[v.name]);
+    delete vehicleMarkers[v.name];
+  }
+  state.vehicles.splice(idx, 1);
+  refreshVehicleList();
+}
+
+// ============================================================
+// Sidebar rendering
+// ============================================================
+function refreshGeomList() {
+  const el = document.getElementById('items-list');
+  if (!state.items.length) { el.innerHTML = 'No items yet.'; return; }
+
+  el.innerHTML = state.items.map((item, i) => {
+    let desc = '';
+    let tagCls = '';
+    switch (item.kind) {
+      case 'arena':
+        desc = `${item.vertices.length} vertices`;
+        tagCls = 'tag-arena'; break;
+      case 'pipeline':
+        desc = `${item.points.length} pts, depth=${item.depth}m`;
+        tagCls = 'tag-pipeline'; break;
+      case 'anomaly':
+        desc = `pipe=${item.pipeline} x=${item.x} y=${item.y}`;
+        tagCls = 'tag-anomaly'; break;
+      case 'mine':
+        desc = `x=${item.x} y=${item.y}`;
+        tagCls = `tag-${item.type}`; break;
+    }
+    return `<div class="item-row">
+      <span><span class="tag ${tagCls}">${item.kind}</span> ${item.label || ''}</span>
+      <span class="item-del" onclick="removeItem(${i})" title="Remove">✕</span>
+    </div>`;
+  }).join('');
+}
+
+function refreshVehicleList() {
+  const el = document.getElementById('vehicle-list');
+  if (!state.vehicles.length) { el.innerHTML = 'No vehicles placed.'; return; }
+  el.innerHTML = state.vehicles.map((v, i) => `
+    <div class="item-row">
+      <span>${v.name} <span style="color:#556">(${v.team})</span>
+       <span style="color:#778"> x=${v.start_x} y=${v.start_y}</span></span>
+      <span class="item-del" onclick="removeVehicle(${i})" title="Remove">✕</span>
+    </div>`).join('');
+}
+
+function onMissionTypeChange() {
+  const type = document.getElementById('sc-type').value;
+  renderSensorFields(type);
+  renderScoringFields(type);
+}
+
+function renderSensorFields(type) {
+  const el = document.getElementById('sensor-fields');
+  if (type === 'mcm') {
+    el.innerHTML = `
+      <div class="form-row"><label>sensor_pd</label><input id="s-pd" value="0.85"></div>
+      <div class="form-row"><label>sensor_pfa</label><input id="s-pfa" value="0.04"></div>
+      <div class="form-row"><label>sensor_width (m)</label><input id="s-width" value="25"></div>
+      <div class="form-row"><label>sensor_exp</label><input id="s-exp" value="6"></div>
+      <div class="form-row"><label>classify_pd</label><input id="s-cpd" value="0.75"></div>
+      <div class="form-row"><label>classify_time (s)</label><input id="s-ctime" value="10"></div>
+    `;
+  } else if (type === 'inspection') {
+    el.innerHTML = `
+      <div class="form-row"><label>detect_range (m)</label><input id="s-range" value="30"></div>
+      <div class="form-row"><label>detect_cone (deg)</label><input id="s-cone" value="60"></div>
+      <div class="form-row"><label>noise_sigma (m)</label><input id="s-sigma" value="3"></div>
+      <div class="form-row"><label>p_false_alarm</label><input id="s-pfa" value="0.02"></div>
+    `;
+  } else {
+    el.innerHTML = '<span style="color:#556;font-size:0.72rem">No sensor config for this mission type.</span>';
+  }
+}
+
+function renderScoringFields(type) {
+  const el = document.getElementById('scoring-fields');
+  if (type === 'mcm') {
+    el.innerHTML = `
+      <div class="form-row"><label>penalty_missed</label><input id="sc-miss" value="150"></div>
+      <div class="form-row"><label>penalty_false_alarm</label><input id="sc-fa" value="75"></div>
+      <div class="form-row"><label>max_time (s)</label><input id="sc-maxtime" value="900"></div>
+    `;
+  } else if (type === 'inspection') {
+    el.innerHTML = `
+      <div class="form-row"><label>coverage_score</label><input id="sc-cov" value="1000"></div>
+      <div class="form-row"><label>anomaly_score</label><input id="sc-anom" value="500"></div>
+      <div class="form-row"><label>false_alarm_penalty</label><input id="sc-fa" value="100"></div>
+    `;
+  } else {
+    el.innerHTML = '<span style="color:#556;font-size:0.72rem">—</span>';
+  }
+}
+
+// ============================================================
+// Build scenario dict from current state
+// ============================================================
+function buildScenarioDict() {
+  const type = document.getElementById('sc-type').value;
+  const d = {
+    scenario: {
+      name:        document.getElementById('sc-name').value,
+      type:        type,
+      description: document.getElementById('sc-desc').value,
+      tiff_file:   document.getElementById('sc-tiff').value,
+    },
+    origin: { lat: state.originLat, lon: state.originLon },
+    arena: {
+      vertices: (state.items.find(i => i.kind === 'arena') || {}).vertices || [],
+    },
+  };
+
+  // Geometry
+  if (type === 'mcm') {
+    d.mines = state.items
+      .filter(i => i.kind === 'mine')
+      .map(({ label, x, y, type: mtype }) => ({ label, x, y, type: mtype }));
+
+    const spd   = v => parseFloat(document.getElementById(v)?.value || 0);
+    d.sensor = {
+      sensor_pd:    spd('s-pd'),
+      sensor_pfa:   spd('s-pfa'),
+      sensor_width: spd('s-width'),
+      sensor_exp:   spd('s-exp'),
+      classify_pd:  spd('s-cpd'),
+      classify_time:spd('s-ctime'),
+    };
+    d.scoring = {
+      penalty_missed_hazard: spd('sc-miss'),
+      penalty_false_alarm:   spd('sc-fa'),
+      max_time:              spd('sc-maxtime'),
+    };
+    d.survey = { lane_width: 25, survey_speed: 2.5 };
+
+  } else if (type === 'inspection') {
+    d.pipelines = state.items
+      .filter(i => i.kind === 'pipeline')
+      .map(({ label, depth, points }) => ({ label, depth, points }));
+    d.anomalies = state.items
+      .filter(i => i.kind === 'anomaly')
+      .map(({ pipeline, x, y, type: at }) => ({ pipeline, x, y, type: at }));
+
+    const spd = v => parseFloat(document.getElementById(v)?.value || 0);
+    d.sensor = {
+      detect_range:  spd('s-range'),
+      detect_cone:   spd('s-cone'),
+      noise_sigma:   spd('s-sigma'),
+      p_false_alarm: spd('s-pfa'),
+    };
+    d.scoring = {
+      coverage_score:      parseFloat(document.getElementById('sc-cov')?.value || 1000),
+      anomaly_score:       parseFloat(document.getElementById('sc-anom')?.value || 500),
+      false_alarm_penalty: parseFloat(document.getElementById('sc-fa')?.value  || 100),
+    };
+  }
+
+  // Teams: group vehicles by team name
+  const teamMap = {};
+  for (const v of state.vehicles) {
+    if (!teamMap[v.team]) teamMap[v.team] = [];
+    teamMap[v.team].push({
+      name: v.name, student_mode: v.student_mode,
+      start_x: v.start_x, start_y: v.start_y,
+      start_heading: v.start_heading, max_speed: v.max_speed,
+    });
+  }
+  const TEAM_COLORS = ['dodger_blue', 'orange', 'lime', 'magenta', 'cyan'];
+  d.teams = Object.entries(teamMap).map(([name, vehicles], i) => ({
+    name, color: TEAM_COLORS[i % TEAM_COLORS.length], vehicles,
+  }));
+
+  return d;
+}
+
+// ============================================================
+// Export / validate
+// ============================================================
+async function validateScenario() {
+  const d = buildScenarioDict();
+  const res = await fetch('/api/validate', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(d),
+  });
+  const data = await res.json();
+  const errEl = document.getElementById('export-errors');
+  if (data.ok) {
+    errEl.textContent = 'Validation: OK ✓';
+    errEl.style.color = '#7fffaa';
+  } else {
+    errEl.style.color = '#ff8888';
+    errEl.innerHTML = 'Errors:<br>' + data.errors.map(e => '• ' + e).join('<br>');
+  }
+}
+
+async function exportToml() {
+  const d = buildScenarioDict();
+  const errEl = document.getElementById('export-errors');
+
+  const res = await fetch('/api/export_toml', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(d),
+  });
+
+  if (!res.ok) {
+    const data = await res.json();
+    errEl.style.color = '#ff8888';
+    errEl.innerHTML = 'Export errors:<br>' + data.errors.map(e => '• ' + e).join('<br>');
+    return;
+  }
+
+  // Trigger browser download
+  const blob = await res.blob();
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = (document.getElementById('sc-name').value || 'scenario')
+                 .toLowerCase().replace(/\s+/g, '_') + '.toml';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  errEl.style.color = '#7fffaa';
+  errEl.textContent = 'Exported ✓';
+}
+
+function clearAll() {
+  if (!confirm('Clear all drawn geometry and vehicles?')) return;
+  drawnItems.clearLayers();
+  Object.values(vehicleMarkers).forEach(m => map.removeLayer(m));
+  state.items    = [];
+  state.vehicles = [];
+  state.nextVehicleId = 1;
+  refreshGeomList();
+  refreshVehicleList();
+  document.getElementById('export-errors').textContent = '';
+}
+
+// ============================================================
+// Utility
+// ============================================================
+function setStatus(msg) {
+  document.getElementById('status-bar').textContent = msg;
+}
+
+// ============================================================
+// Initialise
+// ============================================================
+onMissionTypeChange();
+setMode('arena');
+setStatus('Ready. Enter origin lat/lon and click "Load Map", or start drawing directly on the OSM base layer.');
+</script>
+</body>
+</html>
