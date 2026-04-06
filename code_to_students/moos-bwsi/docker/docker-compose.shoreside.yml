@@ -1,0 +1,69 @@
+# docker-compose.shoreside.yml — Tier 1: Simulation Server
+#
+# Runs the shoreside MOOS community plus all NPC entities.
+# Place this file on your shoreside (simulation) droplet.
+#
+# Prerequisites:
+#   - bwsi-moos-base:latest image built on this host
+#   - Generated mission files in ./mission/  (copy launch_shoreside.sh + *.moos/bhv)
+#
+# Usage:
+#   docker compose -f docker-compose.shoreside.yml up -d
+#   docker compose -f docker-compose.shoreside.yml down
+#   docker compose -f docker-compose.shoreside.yml logs -f shoreside
+
+version: "3.9"
+
+x-moos-base: &moos-base
+  image: bwsi-moos-base:latest
+  # MOOS processes bind specific TCP ports and pShare opens dynamic outbound
+  # connections.  host networking gives each container the host's full port
+  # space with zero mapping overhead — appropriate for a dedicated droplet.
+  network_mode: host
+  restart: "no"
+  volumes:
+    - ./mission:/mission:ro
+    - ./logs:/logs
+
+services:
+
+  # ---- Shoreside community ----
+  # Runs: MOOSDB, uFldShoreBroker, pShare, sensor oracles (pInfrastructureSensor /
+  #        uFldBeaconRangeSensor / pInspectionScorer), game referee (pChallenge_shoreside)
+  shoreside:
+    <<: *moos-base
+    container_name: bwsi-shoreside
+    command: bash -c "cd /mission && pAntler shoreside.moos"
+
+  # ---- NPC entities (game mode only) ----
+  # Uncomment / duplicate for each NPC defined in your scenario.
+  # Each NPC is a separate MOOS community that registers with the shoreside broker.
+  # The gen_mission.py tool generates one launch_shoreside.sh that starts all NPCs
+  # sequentially; use that script inside the shoreside container for simplicity,
+  # OR use individual services below for Docker-native isolation.
+  #
+  # npc-jaws:
+  #   <<: *moos-base
+  #   container_name: bwsi-npc-jaws
+  #   depends_on: [shoreside]
+  #   command: bash -c "sleep 3 && cd /mission && pAntler jaws.moos"
+  #
+  # npc-nemo:
+  #   <<: *moos-base
+  #   container_name: bwsi-npc-nemo
+  #   depends_on: [shoreside]
+  #   command: bash -c "sleep 4 && cd /mission && pAntler nemo.moos"
+
+  # ---- Web status dashboard ----
+  # Replaces pMarineViewer for headless cloud deployments.
+  # Instructor opens http://<shoreside-ip>:8080 to monitor the mission.
+  web-ui:
+    image: bwsi-web-ui:latest
+    container_name: bwsi-web-ui
+    network_mode: host
+    environment:
+      SHORESIDE_HOST: "localhost"
+      SHORESIDE_PORT: "9100"
+      WEB_PORT: "8080"
+    restart: unless-stopped
+    depends_on: [shoreside]

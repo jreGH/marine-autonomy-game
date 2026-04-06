@@ -1,0 +1,32 @@
+# docker-compose.vehicle.yml — Tier 2: Vehicle Server (one per team)
+#
+# Runs the vehicle MOOS community for one team.
+# Place this file on the team's vehicle droplet.
+#
+# Prerequisites:
+#   - bwsi-moos-base:latest image built on this host
+#   - Generated mission files in ./mission/ (copy launch_vehicle_<team>.sh + *.moos/bhv)
+#   - .env file containing:  TEAM=alpha  (or bravo, etc.)
+#
+# Usage:
+#   TEAM=alpha docker compose -f docker-compose.vehicle.yml up -d
+#   TEAM=alpha docker compose -f docker-compose.vehicle.yml down
+#   TEAM=alpha docker compose -f docker-compose.vehicle.yml logs -f vehicle
+
+version: "3.9"
+
+services:
+
+  vehicle:
+    image: bwsi-moos-base:latest
+    container_name: bwsi-vehicle-${TEAM}
+    network_mode: host
+    restart: "no"
+    volumes:
+      - ./mission:/mission:ro
+      - ./logs:/logs
+    environment:
+      TEAM: "${TEAM}"
+    # The generated launch_vehicle_<team>.sh starts pAntler for each vehicle
+    # in this team plus sets up any Python-mode notification.
+    command: bash -c "cd /mission && ./launch_vehicle_${TEAM}.sh"
