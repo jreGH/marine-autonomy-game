@@ -3,16 +3,17 @@ pipeline_survey.py — BWSI AUVC infrastructure inspection example
 ================================================================
 
 Strategy: lawnmower survey pattern over the arena, logging all
-pInfrastructureSensor detections along the way.  When enough
-detections have been collected, report anomaly positions to shoreside.
+pInfrastructureSensor detections along the way.  Anomaly candidates
+are tracked with a Bayesian belief state (DetectionBuffer) — only report
+when the posterior probability exceeds a confidence threshold.
 
 Run (from the student/ directory) after launching the mission:
     python examples/pipeline_survey.py --vehicle jellyfish --port 9000
 
 Concepts demonstrated:
-  - Receiving INFRASTRUCTURE_DETECT messages via VehicleAPI.notify
-    (we must call api.notify_subscribe to add extra subscriptions)
-  - Building a local detection map indexed by pipeline label
+  - Receiving INFRASTRUCTURE_DETECT messages via VehicleAPI
+  - Using DetectionBuffer for Bayesian log-odds belief tracking
+  - Weighting observations by the 'confidence' (P_D) field in each message
   - Reporting anomaly clusters back to shoreside via ANOMALY_REPORT
   - go_to_sequence() for a pre-planned survey route
 """
@@ -27,7 +28,7 @@ from typing import Dict, List, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from api import VehicleAPI
+from api import VehicleAPI, DetectionBuffer
 
 # ---------------------------------------------------------------------------
 # Tunable constants
@@ -59,8 +60,15 @@ LOOP_PERIOD       = 0.25  # seconds between logic updates
 # their reported positions are within this distance (m).
 CLUSTER_RADIUS    = 15.0
 
-# Minimum detections in a cluster before we report it as a confirmed anomaly.
-MIN_CLUSTER_SIZE  = 3
+# Bayesian belief parameters
+PD_DEFAULT        = 0.7   # assumed P(detect | anomaly present)
+PFA_DEFAULT       = 0.02  # assumed P(detect | no anomaly)
+BELIEF_DECAY      = 0.99  # decay per loop iteration when no new data
+REPORT_THRESHOLD  = 0.85  # report anomaly when P(present) >= this
+
+# Count-based fallback: still report if cluster has this many raw detections
+# even if Bayesian threshold not yet reached (guards against misconfigured PD)
+MIN_CLUSTER_SIZE  = 5
 
 # How often (s) to print a status line.
 STATUS_INTERVAL   = 5.0
@@ -79,142 +87,165 @@ class Detection:
             if "=" in token:
                 k, _, v = token.partition("=")
                 fields[k.strip()] = v.strip()
-        self.pipeline    = fields.get("pipeline", "")
-        self.x           = float(fields.get("x", 0))
-        self.y           = float(fields.get("y", 0))
-        self.depth       = float(fields.get("depth", 0))
-        self.type        = fields.get("type", "pipe")   # pipe | anomaly | false_alarm
+        self.pipeline     = fields.get("pipeline", "")
+        self.x            = float(fields.get("x", 0))
+        self.y            = float(fields.get("y", 0))
+        self.depth        = float(fields.get("depth", 0))
+        self.type         = fields.get("type", "pipe")  # pipe|anomaly|false_alarm
         self.anomaly_type = fields.get("anomaly_type", "")
-        self.range       = float(fields.get("range", 0))
+        self.range        = float(fields.get("range", 0))
+        # confidence = P_D value used for this detection (from sensor model)
+        self.confidence   = float(fields.get("confidence", PD_DEFAULT))
 
     def __repr__(self):
         return (f"Detection(pipeline={self.pipeline!r}, type={self.type!r}, "
-                f"x={self.x:.1f}, y={self.y:.1f}, range={self.range:.1f})")
+                f"x={self.x:.1f}, y={self.y:.1f}, "
+                f"range={self.range:.1f}, conf={self.confidence:.2f})")
 
 
 # ---------------------------------------------------------------------------
-# Cluster analysis
+# Cluster with Bayesian belief tracking
 # ---------------------------------------------------------------------------
 
-def cluster_detections(detections: List[Detection]) -> List[Dict]:
+class Cluster:
     """
-    Group detections spatially.  Returns a list of cluster dicts:
-        { 'x': float, 'y': float, 'count': int,
-          'type': str, 'anomaly_type': str, 'pipeline': str }
+    Spatially-grouped detections with an attached DetectionBuffer.
+
+    Each new detection within CLUSTER_RADIUS updates the belief state
+    using the detection's own confidence (P_D) value from the sensor model.
     """
-    clusters = []
 
-    for det in detections:
-        placed = False
-        for cl in clusters:
-            dx = det.x - cl["x"]
-            dy = det.y - cl["y"]
-            if math.sqrt(dx*dx + dy*dy) < CLUSTER_RADIUS:
-                # Update cluster centroid (running mean)
-                n = cl["count"]
-                cl["x"] = (cl["x"] * n + det.x) / (n + 1)
-                cl["y"] = (cl["y"] * n + det.y) / (n + 1)
-                cl["count"] += 1
-                if det.anomaly_type:
-                    cl["anomaly_type"] = det.anomaly_type
-                placed = True
-                break
-        if not placed:
-            clusters.append({
-                "x": det.x, "y": det.y,
-                "count": 1,
-                "type": det.type,
-                "anomaly_type": det.anomaly_type,
-                "pipeline": det.pipeline,
-            })
+    def __init__(self, det: Detection):
+        self.x            = det.x
+        self.y            = det.y
+        self.pipeline     = det.pipeline
+        self.type         = det.type          # best guess at type so far
+        self.anomaly_type = det.anomaly_type
+        self.count        = 1
+        self._belief      = DetectionBuffer(pd=PD_DEFAULT, pfa=PFA_DEFAULT,
+                                            decay=BELIEF_DECAY)
+        # First detection: update with its own confidence as P_D
+        if det.type != "false_alarm":
+            self._belief.update_positive(pd=det.confidence, pfa=PFA_DEFAULT)
 
-    return clusters
+    def add(self, det: Detection) -> None:
+        """Merge a new detection into this cluster and update the belief."""
+        n = self.count
+        # Update centroid (running mean)
+        self.x = (self.x * n + det.x) / (n + 1)
+        self.y = (self.y * n + det.y) / (n + 1)
+        self.count += 1
+
+        if det.anomaly_type:
+            self.anomaly_type = det.anomaly_type
+        if det.type == "anomaly":
+            self.type = "anomaly"
+
+        # Bayesian update: weight by per-detection confidence (P_D)
+        if det.type == "false_alarm":
+            # A known false-alarm detection is a positive observation of
+            # nothing useful — treat as null (slightly negative evidence)
+            self._belief.update_negative(pd=PD_DEFAULT, pfa=PFA_DEFAULT)
+        else:
+            self._belief.update_positive(pd=det.confidence, pfa=PFA_DEFAULT)
+
+    def tick_decay(self) -> None:
+        self._belief.tick_decay()
+
+    def probability(self) -> float:
+        return self._belief.probability()
+
+    def confirmed(self) -> bool:
+        """True when Bayesian posterior or raw count exceeds threshold."""
+        return (self._belief.decision(REPORT_THRESHOLD) or
+                self.count >= MIN_CLUSTER_SIZE)
+
+
+def find_or_create_cluster(clusters: List[Cluster], det: Detection) -> None:
+    """Insert a detection into the nearest cluster, or create a new one."""
+    for cl in clusters:
+        if cl.pipeline != det.pipeline:
+            continue
+        dx = det.x - cl.x
+        dy = det.y - cl.y
+        if math.sqrt(dx*dx + dy*dy) < CLUSTER_RADIUS:
+            cl.add(det)
+            return
+    clusters.append(Cluster(det))
 
 
 # ---------------------------------------------------------------------------
-# Extended VehicleAPI with INFRASTRUCTURE_DETECT subscription
-# OverridesAPI callbacks are not available directly, so we poll a raw
-# MOOS variable via a custom pymoos subclass approach.  For this example
-# we demonstrate the pattern using api.notify() for subscribing manually.
+# Mission
 # ---------------------------------------------------------------------------
 
 def run(vehicle_name: str, port: int, host: str):
     print(f"Connecting to vehicle '{vehicle_name}' at {host}:{port} …")
 
-    # VehicleAPI.start() subscribes to standard nav variables.
-    # We also need INFRASTRUCTURE_DETECT, which arrives as a string.
-    # We achieve this by subclassing _on_connect — but to keep this example
-    # readable without subclassing, we register it via the comms object
-    # directly after start().
     api = VehicleAPI(vehicle_name, server_port=port, server_host=host)
     api.start(timeout=15.0)
 
-    # Register the extra subscription we need
+    # Register the extra subscription for pipeline detections
     api._comms.register("INFRASTRUCTURE_DETECT", 0)
 
-    # Local detection store: pipeline_label → list of Detection
-    detections: Dict[str, List[Detection]] = defaultdict(list)
-    reported_clusters = set()   # cluster centroids already reported (x_int, y_int)
+    clusters: List[Cluster] = []
+    reported: set            = set()   # cluster centroids already reported
 
     print("Connected.  Waiting for DEPLOY=true …")
     while not api.deployed:
         time.sleep(0.1)
 
     print("Mission started — beginning survey.")
-
-    # Start lawnmower pattern
     api.go_to_sequence(SURVEY_LEGS, speed=SURVEY_SPEED)
 
     last_status = time.time()
-    n_detections = 0
+    n_raw_detections = 0
 
     while api.running:
-        # ---- Drain any queued INFRASTRUCTURE_DETECT messages ----
-        # pymoos delivers mail via the on_new_mail callback (runs in the
-        # VehicleAPI background thread).  We need to intercept it here.
-        # Simplest approach for this example: poll via _comms.fetch().
-        # In production, subclass VehicleAPI and override _on_new_mail.
+        # ---- Drain incoming INFRASTRUCTURE_DETECT messages ----
         msgs = api._comms.fetch()
         for msg in msgs:
             if msg.key() == "INFRASTRUCTURE_DETECT":
                 det = Detection(msg.string())
                 if det.pipeline:
-                    detections[det.pipeline].append(det)
-                    n_detections += 1
+                    find_or_create_cluster(clusters, det)
+                    n_raw_detections += 1
 
-        # ---- Cluster analysis & anomaly reporting ----
-        for pipeline_label, dets in detections.items():
-            clusters = cluster_detections(dets)
-            for cl in clusters:
-                if cl["count"] < MIN_CLUSTER_SIZE:
-                    continue
-                if cl["type"] not in ("anomaly", "pipe"):
-                    continue  # skip false_alarm clusters
+        # ---- Decay beliefs for clusters that received no new data ----
+        for cl in clusters:
+            cl.tick_decay()
 
-                key = (round(cl["x"]), round(cl["y"]))
-                if key in reported_clusters:
-                    continue
+        # ---- Check for confirmed anomalies and report ----
+        vname_upper = vehicle_name.upper()
+        for cl in clusters:
+            if not cl.confirmed():
+                continue
+            if cl.type not in ("anomaly", "pipe"):
+                continue  # skip pure false-alarm clusters
 
-                reported_clusters.add(key)
-                report = (
-                    f"pipeline={cl['pipeline']},"
-                    f"x={cl['x']:.1f},"
-                    f"y={cl['y']:.1f},"
-                    f"type={cl['type']},"
-                    f"anomaly_type={cl['anomaly_type']},"
-                    f"vehicle={vehicle_name},"
-                    f"count={cl['count']}"
-                )
-                vname_upper = vehicle_name.upper()
-                api.notify(f"ANOMALY_REPORT_{vname_upper}", report)
-                print(f"  REPORTED: {report}")
+            key = (round(cl.x), round(cl.y))
+            if key in reported:
+                continue
+
+            reported.add(key)
+            report = (
+                f"pipeline={cl.pipeline},"
+                f"x={cl.x:.1f},"
+                f"y={cl.y:.1f},"
+                f"type={cl.type},"
+                f"anomaly_type={cl.anomaly_type},"
+                f"count={cl.count}"
+            )
+            api.notify(f"ANOMALY_REPORT_{vname_upper}", report)
+            print(f"  REPORTED (P={cl.probability():.2f}): {report}")
 
         # ---- Status line ----
         if time.time() - last_status > STATUS_INTERVAL:
-            total = sum(len(v) for v in detections.values())
+            confirmed_count = sum(1 for cl in clusters if cl.confirmed())
             print(f"  pos=({api.x:.0f},{api.y:.0f})  "
-                  f"detections={total}  "
-                  f"clusters_reported={len(reported_clusters)}")
+                  f"raw_detections={n_raw_detections}  "
+                  f"clusters={len(clusters)}  "
+                  f"confirmed={confirmed_count}  "
+                  f"reported={len(reported)}")
             last_status = time.time()
 
         api.sleep(LOOP_PERIOD)

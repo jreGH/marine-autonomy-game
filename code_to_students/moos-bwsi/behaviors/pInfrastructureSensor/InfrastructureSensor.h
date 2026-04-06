@@ -27,7 +27,10 @@
 /*  Publishes (shoreside, bridged to each vehicle):         */
 /*    INFRASTRUCTURE_DETECT_<VNAME>                         */
 /*      pipeline=<label>,x=<f>,y=<f>,depth=<f>,            */
-/*      type=<pipe|anomaly>,range=<f>[,anomaly_type=<s>]    */
+/*      type=<pipe|anomaly|false_alarm>,range=<f>,          */
+/*      confidence=<f>[,anomaly_type=<s>]                   */
+/*    confidence is the P_D value (0–1) used for this       */
+/*    detection — use it to weight Bayesian belief updates. */
 /*  Publishes (shoreside viewer only):                      */
 /*    VIEW_SEGLIST  — pipeline outline when reveal_pipe=true */
 /*    VIEW_POINT    — anomaly marker when anomaly found     */
@@ -148,12 +151,15 @@ private:
     bool depthGate(const VehicleRecord& v, double pipeline_depth) const;
 
     // Build and publish one detection message to shoreside for bridging.
+    // confidence: the P_D value used for this detection (0–1), included
+    //             in the published message so students can weight observations.
     void publishDetection(const std::string& vname,
                           const std::string& pipeline_label,
                           double raw_x, double raw_y, double depth,
                           const std::string& type,
                           const std::string& anomaly_type,
-                          double range);
+                          double range,
+                          double confidence);
 
     // Build VIEW_SEGLIST spec for a pipeline (for pMarineViewer).
     std::string pipelineViewSeglist(const Pipeline& p) const;

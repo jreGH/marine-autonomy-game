@@ -75,6 +75,7 @@ class Contact:
                 k, _, v = token.partition("=")
                 self._fields[k.strip().upper()] = v.strip()
         self._raw = raw
+        self.last_seen: float = time.time()  # Unix timestamp of last update
 
     # ---- identity ----
 

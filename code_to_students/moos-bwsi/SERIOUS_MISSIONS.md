@@ -240,16 +240,19 @@ regardless of `reveal_pipe`.
 - For each vehicle, find the closest point on each pipeline segment
 - If within `detect_range` AND within forward `detect_cone`: stochastic
   detection (P_D = 1 − range/detect_range, linear falloff)
-- Anomalies: P_D boosted; each anomaly reported at most once per vehicle
+- Anomalies: P_D boosted to 1 − 0.5×(range/detect_range)
 - False alarms: Poisson-rate clutter at `p_false_alarm`/veh/s
 - Position noise: Gaussian with σ = `noise_sigma`
+- Each detection message includes `confidence=<P_D>` — the actual
+  probability-of-detection value used.  Use this to weight Bayesian
+  belief updates via `DetectionBuffer` (Python) or `BeliefState` (C++).
 
 ### Key MOOS Variables
 
 | Variable | Direction | Meaning |
 |----------|-----------|---------|
-| `INFRASTRUCTURE_DETECT_<VNAME>` | sensor → vehicle | `pipeline=cable_01,x=-102.3,y=-198.7,depth=30.0,type=pipe,range=22.4` |
-| `INFRASTRUCTURE_DETECT_<VNAME>` | sensor → vehicle | `...,type=anomaly,anomaly_type=damage,range=8.1` |
+| `INFRASTRUCTURE_DETECT_<VNAME>` | sensor → vehicle | `pipeline=cable_01,x=-102.3,y=-198.7,depth=30.0,type=pipe,range=22.4,confidence=0.254` |
+| `INFRASTRUCTURE_DETECT_<VNAME>` | sensor → vehicle | `...,type=anomaly,anomaly_type=damage,range=8.1,confidence=0.730` |
 | `ANOMALY_REPORT_<VNAME>` | student → shoreside | `pipeline=cable_01,x=-100.5,y=-179.2,type=anomaly,anomaly_type=damage,count=5` |
 | `INSPECTION_SCORE` | scorer → shoreside | `team=alpha,score=1420,coverage=0.72,anomalies=2,fa=1\|team=bravo,...` |
 | `VIEW_SEGLIST` | sensor → viewer | Pipeline outline (posted on startup + on first detection per vehicle) |

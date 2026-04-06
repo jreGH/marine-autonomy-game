@@ -10,7 +10,10 @@
 #pragma once
 
 #include "NodeReport.h"
+#include <cmath>
+#include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 class ContactTracker {
@@ -43,8 +46,28 @@ public:
 
   int emptyCount() const { return _emptyCount; }
 
+  // --- Uncertainty helpers ---
+
+  // Seconds elapsed since the last NODE_REPORT was received for this contact.
+  // Returns -1 if the contact name is not known.
+  double contactAge(const std::string& name) const;
+
+  // Exponential-decay confidence in [0, 1].
+  //   confidence = exp( -age * ln2 / half_life )
+  // Returns 0 when the contact is unknown.
+  // half_life: seconds at which confidence falls to 0.5 (default 10 s).
+  double contactConfidence(const std::string& name,
+                           double half_life = 10.0) const;
+
+  // Dead-reckoning position estimate dt seconds into the future (or past
+  // if dt is negative), assuming constant heading and speed from the last
+  // report.  Returns {NaN, NaN} if the contact is unknown.
+  std::pair<double, double> predictPosition(const std::string& name,
+                                            double dt) const;
+
 private:
-  std::vector<NodeReport> _contacts;
-  std::vector<NodeReport> _collected;
+  std::vector<NodeReport>      _contacts;
+  std::vector<NodeReport>      _collected;
+  std::map<std::string, double> _lastSeenTime; // contact name → MOOSTime
   int _emptyCount;
 };

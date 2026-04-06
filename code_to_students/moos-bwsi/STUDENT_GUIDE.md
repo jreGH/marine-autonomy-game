@@ -256,6 +256,118 @@ bool Challenge::Iterate() {
 
 ---
 
+---
+
+## Decision-Making Under Uncertainty
+
+Ocean autonomy involves noisy sensors, stale contacts, and vehicles that
+cannot stop or turn instantly.  The full guide is in
+**[DECISION_MAKING.md](DECISION_MAKING.md)**; the most useful patterns
+are summarised here.
+
+### Sensor confidence field
+
+`pInfrastructureSensor` now includes a `confidence` field in every
+detection message — the P_D value (0–1) used by the sensor model:
+
+```
+pipeline=cable_01,x=-101.2,y=-179.5,depth=30.0,
+type=anomaly,anomaly_type=damage,range=12.4,confidence=0.587
+```
+
+Use this to weight your Bayesian updates: a detection at 5 m (confidence
+≈ 0.83) is stronger evidence than one at 28 m (confidence ≈ 0.07).
+
+### Bayesian log-odds belief tracking
+
+Track whether a feature is present using a log-odds score:
+
+**C++**
+```cpp
+#include "BeliefState.h"
+
+BeliefState belief;
+
+// For each detection message:
+belief.updatePositive(detect.confidence, 0.02);  // PD, PFA
+
+// Each iteration the sensor could observe but didn't:
+belief.updateNegative(0.7, 0.02);
+
+// Decay gradually when sensor moves away
+belief.decay(0.98);
+
+if (belief.decision(0.85))
+    Notify("ANOMALY_REPORT_WALRUS", buildReport());
+```
+
+**Python**
+```python
+from api import DetectionBuffer
+
+buf = DetectionBuffer(pd=0.7, pfa=0.02, decay=0.99)
+
+if new_detection:
+    buf.update_positive(pd=detect.confidence)  # use per-detection PD
+else:
+    buf.update_negative()
+buf.tick_decay()
+
+if buf.decision(threshold=0.85):
+    api.notify("ANOMALY_REPORT_JELLYFISH", report_string)
+    buf.reset()
+```
+
+### Contact staleness
+
+Contacts are only as fresh as the last NODE_REPORT.  Use the C++
+`ContactTracker` uncertainty helpers to avoid chasing ghosts:
+
+```cpp
+double age  = _tracker.contactAge("moby");          // seconds
+double conf = _tracker.contactConfidence("moby", 8.0); // half-life 8 s
+
+if (conf < 0.2)          // contact is stale — give up
+    switchToLoiter();
+
+// Dead-reckoning prediction
+auto [px, py] = _tracker.predictPosition("moby", age);
+```
+
+In Python, each `Contact` has a `last_seen` timestamp:
+
+```python
+import time, math
+age  = time.time() - c.last_seen
+px   = c.x + c.speed * math.sin(math.radians(c.heading)) * age
+py   = c.y + c.speed * math.cos(math.radians(c.heading)) * age
+```
+
+### Hysteresis — prevent mode-chattering
+
+Require a condition to hold for several consecutive ticks before switching:
+
+```python
+chase_ticks = 0
+REQUIRED = 3
+
+while api.running:
+    if candidate_in_range:
+        chase_ticks += 1
+        if chase_ticks >= REQUIRED:
+            api.chase(target.name)
+    else:
+        chase_ticks = 0
+        api.loiter()
+    api.sleep(0.25)
+```
+
+See **[DECISION_MAKING.md](DECISION_MAKING.md)** for platform dynamics
+(turn radius, underactuated constraints), CPA geometry for collision
+avoidance, chance-constrained planning, and POMDP references.
+
+---
+
 ## Tips
 
 - **Time-warp**: Run with `--warp 4` during development to iterate faster.

@@ -6,8 +6,8 @@ INSTALL_INC_DIR=${HOME}/moos-bwsi/lib/include
 MOOS_INCLUDE=${HOME}/moos-ivp/include/ivp/
 MOOSCORE_INCLUDE=${HOME}/moos-ivp/MOOS/MOOSCore/Core/libMOOS/include/
 
-SRC=NodeReport.cpp ContactTracker.cpp
-HEADERS=NodeReport.h ContactTracker.h
+SRC=NodeReport.cpp ContactTracker.cpp BeliefState.cpp
+HEADERS=NodeReport.h ContactTracker.h BeliefState.h
 
 all: default install
 

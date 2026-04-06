@@ -190,11 +190,11 @@ bool InfrastructureSensor::Iterate()
             if (_uniform(_rng) > pd)
                 continue;
 
-            // Detected — publish with position noise
+            // Detected — publish with position noise and P_D as confidence
             publishDetection(v.name, pipe.label,
                              bestX, bestY, pipe.depth,
                              "pipe", "",
-                             bestDist);
+                             bestDist, pd);
             _lastDetect[key] = now;
             _totalDetections++;
 
@@ -245,7 +245,7 @@ bool InfrastructureSensor::Iterate()
             publishDetection(v.name, anom.pipeline_label,
                              anom.x, anom.y, anomalyDepth,
                              "anomaly", anom.type,
-                             dist);
+                             dist, pd);
             reported.push_back(ai);
             _totalAnomalyDetections++;
 
@@ -274,10 +274,12 @@ bool InfrastructureSensor::Iterate()
                 double fx = pipe.points[pi2].first  + _gauss(_rng) * _detectRange * 0.5;
                 double fy = pipe.points[pi2].second + _gauss(_rng) * _detectRange * 0.5;
                 double fd = sqrt(pow(fx - v.x, 2) + pow(fy - v.y, 2));
+                // False alarms have a low, fixed confidence to allow
+                // students to filter them with a Bayesian belief tracker.
                 publishDetection(v.name, pipe.label,
                                  fx, fy, pipe.depth,
                                  "false_alarm", "",
-                                 fd);
+                                 fd, _pFalseAlarm);
                 _totalFalseAlarms++;
             }
         }
@@ -463,20 +465,22 @@ void InfrastructureSensor::publishDetection(
     double raw_x, double raw_y, double depth,
     const string& type,
     const string& anomaly_type,
-    double range)
+    double range,
+    double confidence)
 {
     // Add Gaussian position noise
     double nx = raw_x + _gauss(_rng) * _noiseSigma;
     double ny = raw_y + _gauss(_rng) * _noiseSigma;
 
     ostringstream msg;
-    msg << fixed << setprecision(2);
+    msg << fixed << setprecision(3);
     msg << "pipeline="    << pipeline_label
-        << ",x="          << nx
+        << ",x="          << setprecision(2) << nx
         << ",y="          << ny
         << ",depth="      << depth
         << ",type="       << type
-        << ",range="      << range;
+        << ",range="      << setprecision(2) << range
+        << ",confidence=" << setprecision(3) << confidence;
 
     if (!anomaly_type.empty())
         msg << ",anomaly_type=" << anomaly_type;
