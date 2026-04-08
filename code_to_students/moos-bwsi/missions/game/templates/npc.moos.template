@@ -118,7 +118,7 @@ ProcessConfig = uFldNodeBroker
   AppTick   = 1
   CommsTick = 1
 
-  try_shore_host = ${SHORESIDE_HOST}:${SHORESIDE_PORT}
+  try_shore_host = pshare_route=${SHORESIDE_HOST}:${SHORESIDE_SHARE_PORT}
 
   bridge = src=DEPLOY_ALL, alias=DEPLOY
 }

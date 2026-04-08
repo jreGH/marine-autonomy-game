@@ -104,24 +104,6 @@ def anomaly_config_blocks(anomalies):
     return "\n".join(lines)
 
 
-def detect_bridge_lines(vehicle_names):
-    """
-    Build pShare bridge declarations so detection messages reach each vehicle.
-    These go inside the uFldShoreBroker ProcessConfig on the shoreside.
-
-    The pattern:
-        bridge = src=INFRASTRUCTURE_DETECT_JELLYFISH, alias=INFRASTRUCTURE_DETECT
-    means: take INFRASTRUCTURE_DETECT_JELLYFISH from shoreside and publish it
-    as INFRASTRUCTURE_DETECT in the jellyfish community.
-    """
-    lines = []
-    for vname in vehicle_names:
-        vupper = vname.upper()
-        lines.append(
-            f"  bridge = src=INFRASTRUCTURE_DETECT_{vupper}, "
-            f"alias=INFRASTRUCTURE_DETECT"
-        )
-    return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
@@ -195,13 +177,6 @@ def generate(scenario_path, outdir):
         if not headless else ""
     )
 
-    # Collect all vehicle names for bridge generation
-    all_vehicle_names = [
-        v["name"]
-        for team in teams
-        for v in team["vehicles"]
-    ]
-
     # ---- Load templates ----
     shoreside_tmpl = load_template("shoreside.moos.template")
     vehicle_tmpl   = load_template("vehicle.moos.template")
@@ -228,6 +203,9 @@ def generate(scenario_path, outdir):
     ]
 
     # ---- Shoreside ----
+    pipeline_blocks = pipeline_config_blocks(pipelines)
+    anomaly_blocks  = anomaly_config_blocks(anomalies)
+
     shoreside_vals = dict(
         SHORESIDE_HOST       = shoreside_host,
         SHORESIDE_PORT       = SHORESIDE_PORT,
@@ -235,14 +213,9 @@ def generate(scenario_path, outdir):
         LAT_ORIGIN           = origin["lat"],
         LON_ORIGIN           = origin["lon"],
         TIFF_FILE            = tiff_file,
-        PIPELINE_BLOCKS      = pipeline_config_blocks(pipelines),
-        ANOMALY_BLOCKS       = anomaly_config_blocks(anomalies),
-        DETECT_RANGE         = sensor.get("detect_range",  30.0),
-        DETECT_CONE          = sensor.get("detect_cone",   60.0),
-        NOISE_SIGMA          = sensor.get("noise_sigma",    3.0),
-        P_FALSE_ALARM        = sensor.get("p_false_alarm", 0.02),
-        REVEAL_PIPE          = str(sensor.get("reveal_pipe", False)).lower(),
-        DETECT_BRIDGE_LINES  = detect_bridge_lines(all_vehicle_names),
+        PIPELINE_BLOCKS      = pipeline_blocks,
+        ANOMALY_BLOCKS       = anomaly_blocks,
+        DETECT_RANGE         = sensor.get("detect_range", 30.0),
         COVERAGE_SCORE       = scoring.get("coverage_score",   1000),
         COVERAGE_THRESHOLD   = scoring.get("coverage_threshold", 0.8),
         ANOMALY_SCORE        = scoring.get("anomaly_score",     500),
@@ -313,6 +286,7 @@ def generate(scenario_path, outdir):
                 SERVER_PORT             = port,
                 SHARE_LISTEN_PORT       = share_port,
                 SHORESIDE_PORT          = SHORESIDE_PORT,
+                SHORESIDE_SHARE_PORT    = SHORESIDE_SHARE_PORT,
                 LAT_ORIGIN              = origin["lat"],
                 LON_ORIGIN              = origin["lon"],
                 START_X                 = vehicle["start_x"],
@@ -321,6 +295,13 @@ def generate(scenario_path, outdir):
                 MAX_SPEED               = vehicle.get("max_speed", 4.0),
                 ARENA_POLYGON           = arena_polygon,
                 PATROL_POLYGON          = patrol,
+                PIPELINE_BLOCKS         = pipeline_blocks,
+                ANOMALY_BLOCKS          = anomaly_blocks,
+                DETECT_RANGE            = sensor.get("detect_range",  30.0),
+                DETECT_CONE             = sensor.get("detect_cone",   60.0),
+                NOISE_SIGMA             = sensor.get("noise_sigma",    3.0),
+                P_FALSE_ALARM           = sensor.get("p_false_alarm", 0.02),
+                REVEAL_PIPE             = str(sensor.get("reveal_pipe", False)).lower(),
                 PCHALLENGE_RUN_LINE     = pchallenge_run_line,
                 PCHALLENGE_CONFIG_BLOCK = pchallenge_cfg_block,
             )

@@ -20,6 +20,7 @@ ProcessConfig = ANTLER
   Run = pMarinePID          @ NewConsole = false
   Run = pHelmIvP            @ NewConsole = false
   Run = pNodeReporter       @ NewConsole = false
+  Run = pInfrastructureSensor @ NewConsole = false
 ${PCHALLENGE_RUN_LINE}  Run = uFldNodeBroker      @ NewConsole = false
   Run = pShare              @ NewConsole = false
   Run = uProcessWatch       @ NewConsole = false
@@ -106,6 +107,22 @@ ProcessConfig = pNodeReporter
 }
 
 //------------------------------------------
+ProcessConfig = pInfrastructureSensor
+{
+  AppTick   = 4
+  CommsTick = 4
+
+${PIPELINE_BLOCKS}
+${ANOMALY_BLOCKS}
+
+  detect_range  = ${DETECT_RANGE}
+  detect_cone   = ${DETECT_CONE}
+  noise_sigma   = ${NOISE_SIGMA}
+  p_false_alarm = ${P_FALSE_ALARM}
+  reveal_pipe   = ${REVEAL_PIPE}
+}
+
+//------------------------------------------
 ${PCHALLENGE_CONFIG_BLOCK}
 //------------------------------------------
 // uFldNodeBroker: tells the shoreside this vehicle exists.
@@ -115,7 +132,7 @@ ProcessConfig = uFldNodeBroker
   AppTick   = 1
   CommsTick = 1
 
-  try_shore_host = ${SHORESIDE_HOST}:${SHORESIDE_PORT}
+  try_shore_host = pshare_route=${SHORESIDE_HOST}:${SHORESIDE_SHARE_PORT}
 
   // Variables we want bridged from shoreside → this vehicle
   bridge = src=DEPLOY_ALL,           alias=DEPLOY
@@ -130,6 +147,10 @@ ProcessConfig = pShare
   CommsTick = 2
 
   input = route=${VEHICLE_HOST}:${SHARE_LISTEN_PORT}
+
+  // Push detection reports to shoreside — pInspectionScorer subscribes to
+  // INFRASTRUCTURE_DETECT_<VEHICLE_NAME_UPPER> for each community.
+  output = src=INFRASTRUCTURE_DETECT, route=${SHORESIDE_HOST}:${SHORESIDE_SHARE_PORT}, alias=INFRASTRUCTURE_DETECT_${VEHICLE_NAME_UPPER}
 }
 
 //------------------------------------------

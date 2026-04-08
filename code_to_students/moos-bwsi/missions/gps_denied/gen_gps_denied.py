@@ -255,6 +255,7 @@ def generate(scenario_path, outdir):
                 SERVER_PORT             = port,
                 SHARE_LISTEN_PORT       = share_port,
                 SHORESIDE_PORT          = SHORESIDE_PORT,
+                SHORESIDE_SHARE_PORT    = SHORESIDE_SHARE_PORT,
                 LAT_ORIGIN              = origin["lat"],
                 LON_ORIGIN              = origin["lon"],
                 START_X                 = vehicle["start_x"],
