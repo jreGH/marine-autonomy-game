@@ -182,10 +182,8 @@ def run(vehicle_name: str, port: int, host: str):
     print(f"Connecting to vehicle '{vehicle_name}' at {host}:{port} …")
 
     api = VehicleAPI(vehicle_name, server_port=port, server_host=host)
+    api.subscribe("INFRASTRUCTURE_DETECT")
     api.start(timeout=15.0)
-
-    # Register the extra subscription for pipeline detections
-    api._comms.register("INFRASTRUCTURE_DETECT", 0)
 
     clusters: List[Cluster] = []
     reported: set            = set()   # cluster centroids already reported
@@ -202,13 +200,11 @@ def run(vehicle_name: str, port: int, host: str):
 
     while api.running:
         # ---- Drain incoming INFRASTRUCTURE_DETECT messages ----
-        msgs = api._comms.fetch()
-        for msg in msgs:
-            if msg.key() == "INFRASTRUCTURE_DETECT":
-                det = Detection(msg.string())
-                if det.pipeline:
-                    find_or_create_cluster(clusters, det)
-                    n_raw_detections += 1
+        for msg in api.pop_messages("INFRASTRUCTURE_DETECT"):
+            det = Detection(msg.string())
+            if det.pipeline:
+                find_or_create_cluster(clusters, det)
+                n_raw_detections += 1
 
         # ---- Decay beliefs for clusters that received no new data ----
         for cl in clusters:

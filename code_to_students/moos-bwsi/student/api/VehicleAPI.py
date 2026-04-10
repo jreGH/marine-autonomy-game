@@ -203,6 +203,14 @@ class VehicleAPI:
         self._base_x = start_x
         self._base_y = start_y
 
+        # Extra subscriptions: registered before/after start(), replayed on
+        # each reconnect via _on_connect.
+        self._extra_subs: List[str] = []
+
+        # Pending messages for extra subscriptions, keyed by variable name.
+        # Populated in _handle_messages(); consumed by pop_messages().
+        self._pending_msgs: Dict[str, List] = {}
+
         # Runtime state
         self._running  = False
         self._comms: Optional[pymoos.comms] = None
@@ -442,6 +450,31 @@ class VehicleAPI:
     # Low-level MOOS access
     # ------------------------------------------------------------------
 
+    def subscribe(self, varname: str) -> None:
+        """
+        Subscribe to an additional MOOS variable.
+
+        Messages are buffered and retrieved with pop_messages().  Call this
+        before or after start() — it is safe either way.
+        """
+        if varname not in self._extra_subs:
+            self._extra_subs.append(varname)
+            self._pending_msgs.setdefault(varname, [])
+        if self._comms is not None and self._comms.is_connected():
+            self._comms.register(varname, 0)
+
+    def pop_messages(self, varname: str) -> list:
+        """
+        Return (and clear) all buffered messages for *varname*.
+
+        Each element is a pymoos message object with .key(), .string(), and
+        .double() methods.
+        """
+        with self._lock:
+            msgs = self._pending_msgs.get(varname, [])
+            self._pending_msgs[varname] = []
+            return msgs
+
     def notify(self, var: str, value) -> None:
         """
         Publish a MOOS variable.
@@ -470,10 +503,25 @@ class VehicleAPI:
         c.register("NAV_SPEED",   0)
         c.register("DEPLOY",      0)
         c.register("NODE_REPORT", 0)
+        for varname in self._extra_subs:
+            c.register(varname, 0)
         return True
 
-    def _on_new_mail(self, messages) -> bool:
-        """Process incoming MOOS mail."""
+    def _on_new_mail(self) -> bool:
+        """Drain the pymoos mail queue and dispatch to _handle_messages()."""
+        messages = self._comms.fetch()
+        self._handle_messages(messages)
+        return True
+
+    def _handle_messages(self, messages) -> None:
+        """
+        Process a list of pymoos messages.
+
+        Subclasses should override this method (calling super() first) to
+        handle additional subscriptions without breaking the base behaviour.
+        Unknown variables are routed to the pop_messages() buffer if they
+        were registered via subscribe().
+        """
         with self._lock:
             for msg in messages:
                 key = msg.key()
@@ -492,7 +540,7 @@ class VehicleAPI:
                     self._deployed = raw == "true"
                 elif key == "NODE_REPORT":
                     contact = Contact(msg.string())
-                    # Don't add ourselves to the contact list
                     if contact.name and contact.name != self._vehicle_name:
                         self._contacts[contact.name] = contact
-        return True
+                elif key in self._pending_msgs:
+                    self._pending_msgs[key].append(msg)

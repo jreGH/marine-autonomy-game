@@ -179,9 +179,8 @@ class GPSDeniedVehicle(VehicleAPI):
         self._comms.register("VEHICLE_AT_SURFACE",  0)
         return True
 
-    def _on_new_mail(self, messages):
-        super()._on_new_mail(messages)
-        import threading
+    def _handle_messages(self, messages):
+        super()._handle_messages(messages)
         with self._lock:
             for msg in messages:
                 key = msg.key()
@@ -194,7 +193,6 @@ class GPSDeniedVehicle(VehicleAPI):
                         self._beacon_ranges[label] = float(dist)
                 elif key == "VEHICLE_AT_SURFACE":
                     self._at_surface = msg.string().strip().lower() == "true"
-        return True
 
     @property
     def at_surface(self) -> bool:
