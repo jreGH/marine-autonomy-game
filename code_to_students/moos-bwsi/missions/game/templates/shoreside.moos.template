@@ -51,9 +51,6 @@ ProcessConfig = uFldShoreBroker
   // Per-vehicle variables (the broker adds the vehicle-name suffix automatically)
   bridge  = src=DEPLOY_ALL, alias=DEPLOY
 
-  // Receive NODE_REPORTs from all communities and re-publish locally
-  // so pMarineViewer can display all vehicles on one map
-  note = NODE_REPORT
 }
 
 //------------------------------------------

@@ -122,6 +122,7 @@ ProcessConfig = uFldNodeBroker
   // MCM sensor feedback from uFldHazardSensor
   bridge = src=UHZ_DETECTION_REPORT_${VEHICLE_NAME_UPPER},    alias=UHZ_DETECTION_REPORT
   bridge = src=UHZ_CLASSIFY_REPORT_${VEHICLE_NAME_UPPER},     alias=UHZ_CLASSIFY_REPORT
+  bridge = src=NODE_REPORT_LOCAL, alias=NODE_REPORT
 }
 
 //------------------------------------------

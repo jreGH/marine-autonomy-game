@@ -57,7 +57,6 @@ ProcessConfig = uFldShoreBroker
   // Bridge beacon range reports down to each vehicle
 ${BEACON_BRIDGE_LINES}
 
-  note = NODE_REPORT
 }
 
 //------------------------------------------

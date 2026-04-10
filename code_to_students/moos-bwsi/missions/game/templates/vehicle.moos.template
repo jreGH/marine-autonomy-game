@@ -121,6 +121,7 @@ ProcessConfig = uFldNodeBroker
   bridge = src=DEPLOY_ALL,           alias=DEPLOY
   bridge = src=DEPLOY_${VEHICLE_NAME_UPPER},    alias=DEPLOY
   bridge = src=MOOS_MANUAL_OVERRIDE_${VEHICLE_NAME_UPPER}, alias=MOOS_MANUAL_OVERRIDE
+  bridge = src=NODE_REPORT_LOCAL, alias=NODE_REPORT
 }
 
 //------------------------------------------

@@ -121,6 +121,7 @@ ProcessConfig = uFldNodeBroker
   try_shore_host = pshare_route=${SHORESIDE_HOST}:${SHORESIDE_SHARE_PORT}
 
   bridge = src=DEPLOY_ALL, alias=DEPLOY
+  bridge = src=NODE_REPORT_LOCAL, alias=NODE_REPORT
 }
 
 //------------------------------------------

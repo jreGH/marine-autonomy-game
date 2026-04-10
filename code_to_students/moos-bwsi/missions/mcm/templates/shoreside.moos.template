@@ -88,7 +88,6 @@ ProcessConfig = uFldShoreBroker
   // Bridge detection/classification reports back down to each vehicle
 ${DETECT_BRIDGE_LINES}
 
-  note = NODE_REPORT
 }
 
 //------------------------------------------
