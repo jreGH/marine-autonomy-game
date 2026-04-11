@@ -21,6 +21,7 @@ ProcessConfig = ANTLER
   Run = pHelmIvP            @ NewConsole = false
   Run = pNodeReporter       @ NewConsole = false
   Run = ${NPC_APP}          @ NewConsole = false
+  Run = pHostInfo           @ NewConsole = false
   Run = uFldNodeBroker      @ NewConsole = false
   Run = pShare              @ NewConsole = false
 }
@@ -113,6 +114,15 @@ ProcessConfig = ${NPC_APP}
 }
 
 //------------------------------------------
+//------------------------------------------
+ProcessConfig = pHostInfo
+{
+  AppTick   = 1
+  CommsTick = 1
+  DEFAULT_HOSTIP = localhost
+}
+
+//------------------------------------------
 ProcessConfig = uFldNodeBroker
 {
   AppTick   = 1
@@ -121,7 +131,6 @@ ProcessConfig = uFldNodeBroker
   try_shore_host = pshare_route=${SHORESIDE_HOST}:${SHORESIDE_SHARE_PORT}
 
   bridge = src=DEPLOY_ALL, alias=DEPLOY
-  bridge = src=NODE_REPORT_LOCAL, alias=NODE_REPORT
 }
 
 //------------------------------------------
@@ -131,4 +140,7 @@ ProcessConfig = pShare
   CommsTick = 2
 
   input = route=${NPC_HOST}:${SHARE_LISTEN_PORT}
+
+  // Push node report to shoreside so pMarineViewer can track this NPC.
+  output = src=NODE_REPORT_LOCAL, route=${SHORESIDE_HOST}:${SHORESIDE_SHARE_PORT}, alias=NODE_REPORT
 }

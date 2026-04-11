@@ -20,6 +20,7 @@ ProcessConfig = ANTLER
   Run = pMarinePID          @ NewConsole = false
   Run = pHelmIvP            @ NewConsole = false
   Run = pNodeReporter       @ NewConsole = false
+  Run = pHostInfo           @ NewConsole = false
   Run = uFldNodeBroker      @ NewConsole = false
   Run = pShare              @ NewConsole = false
   Run = uProcessWatch       @ NewConsole = false
@@ -106,6 +107,15 @@ ProcessConfig = pNodeReporter
 }
 
 //------------------------------------------
+//------------------------------------------
+ProcessConfig = pHostInfo
+{
+  AppTick   = 1
+  CommsTick = 1
+  DEFAULT_HOSTIP = localhost
+}
+
+//------------------------------------------
 // uFldNodeBroker: registers with shoreside and bridges mission variables.
 ProcessConfig = uFldNodeBroker
 {
@@ -122,7 +132,6 @@ ProcessConfig = uFldNodeBroker
   // MCM sensor feedback from uFldHazardSensor
   bridge = src=UHZ_DETECTION_REPORT_${VEHICLE_NAME_UPPER},    alias=UHZ_DETECTION_REPORT
   bridge = src=UHZ_CLASSIFY_REPORT_${VEHICLE_NAME_UPPER},     alias=UHZ_CLASSIFY_REPORT
-  bridge = src=NODE_REPORT_LOCAL, alias=NODE_REPORT
 }
 
 //------------------------------------------
@@ -132,6 +141,9 @@ ProcessConfig = pShare
   CommsTick = 2
 
   input = route=${VEHICLE_HOST}:${SHARE_LISTEN_PORT}
+
+  // Push node report to shoreside so pMarineViewer can track this vehicle.
+  output = src=NODE_REPORT_LOCAL, route=${SHORESIDE_HOST}:${SHORESIDE_SHARE_PORT}, alias=NODE_REPORT
 }
 
 //------------------------------------------
