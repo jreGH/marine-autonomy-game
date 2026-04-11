@@ -60,6 +60,9 @@ ProcessConfig = pShare
   CommsTick = 2
 
   input = route=${SHORESIDE_HOST}:${SHARE_LISTEN_PORT}
+
+  // Static routes: push DEPLOY_ALL to every vehicle/NPC community as DEPLOY
+${VEHICLE_SHARE_OUTPUTS}
 }
 
 //------------------------------------------

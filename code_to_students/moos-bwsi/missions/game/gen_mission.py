@@ -345,6 +345,25 @@ def generate(scenario_path, outdir):
                              "cd \"$(dirname \"$0\")\"",
                              ""]
 
+    # ---- Pre-calculate all community pShare routes for static DEPLOY routing ----
+    _deploy_outputs = []
+    _tmp_vport = VEHICLE_PORT_START
+    for _team in teams:
+        _v_host = get_vehicle_host(_team["name"])
+        for _v in _team["vehicles"]:
+            _sp = _tmp_vport + VEHICLE_SHARE_OFFSET
+            _deploy_outputs.append(
+                f"  output = src=DEPLOY_ALL, route={_v_host}:{_sp}, alias=DEPLOY")
+            _tmp_vport += 1
+    _tmp_nport = NPC_PORT_START
+    for _npc in npcs:
+        _npc_host = shoreside_host   # NPCs run on same host as shore by default
+        _sp = _tmp_nport + NPC_SHARE_OFFSET
+        _deploy_outputs.append(
+            f"  output = src=DEPLOY_ALL, route={_npc_host}:{_sp}, alias=DEPLOY")
+        _tmp_nport += 1
+    vehicle_share_outputs = "\n".join(_deploy_outputs)
+
     # ---- Shoreside ----
     shoreside_vals = dict(
         SHORESIDE_HOST     = shoreside_host,
@@ -361,6 +380,7 @@ def generate(scenario_path, outdir):
         BITE_TIMEOUT       = game["bite_timeout"],
         VIEWER_RUN_LINE    = viewer_run_line,
         VIEWER_CONFIG_BLOCK = viewer_config_block,
+        VEHICLE_SHARE_OUTPUTS = vehicle_share_outputs,
     )
     write_file(os.path.join(outdir, "shoreside.moos"),
                Template(shoreside_tmpl).safe_substitute(shoreside_vals))

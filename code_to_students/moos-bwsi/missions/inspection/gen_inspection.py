@@ -202,6 +202,21 @@ def generate(scenario_path, outdir):
         "",
     ]
 
+    # ---- Pre-calculate vehicle pShare routes for static DEPLOY routing ----
+    # Shore's pShare needs a static output line for each vehicle so that
+    # DEPLOY_ALL posted on shore reaches every vehicle as DEPLOY without
+    # relying on the dynamic uFldNodeBroker/uFldShoreBroker bridge setup.
+    _tmp_port = VEHICLE_PORT_START
+    _deploy_outputs = []
+    for _team in teams:
+        _v_host = get_vehicle_host(_team["name"])
+        for _v in _team["vehicles"]:
+            _sp = _tmp_port + VEHICLE_SHARE_OFFSET
+            _deploy_outputs.append(
+                f"  output = src=DEPLOY_ALL, route={_v_host}:{_sp}, alias=DEPLOY")
+            _tmp_port += 1
+    vehicle_share_outputs = "\n".join(_deploy_outputs)
+
     # ---- Shoreside ----
     pipeline_blocks = pipeline_config_blocks(pipelines)
     anomaly_blocks  = anomaly_config_blocks(anomalies)
@@ -222,6 +237,7 @@ def generate(scenario_path, outdir):
         FALSE_ALARM_PENALTY  = scoring.get("false_alarm_penalty", 100),
         VIEWER_RUN_LINE      = viewer_run_line,
         VIEWER_CONFIG_BLOCK  = viewer_config_block,
+        VEHICLE_SHARE_OUTPUTS = vehicle_share_outputs,
     )
     write_file(os.path.join(outdir, "shoreside.moos"),
                Template(shoreside_tmpl).safe_substitute(shoreside_vals))

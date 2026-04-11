@@ -262,6 +262,18 @@ def generate(scenario_path, outdir):
         "",
     ]
 
+    # ---- Pre-calculate vehicle pShare routes for static DEPLOY routing ----
+    _tmp_port = VEHICLE_PORT_START
+    _deploy_outputs = []
+    for _team in teams:
+        _v_host = get_vehicle_host(_team["name"])
+        for _v in _team["vehicles"]:
+            _sp = _tmp_port + VEHICLE_SHARE_OFFSET
+            _deploy_outputs.append(
+                f"  output = src=DEPLOY_ALL, route={_v_host}:{_sp}, alias=DEPLOY")
+            _tmp_port += 1
+    vehicle_share_outputs = "\n".join(_deploy_outputs)
+
     # ---- Shoreside ----
     shoreside_vals = dict(
         SHORESIDE_HOST        = shoreside_host,
@@ -285,6 +297,7 @@ def generate(scenario_path, outdir):
         DETECT_BRIDGE_LINES   = detect_bridge_lines(all_vehicle_names),
         VIEWER_RUN_LINE       = viewer_run_line,
         VIEWER_CONFIG_BLOCK   = viewer_config_block,
+        VEHICLE_SHARE_OUTPUTS = vehicle_share_outputs,
     )
     write_file(os.path.join(outdir, "shoreside.moos"),
                Template(shoreside_tmpl).safe_substitute(shoreside_vals))
